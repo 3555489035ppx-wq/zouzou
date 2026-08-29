@@ -38,7 +38,7 @@ const toggleInList = (items: string[], id: string) => items.includes(id) ? items
 export const useAppStore = create<AppState>()(persist((set) => ({
   nickname: '小鹏',
   avatar: '/assets/date.jpg',
-  cover: '/assets/shanghai-skyline.jpg',
+  cover: '/assets/cities/shanghai-bund.jpg',
   city: '上海',
   tripCity: null,
   communityCity: '上海',

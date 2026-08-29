@@ -162,10 +162,10 @@ export const ZouPlanCard = ({ plan, selected, onSelect, onOpen }: { plan: Plan; 
   </article>
 )
 
-export const ZouPlaceCard = ({ place, locked, onLock, onReplace, onDelete, onMore }: { place: Place; locked?: boolean; onLock: () => void; onReplace: () => void; onDelete: () => void; onMore?: () => void }) => (
+export const ZouPlaceCard = ({ place, locked, onLock, onReplace, onDelete, onMore }: { place: Place & { factState?: 'verified' | 'estimated'; factSource?: string }; locked?: boolean; onLock: () => void; onReplace: () => void; onDelete: () => void; onMore?: () => void }) => (
   <article className="place-card">
     <div className="place-card__time">{place.time}</div>
-    <div className="place-card__body"><div><h3>{place.name}</h3><p>{place.type} · 停留 {place.stay} · ¥{place.budget}</p></div><p className="place-card__note">{place.note}</p><div className="place-card__transport">下一段 · {place.transport}</div></div>
+    <div className="place-card__body"><div><h3>{place.name}</h3><p>{place.type} · 停留 {place.stay} · ¥{place.budget}</p></div><p className="place-card__note">{place.note}</p>{place.factState ? <small className="place-card__source">{place.factState === 'verified' ? '事实已核验' : '候选待核验'} · {place.factSource}</small> : null}<div className="place-card__transport">下一段 · {place.transport}</div></div>
     <div className="place-card__actions">{locked ? <button aria-label="解锁地点" aria-pressed="true" onClick={onLock}><Lock /></button> : null}<button onClick={onReplace}>替换</button><button aria-label="更多操作" aria-haspopup="menu" onClick={onMore ?? onDelete}><MoreHorizontal /></button></div>
   </article>
 )
@@ -181,7 +181,7 @@ const CommunityCardWithLike = ({ post, onOpen }: { post: CommunityPost; onOpen: 
   const likes = post.likes + (liked ? 1 : 0)
   return <article className="community-card">
     <button className="community-card__open" onClick={onOpen} aria-label={`打开${post.title}`}>
-      <div className="community-card__image" style={{ aspectRatio: ratioMap[post.ratio] }}><img src={post.image} alt="" loading="lazy" width={420} height={560} />{post.completed ? <span className="community-card__done"><Check />已完成</span> : null}</div>
+      <div className="community-card__image" style={{ aspectRatio: ratioMap[post.ratio] }}><img src={post.image} alt={post.title} loading="lazy" width={420} height={560} />{post.completed ? <span className="community-card__done"><Check />已完成</span> : null}</div>
       <h3>{post.title}</h3>
     </button>
     <div className="community-card__meta"><ZouAvatar src={post.avatar} name={post.author} size="sm" /><span>{post.author}</span><button className="community-card__like" aria-label={`喜欢${post.title}`} aria-pressed={liked} onClick={() => toggleLiked(post.id)}><Heart fill={liked ? 'currentColor' : 'none'} /><span>{likes}</span></button></div>

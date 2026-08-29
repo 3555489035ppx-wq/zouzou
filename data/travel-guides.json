@@ -1,0 +1,2339 @@
+{
+  "version": 1,
+  "generatedAt": "2026-08-29T16:14:38.053Z",
+  "guides": [
+    {
+      "id": "xhs-ed75429d2b99059b",
+      "city": "武汉",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/69de1811000000001a0224c3",
+      "title": "极限12小时游武汉攻略",
+      "author": "暴躁小帅-攻略版",
+      "publishedAt": "2026-04-14",
+      "fetchedAt": "2026-08-29T16:14:38.046Z",
+      "likes": 8653,
+      "summary": "武汉旅行攻略线索；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [],
+      "claims": [],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-f51cf68a25eeab78",
+      "city": "武汉",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/69ec876c00000000360013ac",
+      "title": "五一来武汉，直接复制这条citywalk路线！！",
+      "author": "栗子酱",
+      "publishedAt": "2026-04-25",
+      "fetchedAt": "2026-08-29T16:14:38.046Z",
+      "likes": 2348,
+      "summary": "武汉旅行攻略线索；主题：City Walk；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [
+        "City Walk"
+      ],
+      "placeHints": [],
+      "claims": [
+        {
+          "type": "activity",
+          "text": "社区内容呈现的体验主题：City Walk",
+          "confidence": 0.5,
+          "verified": false
+        }
+      ],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-ad4d63f5887f071e",
+      "city": "武汉",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a48d24f00000000170295e9",
+      "title": "武汉📍两日游，懒人版逛吃攻略，超详细❗",
+      "author": "跟着云玺去旅行",
+      "publishedAt": "2026-07-04",
+      "fetchedAt": "2026-08-29T16:14:38.046Z",
+      "likes": 2234,
+      "summary": "武汉旅行攻略线索；主题：逛吃；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [
+        "逛吃"
+      ],
+      "placeHints": [],
+      "claims": [
+        {
+          "type": "activity",
+          "text": "社区内容呈现的体验主题：逛吃",
+          "confidence": 0.5,
+          "verified": false
+        }
+      ],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-ee9433bed59115b7",
+      "city": "武汉",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/69def607000000001d01b9da",
+      "title": "武汉🚄3 天 2 晚旅游详细攻略 | 轻松游版",
+      "author": "啵啵_",
+      "publishedAt": "2026-04-15",
+      "fetchedAt": "2026-08-29T16:14:38.046Z",
+      "likes": 3797,
+      "summary": "武汉旅行攻略线索；3天；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [],
+      "claims": [],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-612e173e0fb6576b",
+      "city": "武汉",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a709800000000003301880f",
+      "title": "📍武汉三日游攻略｜不绕路版逛吃chao顺路",
+      "author": "-Jelliy🍮",
+      "publishedAt": "2026-08-03",
+      "fetchedAt": "2026-08-29T16:14:38.045Z",
+      "likes": 2931,
+      "summary": "武汉旅行攻略线索；主题：City Walk、逛吃、交通、展览；地点：东湖、黄鹤楼、湖北省博物馆、江汉路、武汉大学、汉口江滩；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [
+        "City Walk",
+        "逛吃",
+        "交通",
+        "展览"
+      ],
+      "placeHints": [
+        "东湖",
+        "黄鹤楼",
+        "湖北省博物馆",
+        "江汉路",
+        "武汉大学",
+        "汉口江滩"
+      ],
+      "claims": [
+        {
+          "type": "place",
+          "text": "社区攻略提到：东湖、黄鹤楼、湖北省博物馆、江汉路、武汉大学、汉口江滩",
+          "placeName": "东湖",
+          "confidence": 0.62,
+          "verified": false
+        },
+        {
+          "type": "route",
+          "text": "社区攻略把东湖、黄鹤楼、湖北省博物馆、江汉路、武汉大学、汉口江滩作为候选串联路线",
+          "confidence": 0.55,
+          "verified": false
+        },
+        {
+          "type": "activity",
+          "text": "社区内容呈现的体验主题：City Walk、逛吃、交通、展览",
+          "confidence": 0.5,
+          "verified": false
+        }
+      ],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-5de5b0fbfff15156",
+      "city": "青岛",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/68bab784000000001d022520",
+      "title": "极限12小时游青岛10个景点攻略",
+      "author": "暴躁小帅-攻略版",
+      "publishedAt": "2025-09-05",
+      "fetchedAt": "2026-08-29T16:14:12.704Z",
+      "likes": 37000,
+      "summary": "青岛旅行攻略线索；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [],
+      "claims": [],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-0542c70abb753ef4",
+      "city": "青岛",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a66c5000000000011019d18",
+      "title": "📍青岛旅游地图手绘攻略",
+      "author": "旅游情报局",
+      "publishedAt": "2026-07-27",
+      "fetchedAt": "2026-08-29T16:14:12.704Z",
+      "likes": 5164,
+      "summary": "青岛旅行攻略线索；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [],
+      "claims": [],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-bed6edeb70615c9a",
+      "city": "青岛",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a2939600000000007020be6",
+      "title": "锐评青岛景点从夯到拉！我真的都要说！",
+      "author": "任冉iris",
+      "publishedAt": "2026-06-10",
+      "fetchedAt": "2026-08-29T16:14:12.703Z",
+      "likes": 18000,
+      "summary": "青岛旅行攻略线索；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [],
+      "claims": [],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-30aece24940bf98a",
+      "city": "青岛",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a3e725e00000000110055fe",
+      "title": "被自己做的青岛攻略满意到睡不着😎",
+      "author": "什么都好好吃啊",
+      "publishedAt": "2026-06-26",
+      "fetchedAt": "2026-08-29T16:14:12.703Z",
+      "likes": 7482,
+      "summary": "青岛旅行攻略线索；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [],
+      "claims": [],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-76a0697c9cb29cc5",
+      "city": "青岛",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/69ca451900000000230214b5",
+      "title": "本J人对自己做的青岛攻略甚是满意🥹😀🥹",
+      "author": "财财旅游日记",
+      "publishedAt": "2026-03-30",
+      "fetchedAt": "2026-08-29T16:14:12.702Z",
+      "likes": 14000,
+      "summary": "青岛旅行攻略线索；主题：逛吃；地点：栈桥、小麦岛、大学路、崂山；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [
+        "逛吃"
+      ],
+      "placeHints": [
+        "栈桥",
+        "小麦岛",
+        "大学路",
+        "崂山"
+      ],
+      "claims": [
+        {
+          "type": "place",
+          "text": "社区攻略提到：栈桥、小麦岛、大学路、崂山",
+          "placeName": "栈桥",
+          "confidence": 0.62,
+          "verified": false
+        },
+        {
+          "type": "route",
+          "text": "社区攻略把栈桥、小麦岛、大学路、崂山作为候选串联路线",
+          "confidence": 0.55,
+          "verified": false
+        },
+        {
+          "type": "activity",
+          "text": "社区内容呈现的体验主题：逛吃",
+          "confidence": 0.5,
+          "verified": false
+        }
+      ],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-7b069e8ec69b66a0",
+      "city": "张家界",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a19433800000000380214db",
+      "title": "张家界3天2晚懒人攻略✨",
+      "author": "张家界旅行-思思🌿",
+      "publishedAt": "2026-05-29",
+      "fetchedAt": "2026-08-29T16:01:55.021Z",
+      "likes": 1163,
+      "summary": "张家界旅行攻略线索；主题：逛吃、拍照、夜景、住宿；地点：天门山、武陵源；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [
+        "逛吃",
+        "拍照",
+        "夜景",
+        "住宿"
+      ],
+      "placeHints": [
+        "天门山",
+        "武陵源"
+      ],
+      "claims": [
+        {
+          "type": "place",
+          "text": "社区攻略提到：天门山、武陵源",
+          "placeName": "天门山",
+          "confidence": 0.62,
+          "verified": false
+        },
+        {
+          "type": "route",
+          "text": "社区攻略把天门山、武陵源作为候选串联路线",
+          "confidence": 0.55,
+          "verified": false
+        },
+        {
+          "type": "activity",
+          "text": "社区内容呈现的体验主题：逛吃、拍照、夜景、住宿",
+          "confidence": 0.5,
+          "verified": false
+        }
+      ],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-bbfe65094dee2106",
+      "city": "张家界",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a6731300000000005038a4c",
+      "title": "张家界游玩",
+      "author": "stranger.",
+      "publishedAt": "2026-07-27",
+      "fetchedAt": "2026-08-29T16:01:55.021Z",
+      "likes": 692,
+      "summary": "张家界旅行攻略线索；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [],
+      "claims": [],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-132a2ed0a0cf7bba",
+      "city": "张家界",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a5b6f55000000000401eec2",
+      "title": "张家界3日游｜手绘出行攻略",
+      "author": "途间绘",
+      "publishedAt": "2026-07-18",
+      "fetchedAt": "2026-08-29T16:01:55.021Z",
+      "likes": 1221,
+      "summary": "张家界旅行攻略线索；3天；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [],
+      "claims": [],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-775bf9e679e25488",
+      "city": "张家界",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/691d3050000000001e02b184",
+      "title": "温州-长沙张家界全家出动五日游行程计划",
+      "author": "阿YUE要开心",
+      "publishedAt": "2025-11-19",
+      "fetchedAt": "2026-08-29T16:01:55.021Z",
+      "likes": 127,
+      "summary": "张家界旅行攻略线索；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [],
+      "claims": [],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-817ad3b7d1e382a1",
+      "city": "张家界",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a660142000000000f00a9b5",
+      "title": "长沙到张家界简单3日游",
+      "author": "余周周",
+      "publishedAt": "2026-07-26",
+      "fetchedAt": "2026-08-29T16:01:55.021Z",
+      "likes": 619,
+      "summary": "张家界旅行攻略线索；3天；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [],
+      "claims": [],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-ed4e5aa1fec4981e",
+      "city": "贵阳",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a6713b4000000001b01d26b",
+      "title": "本J人对自己做的贵阳旅游攻略十分满意！",
+      "author": "＞＜",
+      "publishedAt": "2026-07-27",
+      "fetchedAt": "2026-08-29T16:01:20.389Z",
+      "likes": 7404,
+      "summary": "贵阳旅行攻略线索；主题：逛吃；地点：甲秀楼；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [
+        "逛吃"
+      ],
+      "placeHints": [
+        "甲秀楼"
+      ],
+      "claims": [
+        {
+          "type": "place",
+          "text": "社区攻略提到：甲秀楼",
+          "placeName": "甲秀楼",
+          "confidence": 0.62,
+          "verified": false
+        },
+        {
+          "type": "activity",
+          "text": "社区内容呈现的体验主题：逛吃",
+          "confidence": 0.5,
+          "verified": false
+        }
+      ],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-fe1f811b024195ba",
+      "city": "贵阳",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a5625a600000000170283f8",
+      "title": "贵阳一日游保姆级攻略",
+      "author": "暴躁小帅-攻略版",
+      "publishedAt": "2026-07-14",
+      "fetchedAt": "2026-08-29T16:01:20.389Z",
+      "likes": 12000,
+      "summary": "贵阳旅行攻略线索；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [],
+      "claims": [],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-a09a75ce2a5f6c25",
+      "city": "贵阳",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a65935f0000000004029f30",
+      "title": "贵阳已回！说说我的真实感受。。(附攻略)",
+      "author": "丹2妹子",
+      "publishedAt": "2026-07-26",
+      "fetchedAt": "2026-08-29T16:01:20.389Z",
+      "likes": 1154,
+      "summary": "贵阳旅行攻略线索；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [],
+      "claims": [],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-f20ab6ec46ee511a",
+      "city": "贵阳",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/69abeff70000000015022117",
+      "title": "贵阳📍三日游｜保姆级逛吃攻略，超详细❗",
+      "author": "跟着云玺去旅行",
+      "publishedAt": "2026-03-07",
+      "fetchedAt": "2026-08-29T16:01:20.389Z",
+      "likes": 5977,
+      "summary": "贵阳旅行攻略线索；主题：逛吃；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [
+        "逛吃"
+      ],
+      "placeHints": [],
+      "claims": [
+        {
+          "type": "activity",
+          "text": "社区内容呈现的体验主题：逛吃",
+          "confidence": 0.5,
+          "verified": false
+        }
+      ],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-6037cb38da895fd0",
+      "city": "贵阳",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a1587a0000000000803e3be",
+      "title": "贵阳6天5晚｜J人的旅行计划长这样",
+      "author": "辣堡了💥",
+      "publishedAt": "2026-05-26",
+      "fetchedAt": "2026-08-29T16:01:20.389Z",
+      "likes": 652,
+      "summary": "贵阳旅行攻略线索；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [],
+      "claims": [],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-489971f2682a972b",
+      "city": "哈尔滨",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a3b977b00000000210160e1",
+      "title": "本J人对自己做的哈尔滨旅游攻略很满意😎",
+      "author": "吃货一枚的美女",
+      "publishedAt": "2026-06-24",
+      "fetchedAt": "2026-08-29T16:00:55.947Z",
+      "likes": 1890,
+      "summary": "哈尔滨旅行攻略线索；主题：逛吃、交通；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [
+        "逛吃",
+        "交通"
+      ],
+      "placeHints": [],
+      "claims": [
+        {
+          "type": "activity",
+          "text": "社区内容呈现的体验主题：逛吃、交通",
+          "confidence": 0.5,
+          "verified": false
+        }
+      ],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-af771e49e899166f",
+      "city": "哈尔滨",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a4ce774000000000f017f3b",
+      "title": "哈尔滨避暑逛吃全攻略✨景点美食干货满满",
+      "author": "逛吃逛吃的啵啵",
+      "publishedAt": "2026-07-07",
+      "fetchedAt": "2026-08-29T16:00:55.947Z",
+      "likes": 2197,
+      "summary": "哈尔滨旅行攻略线索；主题：逛吃；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [
+        "逛吃"
+      ],
+      "placeHints": [],
+      "claims": [
+        {
+          "type": "activity",
+          "text": "社区内容呈现的体验主题：逛吃",
+          "confidence": 0.5,
+          "verified": false
+        }
+      ],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-b46dd5c86d8f9311",
+      "city": "哈尔滨",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/699dbe73000000002602e159",
+      "title": "04本地女大📍哈尔滨丨不踩雷4天3夜逛吃攻略",
+      "author": "小拾不识月",
+      "publishedAt": "2026-02-24",
+      "fetchedAt": "2026-08-29T16:00:55.947Z",
+      "likes": 32,
+      "summary": "哈尔滨旅行攻略线索；主题：逛吃；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [
+        "逛吃"
+      ],
+      "placeHints": [],
+      "claims": [
+        {
+          "type": "activity",
+          "text": "社区内容呈现的体验主题：逛吃",
+          "confidence": 0.5,
+          "verified": false
+        }
+      ],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-6933b331855a641d",
+      "city": "哈尔滨",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a1c21780000000008024a8d",
+      "title": "来哈尔滨，必去5个打卡地",
+      "author": "李墨竹",
+      "publishedAt": "2026-05-31",
+      "fetchedAt": "2026-08-29T16:00:55.947Z",
+      "likes": 311,
+      "summary": "哈尔滨旅行攻略线索；主题：拍照；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [
+        "拍照"
+      ],
+      "placeHints": [],
+      "claims": [
+        {
+          "type": "activity",
+          "text": "社区内容呈现的体验主题：拍照",
+          "confidence": 0.5,
+          "verified": false
+        }
+      ],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-c123e1082f696e69",
+      "city": "哈尔滨",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a673ec100000000040295fa",
+      "title": "3天2晚哈尔滨旅游攻略📝纯干货",
+      "author": "漫漫冬日",
+      "publishedAt": "2026-07-27",
+      "fetchedAt": "2026-08-29T16:00:55.947Z",
+      "likes": 919,
+      "summary": "哈尔滨旅行攻略线索；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [],
+      "claims": [],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-c66a48f7223be1e8",
+      "city": "桂林",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a55b1d0000000001602526c",
+      "title": "桂林2日游｜手绘旅行攻略",
+      "author": "途间绘",
+      "publishedAt": "2026-07-14",
+      "fetchedAt": "2026-08-29T16:00:26.299Z",
+      "likes": 3097,
+      "summary": "桂林旅行攻略线索；2天；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [],
+      "claims": [],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-1e609d1af653941c",
+      "city": "桂林",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/68eb6cae000000000302e5d9",
+      "title": "桂林阳朔三天两晚旅游攻略",
+      "author": "了了了了了了",
+      "publishedAt": "2025-10-12",
+      "fetchedAt": "2026-08-29T16:00:26.299Z",
+      "likes": 5726,
+      "summary": "桂林旅行攻略线索；地点：阳朔；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [
+        "阳朔"
+      ],
+      "claims": [
+        {
+          "type": "place",
+          "text": "社区攻略提到：阳朔",
+          "placeName": "阳朔",
+          "confidence": 0.62,
+          "verified": false
+        }
+      ],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-c65b2c97f62c4c14",
+      "city": "桂林",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a65fcf6000000000101e244",
+      "title": "阳朔3日游 手绘旅行攻略",
+      "author": "途间绘",
+      "publishedAt": "2026-07-26",
+      "fetchedAt": "2026-08-29T16:00:26.299Z",
+      "likes": 1812,
+      "summary": "桂林旅行攻略线索；3天；地点：阳朔；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [
+        "阳朔"
+      ],
+      "claims": [
+        {
+          "type": "place",
+          "text": "社区攻略提到：阳朔",
+          "placeName": "阳朔",
+          "confidence": 0.62,
+          "verified": false
+        }
+      ],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-cd2ac428ad963c91",
+      "city": "桂林",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/69e7756e000000002200f378",
+      "title": "📍桂林阳朔3日游 | 不费腿保姆级游玩攻略",
+      "author": "慕慕朝颜",
+      "publishedAt": "2026-04-21",
+      "fetchedAt": "2026-08-29T16:00:26.299Z",
+      "likes": 1158,
+      "summary": "桂林旅行攻略线索；3天；地点：阳朔；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [
+        "阳朔"
+      ],
+      "claims": [
+        {
+          "type": "place",
+          "text": "社区攻略提到：阳朔",
+          "placeName": "阳朔",
+          "confidence": 0.62,
+          "verified": false
+        }
+      ],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-166ae011dd259660",
+      "city": "桂林",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a43d949000000000f01f870",
+      "title": "桂林保姆级攻略（新手首选，不绕路）",
+      "author": "李代棠📷",
+      "publishedAt": "2026-06-30",
+      "fetchedAt": "2026-08-29T16:00:26.299Z",
+      "likes": 870,
+      "summary": "桂林旅行攻略线索；主题：交通；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [
+        "交通"
+      ],
+      "placeHints": [],
+      "claims": [
+        {
+          "type": "activity",
+          "text": "社区内容呈现的体验主题：交通",
+          "confidence": 0.5,
+          "verified": false
+        }
+      ],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-5aedea5c8a392972",
+      "city": "三亚",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/69048f82000000000301d69b",
+      "title": "三亚攻略🌴1500玩了4天3晚淡季玩到嗨",
+      "author": "进击的小石头儿",
+      "publishedAt": "2025-10-31",
+      "fetchedAt": "2026-08-29T15:59:42.144Z",
+      "likes": 28000,
+      "summary": "三亚旅行攻略线索；主题：City Walk、逛吃、拍照、夜景；地点：大东海、蜈支洲岛；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [
+        "City Walk",
+        "逛吃",
+        "拍照",
+        "夜景",
+        "住宿",
+        "交通"
+      ],
+      "placeHints": [
+        "大东海",
+        "蜈支洲岛"
+      ],
+      "claims": [
+        {
+          "type": "place",
+          "text": "社区攻略提到：大东海、蜈支洲岛",
+          "placeName": "大东海",
+          "confidence": 0.62,
+          "verified": false
+        },
+        {
+          "type": "route",
+          "text": "社区攻略把大东海、蜈支洲岛作为候选串联路线",
+          "confidence": 0.55,
+          "verified": false
+        },
+        {
+          "type": "activity",
+          "text": "社区内容呈现的体验主题：City Walk、逛吃、拍照、夜景、住宿、交通",
+          "confidence": 0.5,
+          "verified": false
+        }
+      ],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-1a5cad79fbf75e33",
+      "city": "三亚",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a1afc54000000003601dec8",
+      "title": "三亚旅行攻略真实分享第2️⃣篇！ 不走冤枉路！",
+      "author": "不讲理的就喜欢杠到底",
+      "publishedAt": "2026-05-30",
+      "fetchedAt": "2026-08-29T15:59:42.144Z",
+      "likes": 6374,
+      "summary": "三亚旅行攻略线索；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [],
+      "claims": [],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-c57fbd833e16402b",
+      "city": "三亚",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/69fc0ef70000000038036c74",
+      "title": "三亚5天4晚（真正度假不劳累）🏖️",
+      "author": "肯德基土豆泥好好吃",
+      "publishedAt": "2026-05-07",
+      "fetchedAt": "2026-08-29T15:59:42.144Z",
+      "likes": 3467,
+      "summary": "三亚旅行攻略线索；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [],
+      "claims": [],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-e4e457b9f6461953",
+      "city": "三亚",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a636707000000001302d681",
+      "title": "本J人花24h做的三亚攻略已经next level了",
+      "author": "陈米米🍃",
+      "publishedAt": "2026-07-24",
+      "fetchedAt": "2026-08-29T15:59:42.144Z",
+      "likes": 1029,
+      "summary": "三亚旅行攻略线索；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [],
+      "claims": [],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-d869d0e7d536e2ac",
+      "city": "三亚",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a7ab59f0000000006004671",
+      "title": "8.9📍三亚刚回，锐评一下景点（仅个人感受）",
+      "author": "芒果冰🍧",
+      "publishedAt": "2026-08-11",
+      "fetchedAt": "2026-08-29T15:59:42.144Z",
+      "likes": 1364,
+      "summary": "三亚旅行攻略线索；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [],
+      "claims": [],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-c303294005e9ebc1",
+      "city": "昆明",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a1537730000000008024e80",
+      "title": "一条视频告诉你，昆明应该怎么玩！",
+      "author": "王陶陶去哪玩",
+      "publishedAt": "2026-05-26",
+      "fetchedAt": "2026-08-29T15:58:53.113Z",
+      "likes": 5153,
+      "summary": "昆明旅行攻略线索；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [],
+      "claims": [],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-3f43f9557de58cb6",
+      "city": "昆明",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a7056b4000000002701ee45",
+      "title": "昆明📍3天2晚沉浸式citywalk攻略",
+      "author": "小红薯6567FC6B",
+      "publishedAt": "2026-08-03",
+      "fetchedAt": "2026-08-29T15:58:53.113Z",
+      "likes": 284,
+      "summary": "昆明旅行攻略线索；主题：City Walk；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [
+        "City Walk"
+      ],
+      "placeHints": [],
+      "claims": [
+        {
+          "type": "activity",
+          "text": "社区内容呈现的体验主题：City Walk",
+          "confidence": 0.5,
+          "verified": false
+        }
+      ],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-5ae175833c2921b7",
+      "city": "昆明",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a61952f000000000401fc13",
+      "title": "昆明3日 手绘旅行攻略",
+      "author": "途间绘",
+      "publishedAt": "2026-07-23",
+      "fetchedAt": "2026-08-29T15:58:53.113Z",
+      "likes": 1145,
+      "summary": "昆明旅行攻略线索；3天；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [],
+      "claims": [],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-be093cd6ab16079a",
+      "city": "昆明",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a5059d20000000007025208",
+      "title": "昆明｜一日游｜中转站｜人均300｜路线攻略",
+      "author": "圆了个圆",
+      "publishedAt": "2026-07-10",
+      "fetchedAt": "2026-08-29T15:58:53.113Z",
+      "likes": 1795,
+      "summary": "昆明旅行攻略线索；主题：低预算；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [
+        "低预算"
+      ],
+      "placeHints": [],
+      "claims": [
+        {
+          "type": "activity",
+          "text": "社区内容呈现的体验主题：低预算",
+          "confidence": 0.5,
+          "verified": false
+        }
+      ],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-048f5f979df3d039",
+      "city": "昆明",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a92c0450000000026003282",
+      "title": "看了这篇昆明攻略的人有福了🗺️",
+      "author": "芝士小圆子",
+      "publishedAt": "2026-08-29",
+      "fetchedAt": "2026-08-29T15:58:53.111Z",
+      "likes": 23,
+      "summary": "昆明旅行攻略线索；主题：City Walk、逛吃；地点：翠湖、滇池、斗南花市、昆明老街、官渡古镇、西山；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [
+        "City Walk",
+        "逛吃"
+      ],
+      "placeHints": [
+        "翠湖",
+        "滇池",
+        "斗南花市",
+        "昆明老街",
+        "官渡古镇",
+        "西山"
+      ],
+      "claims": [
+        {
+          "type": "place",
+          "text": "社区攻略提到：翠湖、滇池、斗南花市、昆明老街、官渡古镇、西山",
+          "placeName": "翠湖",
+          "confidence": 0.62,
+          "verified": false
+        },
+        {
+          "type": "route",
+          "text": "社区攻略把翠湖、滇池、斗南花市、昆明老街、官渡古镇、西山作为候选串联路线",
+          "confidence": 0.55,
+          "verified": false
+        },
+        {
+          "type": "activity",
+          "text": "社区内容呈现的体验主题：City Walk、逛吃",
+          "confidence": 0.5,
+          "verified": false
+        }
+      ],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-a1cbb9f373995bba",
+      "city": "长沙",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6943abc7000000001e03221a",
+      "title": "长沙最好玩的八个地方！！",
+      "author": "锦鲤附体小妹纸",
+      "publishedAt": "2025-12-18",
+      "fetchedAt": "2026-08-29T15:37:37.881Z",
+      "likes": 3476,
+      "summary": "长沙旅行攻略线索；主题：拍照；地点：橘子洲；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [
+        "拍照"
+      ],
+      "placeHints": [
+        "橘子洲"
+      ],
+      "claims": [
+        {
+          "type": "place",
+          "text": "社区攻略提到：橘子洲",
+          "placeName": "橘子洲",
+          "confidence": 0.62,
+          "verified": false
+        },
+        {
+          "type": "activity",
+          "text": "社区内容呈现的体验主题：拍照",
+          "confidence": 0.5,
+          "verified": false
+        }
+      ],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-9af8b46744712a9c",
+      "city": "长沙",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/69f0425c000000001f006251",
+      "title": "长沙3天2晚保姆级攻略✨不绕路版",
+      "author": "我好想瘦",
+      "publishedAt": "2026-04-28",
+      "fetchedAt": "2026-08-29T15:37:37.881Z",
+      "likes": 8047,
+      "summary": "长沙旅行攻略线索；主题：交通；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [
+        "交通"
+      ],
+      "placeHints": [],
+      "claims": [
+        {
+          "type": "activity",
+          "text": "社区内容呈现的体验主题：交通",
+          "confidence": 0.5,
+          "verified": false
+        }
+      ],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-85ba884350867123",
+      "city": "长沙",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a319cef0000000016024206",
+      "title": "可能是最实在的长沙旅游攻略（合集）",
+      "author": "倍增CD了",
+      "publishedAt": "2026-06-17",
+      "fetchedAt": "2026-08-29T15:37:37.881Z",
+      "likes": 16000,
+      "summary": "长沙旅行攻略线索；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [],
+      "claims": [],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-912bb220f4307666",
+      "city": "长沙",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a89a3af000000001801ab4e",
+      "title": "为什么我来长沙前没有刷到这篇啊啊啊",
+      "author": "张几岁",
+      "publishedAt": "2026-08-22",
+      "fetchedAt": "2026-08-29T15:37:37.881Z",
+      "likes": 269,
+      "summary": "长沙旅行攻略线索；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [],
+      "claims": [],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-485dbd6b99dc2076",
+      "city": "长沙",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a6cb1e700000000050302bb",
+      "title": "本J人对自己做的长沙攻略甚是满意",
+      "author": "奶油岛",
+      "publishedAt": "2026-07-31",
+      "fetchedAt": "2026-08-29T15:37:37.881Z",
+      "likes": 2395,
+      "summary": "长沙旅行攻略线索；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [],
+      "claims": [],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-06a2ac144e81c9e3",
+      "city": "深圳",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a8a95e20000000022021da8",
+      "title": "深圳景点值不值得去。。。（纯个人主观）",
+      "author": "财财旅游日记",
+      "publishedAt": "2026-08-23",
+      "fetchedAt": "2026-08-29T15:37:12.311Z",
+      "likes": 906,
+      "summary": "深圳旅行攻略线索；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [],
+      "claims": [],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-de26c8ff2e111a8d",
+      "city": "深圳",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/69a828f1000000001a033674",
+      "title": "深圳九个必打卡景点",
+      "author": "小小棋",
+      "publishedAt": "2026-03-04",
+      "fetchedAt": "2026-08-29T15:37:12.310Z",
+      "likes": 6065,
+      "summary": "深圳旅行攻略线索；主题：拍照、交通；地点：华侨城、世界之窗；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [
+        "拍照",
+        "交通"
+      ],
+      "placeHints": [
+        "华侨城",
+        "世界之窗"
+      ],
+      "claims": [
+        {
+          "type": "place",
+          "text": "社区攻略提到：华侨城、世界之窗",
+          "placeName": "华侨城",
+          "confidence": 0.62,
+          "verified": false
+        },
+        {
+          "type": "route",
+          "text": "社区攻略把华侨城、世界之窗作为候选串联路线",
+          "confidence": 0.55,
+          "verified": false
+        },
+        {
+          "type": "activity",
+          "text": "社区内容呈现的体验主题：拍照、交通",
+          "confidence": 0.5,
+          "verified": false
+        }
+      ],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-a41c463384c8c2e1",
+      "city": "深圳",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a8bcc8e0000000025007107",
+      "title": "如果在深圳只待一天，请直接复制这条路线！！！",
+      "author": "阿群的生活",
+      "publishedAt": "2026-08-24",
+      "fetchedAt": "2026-08-29T15:37:12.310Z",
+      "likes": 410,
+      "summary": "深圳旅行攻略线索；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [],
+      "claims": [],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-652e74df15526135",
+      "city": "深圳",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/690a0ecd0000000005002dd5",
+      "title": "深圳三日游｜超满意的行程✅",
+      "author": "玲娜贝儿日记",
+      "publishedAt": "2025-11-04",
+      "fetchedAt": "2026-08-29T15:37:12.310Z",
+      "likes": 8572,
+      "summary": "深圳旅行攻略线索；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [],
+      "claims": [],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-0afd9292de64687e",
+      "city": "深圳",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a73f808000000002800925b",
+      "title": "深圳24个必打卡的终极清单，总会有人需要它",
+      "author": "小C爱旅游",
+      "publishedAt": "2026-08-06",
+      "fetchedAt": "2026-08-29T15:37:12.310Z",
+      "likes": 1474,
+      "summary": "深圳旅行攻略线索；主题：拍照；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [
+        "拍照"
+      ],
+      "placeHints": [],
+      "claims": [
+        {
+          "type": "activity",
+          "text": "社区内容呈现的体验主题：拍照",
+          "confidence": 0.5,
+          "verified": false
+        }
+      ],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-3e9e24f43c2174a6",
+      "city": "西安",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a47248c000000001c025af3",
+      "title": "西安5日 手绘旅行攻略",
+      "author": "一人食",
+      "publishedAt": "2026-07-03",
+      "fetchedAt": "2026-08-29T15:36:49.176Z",
+      "likes": 13000,
+      "summary": "西安旅行攻略线索；5天；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [],
+      "claims": [],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-d592f2f336cd7a0d",
+      "city": "西安",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a7868ce000000002c007393",
+      "title": "西安 4 天 3 夜旅游攻略✨懒人版",
+      "author": "可乐不加冰",
+      "publishedAt": "2026-08-09",
+      "fetchedAt": "2026-08-29T15:36:49.176Z",
+      "likes": 984,
+      "summary": "西安旅行攻略线索；4天；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [],
+      "claims": [],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-197f54585b9a0503",
+      "city": "西安",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a4a37b00000000011011663",
+      "title": "为了这15张图，我特意飞了一趟西安‼️附攻略",
+      "author": "Angie",
+      "publishedAt": "2026-07-05",
+      "fetchedAt": "2026-08-29T15:36:49.176Z",
+      "likes": 7633,
+      "summary": "西安旅行攻略线索；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [],
+      "claims": [],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-6b88d458f00e196f",
+      "city": "西安",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a646be000000000090345f7",
+      "title": "西安旅行攻略｜10站玩懂古都长安🏮",
+      "author": "珠三角城市陪游官",
+      "publishedAt": "2026-07-25",
+      "fetchedAt": "2026-08-29T15:36:49.176Z",
+      "likes": 1137,
+      "summary": "西安旅行攻略线索；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [],
+      "claims": [],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-1698db9653ae9fc6",
+      "city": "西安",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a641615000000001101a524",
+      "title": "为什么我来西安前没有刷到这篇啊啊啊",
+      "author": "嘻嘻",
+      "publishedAt": "2026-07-25",
+      "fetchedAt": "2026-08-29T15:36:49.176Z",
+      "likes": 1742,
+      "summary": "西安旅行攻略线索；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [],
+      "claims": [],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-f0e7089cac40d437",
+      "city": "重庆",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a6ac500000000001101294f",
+      "title": "亲测不绕路，重庆懒人三日游直接抄攻略！！",
+      "author": "涂涂大宝",
+      "publishedAt": "2026-07-30",
+      "fetchedAt": "2026-08-29T15:36:25.348Z",
+      "likes": 1728,
+      "summary": "重庆旅行攻略线索；主题：交通；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [
+        "交通"
+      ],
+      "placeHints": [],
+      "claims": [
+        {
+          "type": "activity",
+          "text": "社区内容呈现的体验主题：交通",
+          "confidence": 0.5,
+          "verified": false
+        }
+      ],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-a1eb582f36bcad91",
+      "city": "重庆",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a92bfb7000000002a03cc9b",
+      "title": "我做的特种兵攻略，三天玩遍重庆",
+      "author": "山与海",
+      "publishedAt": "2026-08-29",
+      "fetchedAt": "2026-08-29T15:36:25.348Z",
+      "likes": 37,
+      "summary": "重庆旅行攻略线索；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [],
+      "claims": [],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-7739c0b1b5c880bf",
+      "city": "重庆",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a7090860000000025002d58",
+      "title": "重庆｜特种兵不绕路2日游‼️",
+      "author": "hugeee➰",
+      "publishedAt": "2026-08-03",
+      "fetchedAt": "2026-08-29T15:36:25.348Z",
+      "likes": 1366,
+      "summary": "重庆旅行攻略线索；2天；主题：交通；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [
+        "交通"
+      ],
+      "placeHints": [],
+      "claims": [
+        {
+          "type": "activity",
+          "text": "社区内容呈现的体验主题：交通",
+          "confidence": 0.5,
+          "verified": false
+        }
+      ],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-18c4a007d7a87ffe",
+      "city": "重庆",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a92a2620000000007006e42",
+      "title": "：本J人做的重庆攻略已经next level了",
+      "author": "橙子🍊",
+      "publishedAt": "2026-08-29",
+      "fetchedAt": "2026-08-29T15:36:25.348Z",
+      "likes": 9,
+      "summary": "重庆旅行攻略线索；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [],
+      "claims": [],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-c87c1e7cd8d8372f",
+      "city": "重庆",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a72e4ba0000000033036946",
+      "title": "本J人被自己画的重庆地图满意到睡不着了。",
+      "author": "小猫饼干",
+      "publishedAt": "2026-08-05",
+      "fetchedAt": "2026-08-29T15:36:25.346Z",
+      "likes": 4709,
+      "summary": "重庆旅行攻略线索；主题：逛吃、拍照、住宿；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [
+        "逛吃",
+        "拍照",
+        "住宿"
+      ],
+      "placeHints": [],
+      "claims": [
+        {
+          "type": "activity",
+          "text": "社区内容呈现的体验主题：逛吃、拍照、住宿",
+          "confidence": 0.5,
+          "verified": false
+        }
+      ],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-ca558cc07d8f6ef8",
+      "city": "广州",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/69a03e60000000000d00a43a",
+      "title": "广州📍9个必去打卡点！",
+      "author": "小小棋",
+      "publishedAt": "2026-02-26",
+      "fetchedAt": "2026-08-29T15:29:48.964Z",
+      "likes": 5532,
+      "summary": "广州旅行攻略线索；主题：拍照、夜景、低预算、交通；地点：广州塔、沙面、永庆坊、北京路、白云山；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [
+        "拍照",
+        "夜景",
+        "低预算",
+        "交通"
+      ],
+      "placeHints": [
+        "广州塔",
+        "沙面",
+        "永庆坊",
+        "北京路",
+        "白云山"
+      ],
+      "claims": [
+        {
+          "type": "place",
+          "text": "社区攻略提到：广州塔、沙面、永庆坊、北京路、白云山",
+          "placeName": "广州塔",
+          "confidence": 0.62,
+          "verified": false
+        },
+        {
+          "type": "route",
+          "text": "社区攻略把广州塔、沙面、永庆坊、北京路、白云山作为候选串联路线",
+          "confidence": 0.55,
+          "verified": false
+        },
+        {
+          "type": "activity",
+          "text": "社区内容呈现的体验主题：拍照、夜景、低预算、交通",
+          "confidence": 0.5,
+          "verified": false
+        }
+      ],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-6353026d1a4475ba",
+      "city": "广州",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/69ecccd200000000230049a0",
+      "title": "广州3天旅游攻略❗️超全总结🔥直接抄作业‼️",
+      "author": "凯里Kye",
+      "publishedAt": "2026-04-25",
+      "fetchedAt": "2026-08-29T15:29:48.964Z",
+      "likes": 2439,
+      "summary": "广州旅行攻略线索；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [],
+      "claims": [],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-fbe40427a9c701d9",
+      "city": "广州",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/69610111000000001a034acb",
+      "title": "广州旅游完整版攻略📝逛吃打卡好快乐！",
+      "author": "Mandygaga",
+      "publishedAt": "2026-01-09",
+      "fetchedAt": "2026-08-29T15:29:48.964Z",
+      "likes": 5927,
+      "summary": "广州旅行攻略线索；主题：逛吃、拍照；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [
+        "逛吃",
+        "拍照"
+      ],
+      "placeHints": [],
+      "claims": [
+        {
+          "type": "activity",
+          "text": "社区内容呈现的体验主题：逛吃、拍照",
+          "confidence": 0.5,
+          "verified": false
+        }
+      ],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-892310ed08a42aaf",
+      "city": "广州",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a5ed8f90000000005038d1a",
+      "title": "为什么去广州之前没有人告诉我啊……😭",
+      "author": "Lin",
+      "publishedAt": "2026-07-21",
+      "fetchedAt": "2026-08-29T15:29:48.964Z",
+      "likes": 1328,
+      "summary": "广州旅行攻略线索；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [],
+      "claims": [],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-3aedd8f192d353c6",
+      "city": "广州",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a6ff136000000003300f666",
+      "title": "初次广州游玩｜精简攻略✅避雷清单收好",
+      "author": "阅山海Travel-旅行",
+      "publishedAt": "2026-08-03",
+      "fetchedAt": "2026-08-29T15:29:48.964Z",
+      "likes": 110,
+      "summary": "广州旅行攻略线索；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [],
+      "claims": [],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-898ec56b9b8d09d0",
+      "city": "北京",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a73a98f000000000f039802",
+      "title": "北京经典10站，这样走超顺路！",
+      "author": "豹猫233",
+      "publishedAt": "2026-08-06",
+      "fetchedAt": "2026-08-29T15:29:25.349Z",
+      "likes": 1132,
+      "summary": "北京旅行攻略线索；主题：逛吃、拍照、住宿、交通；地点：故宫、天安门、颐和园、圆明园；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [
+        "逛吃",
+        "拍照",
+        "住宿",
+        "交通"
+      ],
+      "placeHints": [
+        "故宫",
+        "天安门",
+        "颐和园",
+        "圆明园"
+      ],
+      "claims": [
+        {
+          "type": "place",
+          "text": "社区攻略提到：故宫、天安门、颐和园、圆明园",
+          "placeName": "故宫",
+          "confidence": 0.62,
+          "verified": false
+        },
+        {
+          "type": "route",
+          "text": "社区攻略把故宫、天安门、颐和园、圆明园作为候选串联路线",
+          "confidence": 0.55,
+          "verified": false
+        },
+        {
+          "type": "activity",
+          "text": "社区内容呈现的体验主题：逛吃、拍照、住宿、交通",
+          "confidence": 0.5,
+          "verified": false
+        }
+      ],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-4b138064b677e338",
+      "city": "北京",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a633b0a000000001101f614",
+      "title": "北京📍五天五晚旅游详细攻略（出片📷不绕路）",
+      "author": "安安",
+      "publishedAt": "2026-07-24",
+      "fetchedAt": "2026-08-29T15:29:25.349Z",
+      "likes": 2101,
+      "summary": "北京旅行攻略线索；主题：拍照、交通；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [
+        "拍照",
+        "交通"
+      ],
+      "placeHints": [],
+      "claims": [
+        {
+          "type": "activity",
+          "text": "社区内容呈现的体验主题：拍照、交通",
+          "confidence": 0.5,
+          "verified": false
+        }
+      ],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-cc585f5af993b705",
+      "city": "北京",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a7ec71c000000003302c085",
+      "title": "北京旅游真实感受。。。（仅个人观点）",
+      "author": "邱敏",
+      "publishedAt": "2026-08-14",
+      "fetchedAt": "2026-08-29T15:29:25.349Z",
+      "likes": 2213,
+      "summary": "北京旅行攻略线索；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [],
+      "claims": [],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-6ff826bae19e1a82",
+      "city": "北京",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a912060000000002503b741",
+      "title": "和男友报了北京纯玩团后续（永不删",
+      "author": "命运太假糍粑",
+      "publishedAt": "2026-08-28",
+      "fetchedAt": "2026-08-29T15:29:25.349Z",
+      "likes": 12,
+      "summary": "北京旅行攻略线索；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [],
+      "claims": [],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-77d83be9b4d84abd",
+      "city": "北京",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a04219c0000000006036174",
+      "title": "北京热门景点预约攻略🔥没约到等于白去！",
+      "author": "一只羊咩咩",
+      "publishedAt": "2026-05-13",
+      "fetchedAt": "2026-08-29T15:29:25.349Z",
+      "likes": 19000,
+      "summary": "北京旅行攻略线索；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [],
+      "claims": [],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-491a9f65b37eeac1",
+      "city": "厦门",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a3a3aa2000000001702eac1",
+      "title": "就这篇了！厦门三天两夜逛吃攻略｜不绕路版",
+      "author": "小小旅行家Mama",
+      "publishedAt": "2026-06-23",
+      "fetchedAt": "2026-08-29T15:29:01.414Z",
+      "likes": 1106,
+      "summary": "厦门旅行攻略线索；主题：逛吃、拍照、交通、展览；地点：鼓浪屿、沙坡尾、环岛路、中山路、植物园、白城沙滩、厦门大学；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [
+        "逛吃",
+        "拍照",
+        "交通",
+        "展览"
+      ],
+      "placeHints": [
+        "鼓浪屿",
+        "沙坡尾",
+        "环岛路",
+        "中山路",
+        "植物园",
+        "白城沙滩",
+        "厦门大学"
+      ],
+      "claims": [
+        {
+          "type": "place",
+          "text": "社区攻略提到：鼓浪屿、沙坡尾、环岛路、中山路、植物园、白城沙滩、厦门大学",
+          "placeName": "鼓浪屿",
+          "confidence": 0.62,
+          "verified": false
+        },
+        {
+          "type": "route",
+          "text": "社区攻略把鼓浪屿、沙坡尾、环岛路、中山路、植物园、白城沙滩作为候选串联路线",
+          "confidence": 0.55,
+          "verified": false
+        },
+        {
+          "type": "activity",
+          "text": "社区内容呈现的体验主题：逛吃、拍照、交通、展览",
+          "confidence": 0.5,
+          "verified": false
+        }
+      ],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-b04ca7d7c988de8c",
+      "city": "厦门",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a3e2ca8000000000f02b4cc",
+      "title": "厦门景点值不值得去。。。（纯个人主观）",
+      "author": "财财旅游日记",
+      "publishedAt": "2026-06-26",
+      "fetchedAt": "2026-08-29T15:29:01.414Z",
+      "likes": 3263,
+      "summary": "厦门旅行攻略线索；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [],
+      "claims": [],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-25fb46c6dd3a4020",
+      "city": "厦门",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a89c87e000000000b02470e",
+      "title": "人均500💰厦门72h特种兵citywalk路线攻略‼️",
+      "author": "少女与诗",
+      "publishedAt": "2026-08-23",
+      "fetchedAt": "2026-08-29T15:29:01.414Z",
+      "likes": 388,
+      "summary": "厦门旅行攻略线索；主题：City Walk、低预算；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [
+        "City Walk",
+        "低预算"
+      ],
+      "placeHints": [],
+      "claims": [
+        {
+          "type": "activity",
+          "text": "社区内容呈现的体验主题：City Walk、低预算",
+          "confidence": 0.5,
+          "verified": false
+        }
+      ],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-905772e814edaa02",
+      "city": "厦门",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a3a759d000000000803c474",
+      "title": "📍厦门4日游｜Citywalk看海保姆级地图攻略‼️",
+      "author": "🌰栗栗在逃呀💨",
+      "publishedAt": "2026-06-23",
+      "fetchedAt": "2026-08-29T15:29:01.414Z",
+      "likes": 5027,
+      "summary": "厦门旅行攻略线索；4天；主题：City Walk；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [
+        "City Walk"
+      ],
+      "placeHints": [],
+      "claims": [
+        {
+          "type": "activity",
+          "text": "社区内容呈现的体验主题：City Walk",
+          "confidence": 0.5,
+          "verified": false
+        }
+      ],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-39cb82f9cf00f2bc",
+      "city": "厦门",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a58ad10000000002201924d",
+      "title": "厦门可以分成4个板块游玩，✔暑假🉑冲",
+      "author": "吉吉腹饥饥",
+      "publishedAt": "2026-07-16",
+      "fetchedAt": "2026-08-29T15:29:01.414Z",
+      "likes": 2279,
+      "summary": "厦门旅行攻略线索；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [],
+      "claims": [],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-91b24b2c6217d89e",
+      "city": "成都",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a86be690000000035015942",
+      "title": "好 恐怖…朋友做的成都攻略震撼到我了",
+      "author": "蛋小神💤",
+      "publishedAt": "2026-08-20",
+      "fetchedAt": "2026-08-29T15:28:38.042Z",
+      "likes": 733,
+      "summary": "成都旅行攻略线索；主题：逛吃、展览；地点：宽窄巷子、春熙路、太古里、武侯祠、锦里、东郊记忆、成都博物馆；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [
+        "逛吃",
+        "展览"
+      ],
+      "placeHints": [
+        "宽窄巷子",
+        "春熙路",
+        "太古里",
+        "武侯祠",
+        "锦里",
+        "东郊记忆",
+        "成都博物馆"
+      ],
+      "claims": [
+        {
+          "type": "place",
+          "text": "社区攻略提到：宽窄巷子、春熙路、太古里、武侯祠、锦里、东郊记忆、成都博物馆",
+          "placeName": "宽窄巷子",
+          "confidence": 0.62,
+          "verified": false
+        },
+        {
+          "type": "route",
+          "text": "社区攻略把宽窄巷子、春熙路、太古里、武侯祠、锦里、东郊记忆作为候选串联路线",
+          "confidence": 0.55,
+          "verified": false
+        },
+        {
+          "type": "activity",
+          "text": "社区内容呈现的体验主题：逛吃、展览",
+          "confidence": 0.5,
+          "verified": false
+        }
+      ],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-712c25ded4c389f3",
+      "city": "成都",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a6ee22e0000000022032692",
+      "title": "来了成都才知道之前看的攻略有多吓人😨",
+      "author": "小兔乖乖🎀",
+      "publishedAt": "2026-08-02",
+      "fetchedAt": "2026-08-29T15:28:38.042Z",
+      "likes": 2302,
+      "summary": "成都旅行攻略线索；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [],
+      "claims": [],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-14355d1e463304a1",
+      "city": "成都",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a9104e80000000024006e74",
+      "title": "成都9月个人觉得很有必要去的景点",
+      "author": "我请你吃",
+      "publishedAt": "2026-08-28",
+      "fetchedAt": "2026-08-29T15:28:38.042Z",
+      "likes": 78,
+      "summary": "成都旅行攻略线索；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [],
+      "claims": [],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-3ba7d6927102dfcc",
+      "city": "成都",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/697dd1410000000022033afa",
+      "title": "来成都记住这6个地方",
+      "author": "捡漏小羊逛成都",
+      "publishedAt": "2026-01-31",
+      "fetchedAt": "2026-08-29T15:28:38.042Z",
+      "likes": 1312,
+      "summary": "成都旅行攻略线索；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [],
+      "claims": [],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-7209fd5ea75f0d62",
+      "city": "成都",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a7a89c9000000002603734a",
+      "title": "成都4天｜不绕路👉保姆级，吃逛游玩攻略",
+      "author": "大牛叔叔",
+      "publishedAt": "2026-08-11",
+      "fetchedAt": "2026-08-29T15:28:38.042Z",
+      "likes": 798,
+      "summary": "成都旅行攻略线索；主题：交通；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [
+        "交通"
+      ],
+      "placeHints": [],
+      "claims": [
+        {
+          "type": "activity",
+          "text": "社区内容呈现的体验主题：交通",
+          "confidence": 0.5,
+          "verified": false
+        }
+      ],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-2bf6ced3a4e8683d",
+      "city": "南京",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a5ef10d0000000011004486",
+      "title": "南京景点景点不值得去（纯个人感受）",
+      "author": "财财旅游日记",
+      "publishedAt": "2026-07-21",
+      "fetchedAt": "2026-08-29T15:28:14.020Z",
+      "likes": 13000,
+      "summary": "南京旅行攻略线索；主题：逛吃；地点：夫子庙、老门东、南京博物院、中山陵、玄武湖、先锋书店、明孝陵；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [
+        "逛吃"
+      ],
+      "placeHints": [
+        "夫子庙",
+        "老门东",
+        "南京博物院",
+        "中山陵",
+        "玄武湖",
+        "先锋书店",
+        "明孝陵"
+      ],
+      "claims": [
+        {
+          "type": "place",
+          "text": "社区攻略提到：夫子庙、老门东、南京博物院、中山陵、玄武湖、先锋书店、明孝陵",
+          "placeName": "夫子庙",
+          "confidence": 0.62,
+          "verified": false
+        },
+        {
+          "type": "route",
+          "text": "社区攻略把夫子庙、老门东、南京博物院、中山陵、玄武湖、先锋书店作为候选串联路线",
+          "confidence": 0.55,
+          "verified": false
+        },
+        {
+          "type": "activity",
+          "text": "社区内容呈现的体验主题：逛吃",
+          "confidence": 0.5,
+          "verified": false
+        }
+      ],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-d745dcd5e288a5d8",
+      "city": "南京",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/69f1e65d00000000360194ec",
+      "title": "南京两日游保姆级攻略",
+      "author": "暴躁小帅-攻略版",
+      "publishedAt": "2026-04-29",
+      "fetchedAt": "2026-08-29T15:28:14.020Z",
+      "likes": 39000,
+      "summary": "南京旅行攻略线索；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [],
+      "claims": [],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-2a35ac7973545dee",
+      "city": "南京",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/69f1bce200000000350302a2",
+      "title": "南京五一两日游♻️保姆级路线逛吃攻略‼️",
+      "author": "Xiaoxiaoxx",
+      "publishedAt": "2026-04-29",
+      "fetchedAt": "2026-08-29T15:28:14.020Z",
+      "likes": 12000,
+      "summary": "南京旅行攻略线索；主题：逛吃；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [
+        "逛吃"
+      ],
+      "placeHints": [],
+      "claims": [
+        {
+          "type": "activity",
+          "text": "社区内容呈现的体验主题：逛吃",
+          "confidence": 0.5,
+          "verified": false
+        }
+      ],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-46294d9398759d04",
+      "city": "南京",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a7acec5000000002203123a",
+      "title": "南京四日游 手绘旅行攻略",
+      "author": "小幸",
+      "publishedAt": "2026-08-11",
+      "fetchedAt": "2026-08-29T15:28:14.020Z",
+      "likes": 2579,
+      "summary": "南京旅行攻略线索；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [],
+      "claims": [],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-38fe0c1a771da78f",
+      "city": "南京",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a0ec01900000000080317cc",
+      "title": "J人穷游南京3日游攻略（🎨手绘plog）",
+      "author": "行走的星星",
+      "publishedAt": "2026-05-21",
+      "fetchedAt": "2026-08-29T15:28:14.020Z",
+      "likes": 1908,
+      "summary": "南京旅行攻略线索；3天；主题：低预算；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [
+        "低预算"
+      ],
+      "placeHints": [],
+      "claims": [
+        {
+          "type": "activity",
+          "text": "社区内容呈现的体验主题：低预算",
+          "confidence": 0.5,
+          "verified": false
+        }
+      ],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-0b462d434af0fc93",
+      "city": "苏州",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/69d0d96f000000001d01e63d",
+      "title": "锐评苏州景点从夯到拉（出片版）！欢迎补充！",
+      "author": "琪琪琪有此理",
+      "publishedAt": "2026-04-04",
+      "fetchedAt": "2026-08-29T15:27:47.445Z",
+      "likes": 41000,
+      "summary": "苏州旅行攻略线索；主题：拍照；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [
+        "拍照"
+      ],
+      "placeHints": [],
+      "claims": [
+        {
+          "type": "activity",
+          "text": "社区内容呈现的体验主题：拍照",
+          "confidence": 0.5,
+          "verified": false
+        }
+      ],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-432a54cf498b0a9d",
+      "city": "苏州",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/69fd7a2a000000003700dc13",
+      "title": "苏州旅游可以分成3个板块游玩✅不绕路攻略",
+      "author": "loneL",
+      "publishedAt": "2026-05-08",
+      "fetchedAt": "2026-08-29T15:27:47.445Z",
+      "likes": 1546,
+      "summary": "苏州旅行攻略线索；主题：交通；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [
+        "交通"
+      ],
+      "placeHints": [],
+      "claims": [
+        {
+          "type": "activity",
+          "text": "社区内容呈现的体验主题：交通",
+          "confidence": 0.5,
+          "verified": false
+        }
+      ],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-a11de9467536a4a1",
+      "city": "苏州",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/68d132dd000000001301be5b",
+      "title": "苏州两日游保姆级攻略",
+      "author": "暴躁小帅-攻略版",
+      "publishedAt": "2025-09-22",
+      "fetchedAt": "2026-08-29T15:27:47.445Z",
+      "likes": 43000,
+      "summary": "苏州旅行攻略线索；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [],
+      "claims": [],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-5b8fc35b9a34962f",
+      "city": "苏州",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a61f85d000000000f015670",
+      "title": "苏州2日轻松游行程攻略｜逛吃两不误，不",
+      "author": "海边漫步日记",
+      "publishedAt": "2026-07-23",
+      "fetchedAt": "2026-08-29T15:27:47.445Z",
+      "likes": 2383,
+      "summary": "苏州旅行攻略线索；主题：逛吃；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [
+        "逛吃"
+      ],
+      "placeHints": [],
+      "claims": [
+        {
+          "type": "activity",
+          "text": "社区内容呈现的体验主题：逛吃",
+          "confidence": 0.5,
+          "verified": false
+        }
+      ],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-3abe8f81ab76ad63",
+      "city": "苏州",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a3de7cc00000000150267a2",
+      "title": "苏州300💰两天玩9个景点🌳超详行程记录",
+      "author": "今天天气真好",
+      "publishedAt": "2026-06-26",
+      "fetchedAt": "2026-08-29T15:27:47.444Z",
+      "likes": 9197,
+      "summary": "苏州旅行攻略线索；2天；主题：逛吃、拍照、低预算、住宿；地点：拙政园、平江路、苏州博物馆、狮子林、留园、虎丘；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [
+        "逛吃",
+        "拍照",
+        "低预算",
+        "住宿",
+        "交通",
+        "展览"
+      ],
+      "placeHints": [
+        "拙政园",
+        "平江路",
+        "苏州博物馆",
+        "狮子林",
+        "留园",
+        "虎丘"
+      ],
+      "claims": [
+        {
+          "type": "place",
+          "text": "社区攻略提到：拙政园、平江路、苏州博物馆、狮子林、留园、虎丘",
+          "placeName": "拙政园",
+          "confidence": 0.62,
+          "verified": false
+        },
+        {
+          "type": "route",
+          "text": "社区攻略把拙政园、平江路、苏州博物馆、狮子林、留园、虎丘作为候选串联路线",
+          "confidence": 0.55,
+          "verified": false
+        },
+        {
+          "type": "activity",
+          "text": "社区内容呈现的体验主题：逛吃、拍照、低预算、住宿、交通、展览",
+          "confidence": 0.5,
+          "verified": false
+        }
+      ],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-9e28d5667ff8cadd",
+      "city": "杭州",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a6c42c00000000028002478",
+      "title": "个人觉得比较杭州旅游比较全面的路线图",
+      "author": "will",
+      "publishedAt": "2026-07-31",
+      "fetchedAt": "2026-08-29T15:27:23.870Z",
+      "likes": 851,
+      "summary": "杭州旅行攻略线索；地点：西湖；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [
+        "西湖"
+      ],
+      "claims": [
+        {
+          "type": "place",
+          "text": "社区攻略提到：西湖",
+          "placeName": "西湖",
+          "confidence": 0.62,
+          "verified": false
+        }
+      ],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-02174c066043ca87",
+      "city": "杭州",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a929e60000000001f01df94",
+      "title": "杭州景点从夯到拉排名！",
+      "author": "高井井",
+      "publishedAt": "2026-08-29",
+      "fetchedAt": "2026-08-29T15:27:23.870Z",
+      "likes": 5889,
+      "summary": "杭州旅行攻略线索；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [],
+      "claims": [],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-78b0a617df215b9a",
+      "city": "杭州",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a63244e000000000f01c436",
+      "title": "以为西湖够美了｜直到我去了现实版抹茶森林",
+      "author": "山炮小王子",
+      "publishedAt": "2026-07-24",
+      "fetchedAt": "2026-08-29T15:27:23.870Z",
+      "likes": 4906,
+      "summary": "杭州旅行攻略线索；地点：西湖；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [
+        "西湖"
+      ],
+      "claims": [
+        {
+          "type": "place",
+          "text": "社区攻略提到：西湖",
+          "placeName": "西湖",
+          "confidence": 0.62,
+          "verified": false
+        }
+      ],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-9ef898c7ffcf80bf",
+      "city": "杭州",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/69dc8f7c000000002301cd7b",
+      "title": "05女大📍杭州 | 3天2晚 保姆级旅游攻略",
+      "author": "橘子爱吃豆泡",
+      "publishedAt": "2026-04-13",
+      "fetchedAt": "2026-08-29T15:27:23.870Z",
+      "likes": 2735,
+      "summary": "杭州旅行攻略线索；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [],
+      "claims": [],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-524204c52ec6dd00",
+      "city": "杭州",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a48cad3000000001503eb97",
+      "title": "杭州必去的十大绿野仙踪",
+      "author": "中国旅游",
+      "publishedAt": "2026-07-04",
+      "fetchedAt": "2026-08-29T15:27:23.870Z",
+      "likes": 11000,
+      "summary": "杭州旅行攻略线索；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [],
+      "claims": [],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-94894a06e0a7e1b1",
+      "city": "上海",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a59f72c000000000903467e",
+      "title": "上海2日游❗️懒人版不走冤枉路~逛吃攻略",
+      "author": "小居吃八方🍜",
+      "publishedAt": "2026-07-17",
+      "fetchedAt": "2026-08-29T15:27:00.346Z",
+      "likes": 4635,
+      "summary": "上海旅行攻略线索；2天；主题：逛吃；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [
+        "逛吃"
+      ],
+      "placeHints": [],
+      "claims": [
+        {
+          "type": "activity",
+          "text": "社区内容呈现的体验主题：逛吃",
+          "confidence": 0.5,
+          "verified": false
+        }
+      ],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-5b16a7d26f5eafcf",
+      "city": "上海",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a44e6f8000000001702ef67",
+      "title": "上海3日游手绘出行攻略",
+      "author": "旅个游",
+      "publishedAt": "2026-07-01",
+      "fetchedAt": "2026-08-29T15:27:00.346Z",
+      "likes": 6224,
+      "summary": "上海旅行攻略线索；3天；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [],
+      "claims": [],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-be35420edd3e5051",
+      "city": "上海",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a92e66a000000002503f491",
+      "title": "上海4天3晚攻略🗺️第一次去直接照着玩",
+      "author": "豆鲨包下班了",
+      "publishedAt": "2026-08-29",
+      "fetchedAt": "2026-08-29T15:27:00.346Z",
+      "likes": 11,
+      "summary": "上海旅行攻略线索；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [],
+      "placeHints": [],
+      "claims": [],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-fbcd6298d95d9bbc",
+      "city": "上海",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/69c74f69000000002102dcd2",
+      "title": "上海citywalk 1.5天",
+      "author": "CING",
+      "publishedAt": "2026-03-28",
+      "fetchedAt": "2026-08-29T15:27:00.346Z",
+      "likes": 7196,
+      "summary": "上海旅行攻略线索；5天；主题：City Walk；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [
+        "City Walk"
+      ],
+      "placeHints": [],
+      "claims": [
+        {
+          "type": "activity",
+          "text": "社区内容呈现的体验主题：City Walk",
+          "confidence": 0.5,
+          "verified": false
+        }
+      ],
+      "permission": "unknown"
+    },
+    {
+      "id": "xhs-75d8f66151fe041a",
+      "city": "上海",
+      "platform": "xiaohongshu",
+      "sourceUrl": "https://www.xiaohongshu.com/search_result/6a915376000000001803fea8",
+      "title": "上海📍两日游，懒人版逛吃攻略，超详细❗",
+      "author": "跟着云玺去旅行",
+      "publishedAt": "2026-08-28",
+      "fetchedAt": "2026-08-29T15:27:00.344Z",
+      "likes": 42,
+      "summary": "上海旅行攻略线索；主题：City Walk、逛吃、拍照、夜景；地点：外滩、武康路、安福路、豫园、南京路步行街、陆家嘴、东方明珠、静安寺；仅作社区体验参考，价格、营业时间和路线需出行前复核。",
+      "tags": [
+        "City Walk",
+        "逛吃",
+        "拍照",
+        "夜景",
+        "住宿",
+        "交通"
+      ],
+      "placeHints": [
+        "外滩",
+        "武康路",
+        "安福路",
+        "豫园",
+        "南京路步行街",
+        "陆家嘴",
+        "东方明珠",
+        "静安寺"
+      ],
+      "claims": [
+        {
+          "type": "place",
+          "text": "社区攻略提到：外滩、武康路、安福路、豫园、南京路步行街、陆家嘴、东方明珠、静安寺",
+          "placeName": "外滩",
+          "confidence": 0.62,
+          "verified": false
+        },
+        {
+          "type": "route",
+          "text": "社区攻略把外滩、武康路、安福路、豫园、南京路步行街、陆家嘴作为候选串联路线",
+          "confidence": 0.55,
+          "verified": false
+        },
+        {
+          "type": "activity",
+          "text": "社区内容呈现的体验主题：City Walk、逛吃、拍照、夜景、住宿、交通",
+          "confidence": 0.5,
+          "verified": false
+        }
+      ],
+      "permission": "unknown"
+    }
+  ]
+}

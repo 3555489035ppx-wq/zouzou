@@ -103,7 +103,7 @@ describe('server text intent integration', () => {
     process.env.DEEPSEEK_API_KEY = 'test-key'
     process.env.DEEPSEEK_MODEL = 'deepseek-v4-flash'
     responsesCreate.mockResolvedValueOnce({
-      output_text: JSON.stringify({
+      output_text: `\`\`\`json\n${JSON.stringify({
         destination: '上海',
         dates: null,
         durationDays: 3,
@@ -121,7 +121,7 @@ describe('server text intent integration', () => {
         departureLocation: null,
         hotel: null,
         missing: ['具体出行日期'],
-      }),
+      })}\n\`\`\``,
     })
 
     const result = await understandTripWithProvider({ text: '上海三天，两个人，预算4000元。', media: [] })
@@ -134,5 +134,8 @@ describe('server text intent integration', () => {
       max_output_tokens: 1200,
       store: false,
     })
+    expect(options.input).toContain('社区攻略知识库线索')
+    expect(result.guideContext?.city).toBe('上海')
+    expect(result.guideContext?.candidates.length).toBeGreaterThan(0)
   })
 })

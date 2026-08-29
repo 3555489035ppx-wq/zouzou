@@ -22,7 +22,7 @@ test('旅行输入到三方案再到方案详情', async ({ page }) => {
   await expect(page.getByText('最匹配', { exact: true }).first()).toBeVisible()
   await page.getByRole('button', { name: '查看这套走法' }).first().click()
   await expect(page).toHaveURL(/travel\/plan\/match/)
-  await expect(page.getByText('时间与预算已校验')).toBeVisible()
+  await expect(page.getByText(/结构化时间与预算检查通过|完整时间轴已生成/)).toBeVisible()
   await expect(page.getByText('虹桥火车站', { exact: true })).toBeVisible()
   await expect(page.getByText('武康路', { exact: true })).toBeVisible()
   await page.getByRole('tab', { name: 'Day 2' }).click()

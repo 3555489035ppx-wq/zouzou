@@ -64,14 +64,11 @@ const interpolate = (places: Place[], progress: number) => {
   return [a.lng + (b.lng - a.lng) * t, a.lat + (b.lat - a.lat) * t] as [number, number]
 }
 
-// The route marker uses the same Bloub/Grok body as the rest of the product,
-// but a walking segment should feel alive rather than stuck in one thinking
-// pose. Cycling only between expressive, non-thinking states keeps the marker
-// legible at 44px while the engine still performs smooth morphs.
-const visualBotState = (state: BotState, progress: number): BotState => {
-  if (state !== 'walking') return state
-  const variant = Math.floor(Math.max(0, Math.min(1, progress)) * 9) % 3
-  return variant === 1 ? 'listening' : variant === 2 ? 'done' : 'walking'
+// Map travel is intentionally neutral: orbit/thinking motion is reserved for
+// the circular AI cards, not for a marker moving along a route.
+const visualBotState = (state: BotState, _progress: number): BotState => {
+  if (state === 'walking' || state === 'listening' || state === 'done') return 'transport'
+  return state
 }
 
 function MapLibreRouteMap({ places, center = defaultCenter, progress=0, compact=false, focus=null, botState='walking', onNodeSelect, onReady }: RouteMapProps) {

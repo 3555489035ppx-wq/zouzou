@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "server": "tsx server/index.ts",
+    "guides:collect": "tsx scripts/collect-xhs-guides.ts",
+    "images:sync": "tsx scripts/sync-city-images.ts",
     "typecheck": "tsc -b --pretty false",
     "build": "tsc -b && vite build",
     "test": "vitest run",

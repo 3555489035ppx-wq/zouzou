@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url'
 import { resolve } from 'node:path'
 import { getAIProviderConfig, sanitizeTripRequest, understandTripWithProvider } from './trip-intent'
 import { analyzeTripMediaWithProvider, getVisionProviderConfig, sanitizeTripMediaRequest } from './trip-vision'
+import { getGuideStats, inferGuideCity, searchTravelGuides } from './travel-guides'
 
 const DEFAULT_PORT = 8787
 const MAX_BODY_BYTES = 1_000_000
@@ -67,7 +68,21 @@ export async function handleRequest(request: IncomingMessage, response: ServerRe
       visionProvider: visionConfig.provider,
       visionConfigured: visionConfig.configured,
       visionModel: visionConfig.model,
+      guideKnowledgeBase: getGuideStats(),
     })
+    return
+  }
+
+  if (request.method === 'GET' && request.url?.startsWith('/api/guides')) {
+    try {
+      const url = new URL(request.url, `http://${request.headers.host ?? '127.0.0.1'}`)
+      const query = url.searchParams.get('q')?.trim() || ''
+      const city = url.searchParams.get('city')?.trim() || inferGuideCity(query)
+      const limit = Number(url.searchParams.get('limit') || 8)
+      sendJson(response, 200, searchTravelGuides(city, query, Number.isFinite(limit) ? limit : 8))
+    } catch {
+      sendJson(response, 400, { error: 'GUIDE_QUERY_FAILED', message: '攻略查询参数无效。' })
+    }
     return
   }
 

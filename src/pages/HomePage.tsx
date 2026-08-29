@@ -3,7 +3,8 @@ import { Bell, ChevronDown, CloudRain, CloudSnow, CloudSun, Sun, Wind } from 'lu
 import { useNavigate } from 'react-router-dom'
 import { AppShell } from '../components/AppShell'
 import { CityPicker, TripEntryIcon, ZouAvatar, ZouCard } from '../components/ui'
-import { getDemoTripPlaces } from '../demo-data/cities'
+import { getCityProfile, getDemoTripPlaces } from '../demo-data/cities'
+import { getCityImage } from '../demo-data/city-images'
 import { useAppStore } from '../stores/appStore'
 import { weatherService, type Weather } from '../services/weather'
 
@@ -14,22 +15,16 @@ const entries = [
   { type: 'dining' as const, title: '聚餐', body: '发现美食与餐厅', path: '/dining' },
 ]
 
-const localRecommendations: Record<string, { name: string; type: string; image: string }[]> = {
-  上海: [
-    { name: '武康路', type: '上午 City Walk', image: '/assets/wukang-road.jpg' },
-    { name: '浦东美术馆', type: '雨天室内展览', image: '/assets/museum.jpg' },
-    { name: '安福路咖啡', type: '四小时刚刚好', image: '/assets/coffee.jpg' },
-  ],
-  杭州: [
-    { name: '西湖边', type: '慢慢走一圈', image: '/assets/weekend.jpg' },
-    { name: '天目里', type: '展览与咖啡', image: '/assets/gallery.jpg' },
-    { name: '良渚古城', type: '周末松弛半日', image: '/assets/garden.jpg' },
-  ],
-  苏州: [
-    { name: '平江路', type: '园林与小店', image: '/assets/garden.jpg' },
-    { name: '苏州博物馆', type: '雨天室内', image: '/assets/museum.jpg' },
-    { name: '山塘街', type: '傍晚散步', image: '/assets/bund.jpg' },
-  ],
+function getLocalRecommendations(city: string) {
+  const profile = getCityProfile(city)
+  const image = getCityImage(city)
+  const types = ['适合排在上午', '天气备选 / 室内外可切换', '留给慢走与休息']
+  return profile.demoLabels.slice(0, 3).map((name, index) => ({
+    name,
+    type: `${types[index]} · ${image.landmark}真实照片`,
+    image: image.src,
+    alt: image.alt,
+  }))
 }
 
 const WeatherIcon = ({ condition }: { condition: Weather['condition'] }) => {
@@ -48,7 +43,7 @@ export const HomePage = () => {
   const tripCity = useAppStore((s) => s.tripCity)
   const [citiesOpen, setCitiesOpen] = useState(false)
   const [weather, setWeather] = useState<Weather | null>(null)
-  const recommendations = localRecommendations[city] ?? localRecommendations['上海']
+  const recommendations = getLocalRecommendations(city)
   const activeCity = tripCity ?? city
   const activePlaces = getDemoTripPlaces(activeCity, 'Day 1')
   const activeNext = activePlaces[1] ?? activePlaces[0]
@@ -67,7 +62,7 @@ export const HomePage = () => {
     <section className="home-recommend" aria-labelledby="home-recommend-title"><h2 id="home-recommend-title">为你推荐</h2><span>从一次想走的路开始</span></section>
     <section className="entry-list" aria-label="创建场景">{entries.map((entry) => <ZouCard key={entry.title} className="entry-card" onClick={() => navigate(entry.path)}><span className="entry-card__icon"><TripEntryIcon type={entry.type} /></span><span><strong>{entry.title}</strong><small>{entry.body}</small></span><span className="entry-card__arrow">→</span></ZouCard>)}</section>
     <section className={`home-dynamic home-dynamic--${tripMode}`}><div><span className="soft-label">{tripMode === 'active' ? '正在进行' : tripMode === 'upcoming' ? '即将开始' : '准备开始'}</span><h2>{tripMode === 'active' ? `${activeCity} · Day 1` : tripMode === 'upcoming' ? `${activeCity} · 3天2晚` : '开始一次走走'}</h2><p>{tripMode === 'active' ? `下一站 · ${activeNext?.name ?? '下一站'} · ${activeNext?.time ?? '09:30'}` : tripMode === 'upcoming' ? '明天 09:00 出发' : '从一个想法开始，走出一条自己的路线'}</p></div><button onClick={() => navigate(tripMode === 'active' ? '/trips' : '/travel/new')}>{tripMode === 'active' ? '继续行程' : tripMode === 'upcoming' ? '查看行程' : '开始规划'}<span>→</span></button></section>
-    <section className="home-local-recommendations" aria-labelledby="home-local-title"><header><h2 id="home-local-title">在{city}，你可能喜欢</h2><span>和你所在的城市一起更新</span></header><div className="home-local-list">{recommendations.map((item) => <button key={item.name} onClick={() => navigate('/community')}><img src={item.image} alt="" width={52} height={50} /><span><strong>{item.name}</strong><small>{item.type}</small></span><span aria-hidden="true">→</span></button>)}</div></section>
+    <section className="home-local-recommendations" aria-labelledby="home-local-title"><header><h2 id="home-local-title">在{city}，你可能喜欢</h2><span>和你所在的城市一起更新</span></header><div className="home-local-list">{recommendations.map((item) => <button key={item.name} onClick={() => navigate('/community')}><img src={item.image} alt={item.alt} width={52} height={50} /><span><strong>{item.name}</strong><small>{item.type}</small></span><span aria-hidden="true">→</span></button>)}</div></section>
     <CityPicker open={citiesOpen} onClose={() => setCitiesOpen(false)} />
   </div></AppShell>
 }

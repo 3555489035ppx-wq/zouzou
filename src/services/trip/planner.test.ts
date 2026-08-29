@@ -5,6 +5,8 @@ import {
   replacePlanPlace,
   understandTrip,
 } from './planner'
+import type { GuideContext } from './guides'
+import { cityNames, getCityProfile } from '../../demo-data/cities'
 
 describe('Shanghai itinerary planner', () => {
   it('extracts the complete demo trip instead of returning fixed values', () => {
@@ -79,5 +81,77 @@ describe('Shanghai itinerary planner', () => {
     expect(updated.days['Day 1'].find((stop) => stop.id === 'wukang-cafe')?.name).toBe('衡山和集')
     expect(updated.days['Day 1'].find((stop) => stop.id === 'wukang-road')?.name).toBe('武康路')
     expect(updated.validation.passed).toBe(true)
+  })
+
+  it('carries guide context into plan evidence and adapts the city skeleton', () => {
+    const understanding = understandTrip({ text: '我想去杭州三天，两个人，预算 3000 元。', media: [] })
+    const guideContext: GuideContext = {
+      city: '杭州',
+      candidates: [
+        {
+          id: 'guide-hangzhou-1',
+          city: '杭州',
+          platform: 'xiaohongshu',
+          sourceUrl: 'https://www.xiaohongshu.com/explore/example',
+          title: '杭州西湖 City Walk 攻略',
+          author: '测试作者',
+          publishedAt: null,
+          fetchedAt: '2026-08-29T00:00:00.000Z',
+          likes: 100,
+          summary: '杭州旅行攻略线索；主题：City Walk；地点：西湖。',
+          tags: ['City Walk'],
+          placeHints: ['西湖'],
+          claims: [],
+          permission: 'unknown',
+        },
+      ],
+      matchedTerms: ['旅行攻略'],
+      generatedAt: '2026-08-29T00:00:00.000Z',
+      disclaimer: '仅作社区体验参考。',
+    }
+    const generated = generatePlans(understanding.intent, guideContext)
+
+    expect(generated[0].city).toBe('杭州')
+    expect(generated[0].guideContext?.candidates.length).toBe(1)
+    expect(generated[0].evidence.some((item) => item.includes('小红书社区攻略线索'))).toBe(true)
+    expect(Object.values(generated[0].days).flat().some((stop) => stop.name.includes('武康路'))).toBe(false)
+    expect(Object.values(generated[0].days).flat().some((stop) => stop.name.includes('西湖'))).toBe(true)
+  })
+
+  it('generates a complete three-day timeline for every supported city', () => {
+    for (const city of cityNames) {
+      const firstPlace = getCityProfile(city).demoLabels[0]
+      const understanding = understandTrip({
+        text: `2026年9月18日到9月20日去${city}，3天2晚，2个人，预算4000元。10:30到${city}东站，住${city}中心酒店，18:30从${city}东站返程。想去${firstPlace}，行程不要太赶。`,
+        media: [],
+      })
+      const plan = generatePlans(understanding.intent)[0]
+      const allStops = Object.values(plan.days).flat()
+
+      expect(understanding.intent.destination).toBe(city)
+      expect(understanding.intent.missing).toEqual([])
+      expect(Object.keys(plan.days)).toEqual(['Day 1', 'Day 2', 'Day 3'])
+      expect(allStops.length).toBeGreaterThanOrEqual(16)
+      expect(allStops.some((stop) => stop.name.includes(firstPlace))).toBe(true)
+      expect(allStops.every((stop) => stop.name && stop.time && stop.transport)).toBe(true)
+    }
+  })
+
+  it('turns structured Changsha needs into a sourced food, hotel and attraction plan', () => {
+    const understanding = understandTrip({
+      text: '2026年9月18日到9月20日去长沙3天2晚。两个人，预算3000元（含住宿、市内交通、餐饮和门票，不含往返车票）。9月18日10:30到长沙南站，住五一广场附近性价比酒店，9月20日18:30从长沙南站返程。想吃臭豆腐、糖油粑粑和湘菜，去岳麓山、橘子洲、湖南博物院、太平街，喜欢城市漫步和夜景，节奏不要太赶。',
+      media: [],
+    })
+    const plan = generatePlans(understanding.intent)[0]
+    const stops = Object.values(plan.days).flat()
+
+    expect(understanding.intent.hotel).toBe('五一广场附近性价比酒店')
+    expect(understanding.intent.pace).toBe('relaxed')
+    expect(understanding.intent.preferences).toEqual(expect.arrayContaining(['本地美食', '夜景']))
+    expect(plan.knowledge.city).toBe('长沙')
+    expect(stops.map((stop) => stop.name)).toEqual(expect.arrayContaining(['岳麓山风景名胜区', '橘子洲景区', '湖南博物院', '长沙臭豆腐', '糖油粑粑', '口味虾 / 湘菜晚餐']))
+    expect(stops.some((stop) => stop.type === '住宿' && stop.name.includes('五一广场'))).toBe(true)
+    expect(plan.budget).toBeLessThanOrEqual(3000)
+    expect(plan.validation.passed).toBe(true)
   })
 })

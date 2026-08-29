@@ -7,6 +7,7 @@ import {
   type TripRequest,
   type TripUnderstanding,
 } from './trip/planner'
+import { getLocalGuideContext } from './trip/localGuides'
 
 export type AIStage = 'listening' | 'reading' | 'thinking' | 'planning' | 'updating' | 'done' | 'success' | 'error'
 export type StageListener = (stage: AIStage, label: string) => void
@@ -141,12 +142,16 @@ class LocalPlanningAIAdapter implements AIService {
     onStage('reading', `正在读取 ${request.media.length} 张截图线索`)
     await wait(180)
     const result = understandTrip(request)
+    const guideContext = getLocalGuideContext(result.intent.destination, request.text)
     onStage('thinking', result.intent.missing.length > 0 ? '已识别需求，正在标记待确认信息' : '已识别需求和固定行程锚点')
     await wait(180)
     onStage('planning', '检查地点、时间窗口与预算')
     await wait(180)
     onStage('success', '理解完成')
-    return result
+    return {
+      ...result,
+      ...(guideContext.candidates.length > 0 ? { guideContext } : {}),
+    }
   }
 
   async generatePlans(understanding: TripUnderstanding, onStage: StageListener) {
@@ -154,7 +159,7 @@ class LocalPlanningAIAdapter implements AIService {
       onStage('planning', label)
       await wait(140)
     }
-    const result = generatePlans(understanding.intent)
+    const result = generatePlans(understanding.intent, understanding.guideContext)
     onStage('success', result.every((plan) => plan.validation.passed) ? '3 套可执行方案已准备好' : '方案已生成，还有信息需要确认')
     return result
   }

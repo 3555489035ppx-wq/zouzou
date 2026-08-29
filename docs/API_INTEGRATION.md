@@ -54,6 +54,38 @@ pnpm dev
 
 ## 接口
 
+### 城市攻略知识库（小红书只读线索）
+
+项目通过已登录的 OpenCLI 浏览器会话，以低频只读方式采集热门城市的笔记搜索结果和少量正文，写入 `data/travel-guides.json`。采集器只保存标题、作者、点赞数、去参数化来源链接、主题标签和结构化地点线索，不保存原文、图片或 Cookie：
+
+```powershell
+# 默认采集 20 个城市：上海、杭州、苏州、南京、成都、厦门、北京、广州、重庆、西安、深圳、长沙、青岛、武汉、昆明、三亚、桂林、哈尔滨、贵阳、张家界
+pnpm guides:collect
+
+# 先小批量验证；每次笔记读取之间至少 2 秒
+pnpm guides:collect -- --cities 上海,杭州 --limit 5 --details 1 --delay 2500
+```
+
+用户提交旅行描述时，服务端会按城市和输入内容检索知识库，将最多 8 条摘要作为外部经验线索传给模型。攻略线索不能覆盖用户日期、到达、返程、住宿、预算等硬约束；其中的价格、营业时间、路线和预约状态也不会直接变成事实。方案详情会保留来源链接，供用户复核。
+
+知识库查询接口：
+
+```powershell
+Invoke-RestMethod -Uri "http://127.0.0.1:8787/api/guides?city=上海&q=citywalk&limit=5"
+```
+
+小红书登录、浏览器会话和采集边界见 [`travel-guide-source-integration.md`](./research/travel-guide-source-integration.md)。
+
+### 城市真实图片
+
+首页推荐、社区卡片和发布封面使用 `public/assets/cities/` 中的真实城市地标照片，不使用随机图库或小红书图片。照片来自 Wikimedia Commons，作者、许可证和来源页记录在 `public/assets/cities/sources.json`；重新拉取素材可运行：
+
+```powershell
+pnpm images:sync
+```
+
+图片是真实地点照片，不等于当天营业、天气或路线事实；行程中的 POI、交通和开放状态仍需出行前复核。
+
 ### `GET /api/health`
 
 用于确认服务是否启动，以及当前使用的供应商：
@@ -89,7 +121,7 @@ Invoke-RestMethod -Uri http://127.0.0.1:8787/api/health
 {
   "provider": "dashscope",
   "model": "qwen3-vl-flash",
-  "mediaFacts": [{
+      "mediaFacts": [{
     "mediaId": "ticket-1",
     "kind": "ticket",
     "rawText": "上海虹桥 10:30 ...",
@@ -102,6 +134,19 @@ Invoke-RestMethod -Uri http://127.0.0.1:8787/api/health
 }
 ```
 
+### 行程理解如何使用攻略线索
+
+```text
+用户城市/行程输入
+  -> 服务端识别城市
+  -> 检索 data/travel-guides.json 的短摘要
+  -> DeepSeek 提取 TripIntent（攻略不能制造硬约束）
+  -> 确定性排程器生成并校验时间、预算和必去覆盖
+  -> 方案详情展示社区来源，提示出行前复核
+```
+
+当前版本对 20 个城市都能输出完整的多日时间轴和预算结构；上海有更完整的示例地点与营业窗口，其他城市使用角色化城市候选点并明确标注“真实 POI 与路线待复核”，不能把演示地图当作导航结果。
+
 ## 安全边界
 
 - `DEEPSEEK_API_KEY` 或 `OPENAI_API_KEY` 只能放在服务端 `.env`，不要使用 `VITE_` 前缀。
@@ -109,3 +154,4 @@ Invoke-RestMethod -Uri http://127.0.0.1:8787/api/health
 - 模型只提取用户意图，不生成未经核验的景点、路线、价格或营业时间。
 - 模型请求使用 `store: false`；应用仍应根据自己的隐私和日志策略处理输入文本。
 - AI 生成文字必须遵守 [`AI_GENERATION_SPEC.md`](./AI_GENERATION_SPEC.md)；模型输出不能绕过服务端字段校验和行程校验。
+- 旅行攻略来源（包括小红书）只能作为用户主动导入的线索；接入边界和来源字段见 [`travel-guide-source-integration.md`](./research/travel-guide-source-integration.md)。

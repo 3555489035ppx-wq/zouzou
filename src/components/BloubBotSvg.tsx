@@ -23,11 +23,11 @@ const stateMap: Record<BotState, StateId> = {
   success: 'notify',
   alert: 'alert',
   error: 'exclaim',
-  walking: 'orbit',
+  walking: 'idle',
   arriving: 'wink',
   waiting: 'idle',
   paused: 'idle',
-  transport: 'orbit',
+  transport: 'idle',
   completed: 'wink',
 }
 
