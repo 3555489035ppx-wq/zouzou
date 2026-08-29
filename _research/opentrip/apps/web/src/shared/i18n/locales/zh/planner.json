@@ -1,0 +1,281 @@
+{
+  "header": {
+    "renameAria": "重命名行程",
+    "renamePlaceholder": "行程名称",
+    "subtitle": "{{start}} – {{end}} · {{days}} 天 · {{stops}} 个地点"
+  },
+  "tabs": {
+    "map": "地图",
+    "schedule": "日程",
+    "budget": "预算",
+    "reservations": "预订"
+  },
+  "days": {
+    "all": "全部日期",
+    "day": "第 {{n}} 天",
+    "groupLabel": "第 {{n}} 天 · {{date}}",
+    "add": "添加一天"
+  },
+  "itinerary": {
+    "title": "行程",
+    "count_other": "{{count}} 个地点"
+  },
+  "detail": {
+    "dayTime": "第 {{day}} 天 · {{time}} · {{dur}}",
+    "free": "免费",
+    "perPerson": "{{amount}} / 人",
+    "addedBy": "由 {{name}} 添加",
+    "noVotes": "暂无投票",
+    "wantThis": "{{total}} 人中有 {{count}} 人想去",
+    "vote": "投票",
+    "unvote": "取消投票",
+    "voted": "已投票 ✓",
+    "commentsWithCount": "评论（{{count}}）",
+    "commentsEmpty": "评论 — 开启讨论",
+    "commentPlaceholder": "添加评论…",
+    "postComment": "发送",
+    "replyComment": "回复",
+    "dismissQuote": "取消引用",
+    "backToItinerary": "行程",
+    "justNow": "刚刚",
+    "notes": "备注",
+    "writeTravelogue": "写进游记",
+    "editName": "编辑名称",
+    "editArea": "编辑区域",
+    "editSchedule": "编辑天数、时间与时长",
+    "editCategory": "更改类型",
+    "editCost": "编辑花费",
+    "editNote": "编辑备注",
+    "expandNote": "在主屏编辑备注",
+    "noteEditorTitle": "备注",
+    "noteEditorDescription": "支持 Markdown 所见即所得。图片会嵌入备注内容。",
+    "noteCloseConfirmTitle": "保存备注？",
+    "noteCloseConfirmDescription": "有未保存的更改。",
+    "noteCloseDiscard": "不保存",
+    "noteCloseSave": "保存",
+    "noteImageTooLarge": "图片过大（最大 2 MB）。",
+    "noteImageUnsupported": "仅支持 PNG、JPEG、WebP 图片。",
+    "noteImageUploadFailed": "图片上传失败，请重试。",
+    "notePlaceholder": "添加备注 — 支持 Markdown 与图片",
+    "namePlaceholder": "地点名称",
+    "areaPlaceholder": "区域或街区",
+    "dayLabel": "天数",
+    "timeLabel": "时间",
+    "durationLabel": "时长",
+    "costLabel": "每人花费"
+  },
+  "schedule": {
+    "insert": "插入地点",
+    "namePlaceholder": "新地点",
+    "timePlaceholder": "时间 · 14:00",
+    "moreOptions": "更多选项",
+    "durationPlaceholder": "时长",
+    "categoryPlaceholder": "类型",
+    "areaPlaceholder": "区域或街区",
+    "costPlaceholder": "预计花费",
+    "currencyLabel": "货币",
+    "notePlaceholder": "备注 — 支持 Markdown 与图片",
+    "add": "添加",
+    "voteCount": "▲ {{count}}",
+    "reorderAria": "拖动以重新排序第 {{n}} 天",
+    "dayMenu": {
+      "label": "第 {{n}} 天",
+      "edit": "编辑信息",
+      "delete": "删除",
+      "useGeneratedLocation": "使用日程位置"
+    },
+    "dayDialog": {
+      "title": "编辑第 {{n}} 天",
+      "description": "选择存储在这张日程卡片上的日期、位置和颜色。",
+      "date": "日期",
+      "cityLabel": "位置",
+      "cityPlaceholder": "选择位置",
+      "colorLabel": "颜色",
+      "useGenerated": "使用日程位置：{{location}}",
+      "save": "保存"
+    },
+    "deleteDialog": {
+      "title": "删除第 {{n}} 天？",
+      "description": "这将永久删除这一天及其所有地点，无法撤销。",
+      "confirm": "删除"
+    },
+    "colorPicker": {
+      "presets": "快捷颜色",
+      "custom": "自定义颜色",
+      "pick": "选择颜色 {{color}}"
+    }
+  },
+  "category": {
+    "Sight": "观光",
+    "Food": "餐饮",
+    "Stay": "住宿",
+    "Shopping": "购物",
+    "Activity": "活动",
+    "Walk": "步行",
+    "Park": "公园",
+    "Transit": "交通",
+    "Plan": "计划"
+  },
+  "pick": {
+    "onMap": "在地图上选点",
+    "hint": "点击地图放置图钉",
+    "searching": "搜索中…",
+    "noResults": "未找到地点",
+    "located": "已定位"
+  },
+  "map": {
+    "menu": {
+      "addStop": "在此添加地点",
+      "copyCoords": "复制坐标"
+    },
+    "search": {
+      "placeholder": "搜索地点…"
+    },
+    "popup": {
+      "addStop": "在此添加地点"
+    },
+    "locate": "我的位置",
+    "locateUnavailable": "无法获取位置",
+    "location": {
+      "resolving": "正在解析地点…",
+      "now": "刚刚",
+      "minutesAgo": "{{count}} 分钟前",
+      "hoursAgo": "{{count}} 小时前"
+    }
+  },
+  "streetView": {
+    "open": "展开街景",
+    "searching": "正在查找街景…",
+    "empty": "附近没有可用街景",
+    "searchError": "街景查找失败",
+    "dialog": {
+      "title": "街景",
+      "description": "以 360° 视角探索所选地点。",
+      "close": "关闭街景",
+      "error": "无法加载交互式街景。",
+      "retry": "重试"
+    }
+  },
+  "budget": {
+    "total": "行程总计",
+    "perPerson": "人均",
+    "expenses": "花费",
+    "expenseList": "花费清单",
+    "addExpense": "添加花费",
+    "descPlaceholder": "这笔花费用于？",
+    "amountPlaceholder": "金额",
+    "payer": "付款人",
+    "splitWith": "分摊给",
+    "currencyLabel": "货币",
+    "categoryLabel": "类型",
+    "categoryPlaceholder": "类型",
+    "save": "保存花费",
+    "editExpense": "编辑花费 {{name}}",
+    "paidBy": "由 {{name}} 支付 · {{when}} · {{count}} 人分摊",
+    "paidByYou": "你",
+    "each": "每人 {{amount}}",
+    "balances": "结余",
+    "balanceSub": "已付 {{paid}} · 应摊 {{share}}",
+    "you": "{{name}}（你）",
+    "settleUp": "结算",
+    "settleCurrencyLabel": "结算货币",
+    "transfersClear_other": "{{count}} 笔转账即可结清整趟行程",
+    "everyonePaid": "结清后互不欠款。",
+    "owes": "应付给",
+    "fx": {
+      "title": "汇率",
+      "rateAria": "{{from}} 兑 {{to}} 汇率",
+      "converted": "{{original}} → {{converted}}",
+      "asOf": "{{provider}} · {{date}}",
+      "loading": "正在加载汇率…",
+      "unavailable": "暂无汇率。"
+    },
+    "derivation": {
+      "aria": "查看 {{from}} 付给 {{to}} {{amount}} 的计算过程",
+      "owesTitle": "{{name}} 应付给大家",
+      "owedTitle": "{{name}} 应收回",
+      "fairShare": "应摊",
+      "paid": "已付",
+      "owes": "应付",
+      "owed": "应收",
+      "transfer": "本笔转账",
+      "rule": "{{from}} 付给 {{to}} 两个未结金额中较小的一个："
+    }
+  },
+  "splitter": {
+    "sidebarLabel": "调整行程侧边栏大小"
+  },
+  "reservations": {
+    "title": "预订",
+    "subtitle": "集中管理航班、住宿、餐厅与门票。",
+    "add": "添加预订",
+    "edit": "编辑预订",
+    "empty": "还没有预订",
+    "emptyHint": "把确认信息放在行程旁，所有同行者都能随时找到。",
+    "unscheduled": "未安排日期",
+    "day": "第 {{day}} 天",
+    "loading": "正在加载预订…",
+    "loadError": "无法加载预订。",
+    "retry": "重试",
+    "save": "保存预订",
+    "saving": "正在保存…",
+    "cancel": "取消预订",
+    "delete": "删除",
+    "close": "关闭",
+    "conflict": "此预订已被其他成员修改。请查看最新版本后重试。",
+    "saveError": "无法保存预订。",
+    "labels": {
+      "type": "类型",
+      "status": "状态",
+      "name": "名称",
+      "provider": "供应方",
+      "confirmation": "确认编号",
+      "start": "开始时间",
+      "end": "结束时间",
+      "timezone": "时区",
+      "location": "地点",
+      "day": "行程日期",
+      "stop": "关联地点",
+      "amount": "金额",
+      "currency": "货币",
+      "notes": "备注"
+    },
+    "types": {
+      "flight": "航班",
+      "accommodation": "住宿",
+      "restaurant": "餐厅",
+      "rail": "铁路",
+      "ground_transport": "地面交通",
+      "activity": "活动",
+      "other": "其他"
+    },
+    "statuses": {
+      "tentative": "待确认",
+      "confirmed": "已确认",
+      "cancelled": "已取消",
+      "completed": "已完成"
+    },
+    "placeholders": {
+      "name": "航班号、酒店、餐厅……",
+      "provider": "航空公司、酒店、运营方……",
+      "confirmation": "预订参考号",
+      "location": "航站楼、地址、集合点……",
+      "notes": "入住信息、政策或其他有用说明……",
+      "noStop": "不关联地点"
+    }
+  },
+  "members": {
+    "title": "同行者"
+  },
+  "weather": {
+    "tooltip": {
+      "temp": "温度",
+      "feelsLike": "体感温度",
+      "humidity": "湿度",
+      "wind": "风速"
+    }
+  },
+  "nav": {
+    "label": "行程导航"
+  }
+}

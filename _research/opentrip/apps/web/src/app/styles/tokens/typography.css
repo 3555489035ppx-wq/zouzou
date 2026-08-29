@@ -1,0 +1,48 @@
+/* cossUI — Typography
+ * ----------------------------------------------------------------------------
+ * Cal Sans UI for interface text (variable, 300–700), Cal Sans for display
+ * headings, Paper Mono for code & numerics. Tight, even, low-drama — the type
+ * carries the same restraint as the palette.
+ */
+
+:root {
+  --font-sans: "Cal Sans UI", ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-heading: "Cal Sans", "Cal Sans UI", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Paper Mono", ui-monospace, "SF Mono", "JetBrains Mono",
+    "Menlo", monospace;
+
+  /* Type scale — interface-first, modest steps */
+  --text-xs: 0.75rem;       /* 12px */
+  --text-sm: 0.8125rem;     /* 13px — default UI body in coss */
+  --text-base: 0.875rem;    /* 14px */
+  --text-md: 1rem;          /* 16px */
+  --text-lg: 1.125rem;      /* 18px */
+  --text-xl: 1.375rem;      /* 22px */
+  --text-2xl: 1.75rem;      /* 28px */
+  --text-3xl: 2.25rem;      /* 36px */
+  --text-4xl: 3rem;         /* 48px */
+  --text-5xl: 3.75rem;      /* 60px */
+
+  --leading-tight: 1.1;
+  --leading-snug: 1.3;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.65;
+
+  --tracking-tight: -0.02em;
+  --tracking-snug: -0.01em;
+  --tracking-normal: 0em;
+  --tracking-wide: 0.02em;
+
+  --weight-normal: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+
+  /* Semantic roles */
+  --text-display: var(--text-4xl);
+  --text-title: var(--text-2xl);
+  --text-heading: var(--text-lg);
+  --text-body: var(--text-base);
+  --text-label: var(--text-sm);
+  --text-caption: var(--text-xs);
+}

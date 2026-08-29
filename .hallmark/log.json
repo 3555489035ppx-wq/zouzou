@@ -1,0 +1,20 @@
+[
+  {
+    "date": "2026-08-28",
+    "macrostructure": "Workbench",
+    "theme": "custom",
+    "theme_axes": "light / rounded-sans / neutral",
+    "vibe": "pure white calm rounded lifestyle",
+    "enrichment": "functional low-poly trip scene",
+    "brief": "走走 mobile travel planning and replay prototype"
+  }
+  ,{
+    "date": "2026-08-28",
+    "macrostructure": "Map / Diagram",
+    "theme": "custom",
+    "theme_axes": "light / rounded-sans / neutral",
+    "vibe": "pure white native consumer travel",
+    "enrichment": "real map plus abstract black-white Zou Bot",
+    "brief": "V3 systematic redesign for 402 by 874 with presentation and developer modes"
+  }
+]

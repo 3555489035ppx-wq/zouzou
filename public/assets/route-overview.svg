@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e9eef3"/>
+      <stop offset="1" stop-color="#f7f4ed"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="12" stdDeviation="12" flood-opacity=".12"/>
+    </filter>
+  </defs>
+  <rect width="800" height="560" fill="url(#sky)"/>
+  <path d="M0 390 170 300 310 358 470 248 645 315 800 238v322H0Z" fill="#dce4d4"/>
+  <path d="M0 453 172 363 318 421 478 310 653 378 800 298" fill="none" stroke="#fff" stroke-width="48" stroke-linejoin="round"/>
+  <path d="M0 453 172 363 318 421 478 310 653 378 800 298" fill="none" stroke="#161616" stroke-width="7" stroke-dasharray="16 18" stroke-linecap="round"/>
+  <g filter="url(#shadow)">
+    <path d="m147 353 30-57 32 57-31 28Z" fill="#c76a4d"/>
+    <rect x="158" y="333" width="40" height="41" fill="#f6ead9"/>
+    <path d="m446 303 35-73 37 73-36 33Z" fill="#284c46"/>
+    <rect x="458" y="277" width="48" height="50" fill="#e8d6b5"/>
+    <circle cx="649" cy="363" r="31" fill="#e3ad42"/>
+  </g>
+  <g transform="translate(292 337)">
+    <ellipse cx="22" cy="92" rx="28" ry="8" fill="#000" opacity=".12"/>
+    <circle cx="24" cy="16" r="12" fill="#141414"/>
+    <path d="M20 31 10 60m10-29 25 16M20 31l9 37m0 0L8 88m21-20 23 19" fill="none" stroke="#141414" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <g font-family="Arial, sans-serif" fill="#151515">
+    <text x="42" y="63" font-size="25" font-weight="700">上海 · 3 天 2 晚</text>
+    <text x="42" y="96" font-size="17" opacity=".62">8 个地点 · 18.6 km · ¥1860</text>
+  </g>
+</svg>

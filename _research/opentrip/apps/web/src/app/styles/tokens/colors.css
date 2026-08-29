@@ -1,0 +1,171 @@
+/* cossUI — Color system
+ * ----------------------------------------------------------------------------
+ * Recolored from coss.com/ui (Cal.com's design system). The original ships a
+ * warm Tailwind-neutral palette; here the light theme keeps the cool,
+ * restrained blue-grey of the reference portrait while the dark theme uses a
+ * neutral near-black surface ladder. Cornflower blue is reserved for focus,
+ * links and brand moments in both themes. Restraint over ornament.
+ *
+ * Two layers:
+ *   1. Base ramps  — --ink-* (cool slate) and --corn-* (cornflower)
+ *   2. Semantic    — --background, --foreground, --primary … (alias the ramps)
+ * Build against the semantic tokens; reskin by editing the ramps.
+ */
+
+:root {
+  /* — Base ——————————————————————————————————————————————————————— */
+  --white: #ffffff;
+  --black: oklch(0.16 0.028 264);          /* near-black with a navy cast    */
+
+  /* Ink — cool blue-grey slate (hue ~260, low chroma) */
+  --ink-50:  oklch(0.985 0.004 258);       /* #fafbfd silver-white           */
+  --ink-100: oklch(0.969 0.006 258);       /* #f2f4f9                        */
+  --ink-150: oklch(0.947 0.010 258);       /* #e9ecf4 reference bg tint      */
+  --ink-200: oklch(0.916 0.013 259);       /* #dde2ee                        */
+  --ink-300: oklch(0.858 0.017 259);       /* #c8cfdf                        */
+  --ink-400: oklch(0.708 0.024 260);       /* #97a0b6                        */
+  --ink-500: oklch(0.585 0.028 261);       /* #6d788f muted text             */
+  --ink-600: oklch(0.480 0.032 262);       /* #545f78                        */
+  --ink-700: oklch(0.382 0.036 263);       /* #3c4760                        */
+  --ink-800: oklch(0.296 0.042 264);       /* #28304a navy ink — primary     */
+  --ink-900: oklch(0.232 0.044 265);       /* #1d2540                        */
+  --ink-950: oklch(0.172 0.040 265);       /* #141a30                        */
+
+  /* Cornflower — the ribbon blue, the one accent (hue ~258) */
+  --corn-50:  oklch(0.966 0.018 257);      /* #eff3fd                        */
+  --corn-100: oklch(0.930 0.036 257);      /* #dde7fb                        */
+  --corn-200: oklch(0.878 0.062 258);      /* #c2d2f6                        */
+  --corn-300: oklch(0.798 0.094 258);      /* #9ab4ef                        */
+  --corn-400: oklch(0.690 0.128 258);      /* #6b8fe3                        */
+  --corn-500: oklch(0.585 0.152 259);      /* #3f6fc9 brand cornflower       */
+  --corn-600: oklch(0.520 0.156 260);      /* #305bb0                        */
+  --corn-700: oklch(0.462 0.142 261);      /* #2b4d93                        */
+  --corn-800: oklch(0.402 0.116 262);      /* #2a4377                        */
+
+  /* — Semantic ————————————————————————————————————————————————————— */
+  --radius: 0.625rem;
+
+  --background: var(--ink-50);
+  --foreground: var(--ink-800);
+
+  --card: var(--white);
+  --card-foreground: var(--ink-800);
+  --popover: var(--white);
+  --popover-foreground: var(--ink-800);
+
+  /* Primary = navy ink (the dark, weighty action) */
+  --primary: var(--ink-800);
+  --primary-foreground: var(--ink-50);
+
+  /* Brand = cornflower (used sparingly: links, selection, focus) */
+  --brand: var(--corn-500);
+  --brand-foreground: var(--white);
+  --brand-muted: color-mix(in srgb, var(--corn-500) 8%, transparent);
+
+  --secondary: color-mix(in srgb, var(--ink-900) 5%, transparent);
+  --secondary-foreground: var(--ink-800);
+  --muted: color-mix(in srgb, var(--ink-900) 4%, transparent);
+  --muted-foreground: var(--ink-500);
+  --accent: color-mix(in srgb, var(--ink-900) 5%, transparent);
+  --accent-foreground: var(--ink-800);
+
+  /* Status — cornflower owns "info"; others kept legible, lightly cooled */
+  --info: var(--corn-500);
+  --info-foreground: var(--corn-700);
+  --success: oklch(0.62 0.13 162);
+  --success-foreground: oklch(0.52 0.12 162);
+  --warning: oklch(0.76 0.14 75);
+  --warning-foreground: oklch(0.56 0.13 70);
+  --destructive: oklch(0.60 0.20 18);
+  --destructive-foreground: oklch(0.52 0.20 20);
+
+  /* Lines & rings */
+  --border: color-mix(in srgb, var(--ink-900) 9%, transparent);
+  --border-strong: color-mix(in srgb, var(--ink-900) 16%, transparent);
+  --input: color-mix(in srgb, var(--ink-900) 12%, transparent);
+  --ring: var(--corn-500);
+
+  /* Sidebar / surfaces */
+  --sidebar: var(--ink-100);
+  --sidebar-foreground: var(--ink-600);
+  --sidebar-accent: color-mix(in srgb, var(--ink-900) 5%, transparent);
+  --sidebar-accent-foreground: var(--ink-800);
+  --sidebar-border: color-mix(in srgb, var(--ink-900) 7%, transparent);
+
+  /* Deterministic avatar fallbacks */
+  --avatar-1-bg: var(--corn-100);
+  --avatar-1-fg: var(--corn-700);
+  --avatar-2-bg: color-mix(in srgb, var(--success) 18%, var(--card));
+  --avatar-2-fg: var(--success-foreground);
+  --avatar-3-bg: color-mix(in srgb, var(--warning) 22%, var(--card));
+  --avatar-3-fg: var(--warning-foreground);
+  --avatar-4-bg: color-mix(in srgb, var(--destructive) 14%, var(--card));
+  --avatar-4-fg: var(--destructive-foreground);
+  --avatar-5-bg: var(--ink-200);
+  --avatar-5-fg: var(--ink-700);
+
+  /* Charts — cornflower-led cool sequence */
+  --chart-1: var(--corn-500);
+  --chart-2: var(--corn-300);
+  --chart-3: var(--ink-400);
+  --chart-4: oklch(0.62 0.13 162);
+  --chart-5: var(--ink-700);
+}
+
+.dark {
+  /* Neutral night surfaces. The original handoff's navy dark tokens were
+     never shown in its final light-only compositions; in the real three-pane
+     shell they flattened every surface into one blue slab. Start from true
+     black and raise only interactive/elevated surfaces by luminance. */
+  --background: #000000;
+  --foreground: #f5f5f5;
+
+  --card: #101010;
+  --card-foreground: #f5f5f5;
+  --popover: #161616;
+  --popover-foreground: #f5f5f5;
+
+  --primary: #f5f5f5;
+  --primary-foreground: #0a0a0a;
+
+  --brand: var(--corn-400);
+  --brand-foreground: #050505;
+  --brand-muted: color-mix(in srgb, var(--corn-400) 16%, transparent);
+
+  --secondary: color-mix(in srgb, var(--white) 6%, transparent);
+  --secondary-foreground: #f5f5f5;
+  --muted: color-mix(in srgb, var(--white) 5%, transparent);
+  --muted-foreground: #a3a3a3;
+  --accent: color-mix(in srgb, var(--white) 8%, transparent);
+  --accent-foreground: #f5f5f5;
+
+  --info: var(--corn-400);
+  --info-foreground: var(--corn-300);
+
+  --border: color-mix(in srgb, var(--white) 9%, transparent);
+  --border-strong: color-mix(in srgb, var(--white) 17%, transparent);
+  --input: color-mix(in srgb, var(--white) 14%, transparent);
+  --ring: var(--corn-400);
+
+  --sidebar: #070707;
+  --sidebar-foreground: #a3a3a3;
+  --sidebar-accent: color-mix(in srgb, var(--white) 7%, transparent);
+  --sidebar-accent-foreground: #f5f5f5;
+  --sidebar-border: color-mix(in srgb, var(--white) 8%, transparent);
+
+  --avatar-1-bg: color-mix(in srgb, var(--corn-400) 24%, var(--card));
+  --avatar-1-fg: var(--corn-200);
+  --avatar-2-bg: color-mix(in srgb, var(--success) 22%, var(--card));
+  --avatar-2-fg: var(--success);
+  --avatar-3-bg: color-mix(in srgb, var(--warning) 22%, var(--card));
+  --avatar-3-fg: var(--warning);
+  --avatar-4-bg: color-mix(in srgb, var(--destructive) 20%, var(--card));
+  --avatar-4-fg: var(--destructive);
+  --avatar-5-bg: #262626;
+  --avatar-5-fg: #d4d4d4;
+
+  /* Shadow-as-border on dark: a single white ring — layered depth shadows are
+     invisible on dark surfaces. */
+  --shadow-border: 0 0 0 1px color-mix(in srgb, #fff 8%, transparent);
+  --shadow-border-hover: 0 0 0 1px color-mix(in srgb, #fff 13%, transparent);
+}

@@ -1,0 +1,132 @@
+{
+  "toggle": {
+    "open": "打开行程助手",
+    "close": "收起行程助手"
+  },
+  "panel": {
+    "title": "行程助手",
+    "empty": "助手会安静地关注这次行程。@agent 可以向它提问。",
+    "inputPlaceholder": "聊聊这次行程…(@agent 让助手回复)",
+    "send": "发送",
+    "agentName": "助手",
+    "systemName": "系统",
+    "operationBy": "{{name}}",
+    "thinking": "思考中…"
+  },
+  "attach": {
+    "add": "添加附件",
+    "remove": "移除附件",
+    "imageAlt": "附件图片",
+    "fileFallback": "附件"
+  },
+  "mention": {
+    "listLabel": "提及成员或助手",
+    "toastTitle": "{{name}} 提到了你",
+    "view": "查看"
+  },
+  "quote": {
+    "reply": "回复",
+    "dismiss": "取消引用"
+  },
+  "reasoning": {
+    "thinking": "思考中…",
+    "thought": "已思考片刻",
+    "thoughtFor_other": "已思考 {{count}} 秒"
+  },
+  "approval": {
+    "approve": "批准",
+    "deny": "拒绝",
+    "viewersCannotApprove": "需要编辑者权限才能批准更改"
+  },
+  "context": {
+    "commentingOnStop": "评论地点 {{stop}}"
+  },
+  "debug": {
+    "copy": "复制调试信息"
+  },
+  "generated": {
+    "day": "第 {{day}} 天",
+    "recommended": "推荐",
+    "pros": "优点",
+    "cons": "取舍",
+    "estimate": "预算估算",
+    "total": "预计合计",
+    "invalid": "无法安全显示这段生成内容。",
+    "staleDay": "该日期已不在当前行程中。",
+    "staleStop": "该地点已不在当前行程中。",
+    "fallback": {
+      "title": "街景暂不可用",
+      "place_not_found": "没有找到这个地点，请换一个更明确的地点。",
+      "invalid_request": "请提供明确的地点名称或有效坐标。",
+      "service_unavailable": "街景服务暂时不可用。",
+      "retry": "重试",
+      "retrying": "正在重试…",
+      "retryPlaceMessage": "@agent 看看{{place}}附近的街景。",
+      "retryCoordinateMessage": "@agent 看看坐标 {{lat}}, {{longitude}} 的街景。"
+    },
+    "streetView": {
+      "previewAlt": "街景预览",
+      "previewUnavailable": "静态预览暂不可用",
+      "loading": "正在加载街景…",
+      "placeFallback": "街景",
+      "captureUnknown": "拍摄时间未知",
+      "open": "展开街景",
+      "retry": "重试"
+    }
+  },
+  "tool": {
+    "proposed": "提议：{{tool}}",
+    "running": "正在执行 {{tool}}…",
+    "approved": "已批准 {{tool}}",
+    "denied": "已拒绝 {{tool}}",
+    "applied": "已应用 {{tool}}",
+    "names": {
+      "checkWeather": "查询天气",
+      "placeSearch": "搜索地点",
+      "placeNearby": "附近地点",
+      "placeDetail": "地点详情",
+      "routeCompute": "计算路线",
+      "routeMatrix": "行程矩阵",
+      "reviewLookup": "查看评价",
+      "readTripMedia": "读取行程文件",
+      "appendStopNote": "追加地点备注"
+    }
+  },
+  "preview": {
+    "daySlot": "第 {{day}} 天 · 第 {{position}} 项",
+    "moveTo": "移动到第 {{day}} 天 · 第 {{position}} 项",
+    "expenseMeta": "由 {{name}} 支付 · {{count}} 人分摊",
+    "renameTrip": "将行程重命名为“{{title}}”",
+    "addDay": "新增一天",
+    "deleteDay": "删除第 {{day}} 天",
+    "updateDay": "更新第 {{day}} 天",
+    "updateDayCity": "第 {{day}} 天 → {{city}}",
+    "reorderDays": "调整天数顺序：{{order}}",
+    "unknown": "请查看该提议的更改"
+  },
+  "toast": {
+    "title": "助手建议",
+    "apply": "批准",
+    "discuss": "讨论",
+    "dismiss": "拒绝",
+    "applied": "建议已批准",
+    "appliedByOther": "{{name}} 批准了一条助手建议",
+    "stale": "建议已过期——行程已发生变化",
+    "applyError": "无法批准该建议"
+  },
+  "seed": {
+    "message": "@agent 帮我创建一个行程：{{details}}。",
+    "joiner": "，",
+    "part": {
+      "destination": "目的地{{destination}}",
+      "days_one": "共{{count}}天",
+      "days_other": "共{{count}}天",
+      "dates": "{{start}}至{{end}}",
+      "start": "从{{start}}开始",
+      "budget": "预算{{amount}}",
+      "budgetWithCurrency": "预算{{amount}} {{currency}}",
+      "party_one": "{{count}}人",
+      "party_other": "{{count}}人"
+    }
+  }
+}

@@ -1,0 +1,214 @@
+{
+  "pwa": {
+    "offlineReady": "OpenTrip 已可离线使用",
+    "updateReady": "OpenTrip 更新已就绪",
+    "updateDescription": "准备好后刷新，即可使用最新版本。",
+    "updateAction": "更新"
+  },
+  "mobileOnboarding": {
+    "later": "暂不",
+    "install": {
+      "title": "将 OpenTrip 添加到主屏幕",
+      "description": "安装应用，获得全屏体验和离线访问。",
+      "action": "安装",
+      "iosHint": "打开浏览器的分享菜单，选择“添加到主屏幕”。",
+      "iosAction": "知道了"
+    },
+    "notifications": {
+      "title": "允许消息通知",
+      "description": "OpenTrip 在后台时，行程提醒会以系统通知推送。",
+      "action": "允许"
+    },
+    "location": {
+      "title": "允许精确定位",
+      "description": "用于在行程地图上显示你的位置。",
+      "action": "允许"
+    }
+  },
+    "appName": "OpenTrip",
+    "tagline": "每一场难忘的旅行，都始于群聊。",
+    "language": "语言",
+    "languageName": {
+        "en": "English",
+        "zh": "中文"
+    },
+    "actions": {
+        "back": "返回行程列表",
+        "invite": "邀请",
+        "inviteCopied": "链接已复制 ✓",
+        "signIn": "登录",
+        "signOut": "退出登录",
+        "cancel": "取消",
+        "close": "关闭",
+        "save": "保存",
+        "collapseSidebar": "收起侧栏",
+        "expandSidebar": "展开侧栏",
+        "scrollPrevious": "上一页",
+        "scrollNext": "下一页"
+    },
+    "state": {
+        "loading": "加载中…",
+        "error": "出错了。",
+        "retry": "重试",
+        "tripUnavailable": "无法打开此行程。",
+        "tripUnavailableHint": "行程可能已删除，或者你需要成员发出的邀请链接才能加入。"
+    },
+    "settings": {
+        "userMenu": {
+            "profile": "个人资料",
+            "preferences": "偏好设置",
+            "about": "关于"
+        },
+        "groups": {
+            "personal": "个人",
+            "application": "应用"
+        },
+        "nav": {
+            "profile": "个人资料",
+            "preferences": "偏好设置",
+            "about": "关于"
+        },
+        "profile": {
+            "title": "个人资料",
+            "description": "你的显示名称与公开身份。",
+            "displayName": "显示名称",
+            "uploadAvatar": "上传头像",
+            "removeAvatar": "移除头像",
+            "save": "保存资料",
+            "saving": "保存中…",
+            "errorTitle": "个人资料更新失败",
+            "errors": {
+                "displayNameRequired": "显示名称不能为空。",
+                "saveFailed": "保存资料失败。",
+                "avatarTooLarge": "头像大小不能超过 2 MB。",
+                "avatarUnsupported": "仅支持 PNG、JPEG 和 WebP 图片。",
+                "avatarUploadFailed": "上传头像失败。",
+                "avatarRemoveFailed": "移除头像失败。"
+            },
+            "security": {
+                "title": "账户与安全",
+                "description": "邮箱、密码与两步验证。",
+                "cancel": "取消",
+                "errorTitle": "安全设置更新失败",
+                "successTitle": "安全设置已更新",
+                "email": {
+                    "title": "邮箱",
+                    "desc": "修改账户使用的邮箱地址。",
+                    "label": "邮箱",
+                    "verified": "{{email}} · 已验证",
+                    "change": "修改",
+                    "newLabel": "新邮箱",
+                    "continue": "继续",
+                    "currentOtpLabel": "发送至当前邮箱的验证码",
+                    "newOtpLabel": "发送至新邮箱的验证码",
+                    "verifyCurrent": "验证当前邮箱",
+                    "confirm": "确认新邮箱",
+                    "otpSentCurrent": "验证码已发送至当前邮箱。",
+                    "otpSentNew": "验证码已发送至新邮箱。",
+                    "changed": "邮箱已更新。"
+                },
+                "password": {
+                    "title": "密码",
+                    "desc": "修改用于登录的密码。",
+                    "label": "密码",
+                    "set": "已设置密码",
+                    "unset": "尚未设置密码",
+                    "change": "修改密码",
+                    "setup": "设置密码",
+                    "current": "当前密码",
+                    "new": "新密码",
+                    "confirm": "确认新密码",
+                    "submit": "更新密码",
+                    "changed": "密码已更新。",
+                    "setupHint": "我们将向你的邮箱发送验证码，用于设置登录密码。",
+                    "sendSetupOtp": "发送设置验证码",
+                    "setupOtpLabel": "设置验证码",
+                    "setupOtpSent": "设置验证码已发送。",
+                    "setupSubmit": "设置密码",
+                    "setupDone": "密码已设置。"
+                },
+                "twoFactor": {
+                    "title": "两步验证",
+                    "desc": "使用身份验证器应用的一次性验证码。",
+                    "label": "两步验证",
+                    "on": "已开启",
+                    "off": "未开启",
+                    "enable": "启用",
+                    "manage": "管理",
+                    "enableHint": "确认密码后，用身份验证器扫描二维码。",
+                    "continue": "继续",
+                    "scanHint": "扫描二维码，然后输入应用中的 6 位验证码。",
+                    "manualSecret": "或手动输入密钥：",
+                    "codeLabel": "验证器验证码",
+                    "verify": "验证并启用",
+                    "enabled": "两步验证已开启。",
+                    "backupHint": "请妥善保存这些备用验证码，每个只能使用一次。",
+                    "done": "完成",
+                    "manageHint": "可重新生成备用验证码，或关闭两步验证。",
+                    "regenerateBackup": "重新生成备用码",
+                    "disable": "关闭",
+                    "disabled": "两步验证已关闭。",
+                    "backupRegenerated": "已生成新的备用验证码。"
+                },
+                "errors": {
+                    "emailInvalid": "请输入有效的邮箱地址。",
+                    "emailSame": "这已经是你当前的邮箱。",
+                    "otpSend": "验证码发送失败。",
+                    "otpInvalid": "验证码无效或已过期。",
+                    "passwordRequired": "请输入密码。",
+                    "passwordMismatch": "两次输入的新密码不一致。",
+                    "passwordTooShort": "密码至少需要 8 个字符。",
+                    "passwordChangeFailed": "修改密码失败。",
+                    "passwordSetupFailed": "设置密码失败。",
+                    "twoFactorEnableFailed": "无法开始两步验证设置。",
+                    "twoFactorDisableFailed": "关闭两步验证失败。",
+                    "backupCodesFailed": "重新生成备用验证码失败。"
+                }
+            }
+        },
+        "preferences": {
+            "title": "偏好设置",
+            "description": "语言、外观与货币设置。"
+        },
+        "appearance": {
+            "label": "外观",
+            "system": "跟随系统",
+            "light": "浅色",
+            "dark": "深色"
+        },
+        "language": {
+            "label": "语言"
+        },
+        "currency": {
+            "label": "货币",
+            "errorTitle": "货币更新失败",
+            "errors": {
+                "saveFailed": "保存默认货币失败。"
+            }
+        },
+        "permissions": {
+            "label": "设备权限",
+            "allow": "允许",
+            "granted": "已允许",
+            "denied": "已拒绝 — 请在浏览器设置中开启",
+            "unsupported": "当前浏览器不支持",
+            "install": {
+                "label": "安装应用",
+                "installed": "已安装",
+                "action": "安装",
+                "iosHint": "通过浏览器分享菜单添加"
+            },
+            "notifications": {
+                "label": "消息通知"
+            },
+            "location": {
+                "label": "精确定位"
+            }
+        },
+        "about": {
+            "title": "关于",
+            "version": "版本 {{version}}",
+            "description": "OpenTrip是一款供亲友一起规划旅行的协作工具。"
+        }
+    }
+}

@@ -1,0 +1,40 @@
+node_modules/
+dist/
+.swc/
+build/
+.wrangler/
+.turbo/
+coverage/
+
+# WeChat DevTools per-user config (never committed)
+apps/miniapp/project.private.config.json
+
+# env & secrets
+.env
+.env.*
+!.env.example
+.dev.vars
+deploy/**/secrets.json
+deploy/**/.secrets*.json
+deploy/**/.env.production
+deploy/**/mysql-origin.env
+deploy/**/*.local.env
+deploy/cloudflare/wrangler.api.generated.json
+
+# logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# os
+.DS_Store
+
+# generated
+worker-configuration.d.ts
+apps/api/src/infrastructure/cloudflare/worker-configuration.d.ts
+.workspace/
+.pnpm-store/
+apps/api/uploads
+
+# agent runtime state
+.agents/scheduled_tasks.lock
