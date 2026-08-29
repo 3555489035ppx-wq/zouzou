@@ -4,47 +4,31 @@ import { LngLatBounds, Map, Marker, setWorkerUrl, type Map as MapLibreMap, type 
 import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import type { Place } from '../demo-data/trips'
-import { isAmapConfigured, loadAmap, type AMapMapLike, type AMapOverlay } from '../services/amap/provider'
+import { isAmapConfigured, loadAmap, type AMapMapLike, type AMapOverlay, type AMapPoint } from '../services/amap/provider'
+import { createAmapRoute, getAmapWalkingRoute, wgs84ToGcj02 } from '../services/amap/route'
 import type { BotState } from '../character/engine/motionEngine'
 import { BloubBotSvg } from './BloubBotSvg'
 import { useAppStore } from '../stores/appStore'
 
-// Vite's optimized dependency directory does not always copy MapLibre's
-// sibling worker file. Resolve the worker as an explicit asset so dev and
-// production use the same URL instead of a missing `.vite/deps` path.
 setWorkerUrl(maplibreWorkerUrl)
 
-// AMap is preferred whenever its keys are configured. The keyless Esri canvas
-// fallback keeps the private demo usable without a provider key and retains
-// visible attribution.
-// Esri's Canvas light-gray base + reference labels is a quiet, modern and
-// keyless fallback for this private prototype. CARTO's public endpoint began
-// returning an API-key watermark, so it must not be used for the demo.
 const style: StyleSpecification = {
   version: 8,
   sources: {
-    esriBase: {
-      type: 'raster',
-      tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}'],
-      tileSize: 256,
-      attribution: '© Esri, HERE, Garmin, © OpenStreetMap contributors',
-    },
-    esriReference: {
-      type: 'raster',
-      tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}'],
-      tileSize: 256,
-    },
+    esriBase: { type: 'raster', tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}'], tileSize: 256, attribution: '© Esri, HERE, Garmin, © OpenStreetMap contributors' },
+    esriReference: { type: 'raster', tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}'], tileSize: 256 },
   },
   layers: [
     { id: 'esri-base', type: 'raster', source: 'esriBase', paint: { 'raster-saturation': -0.08, 'raster-contrast': 0.04, 'raster-brightness-max': 0.98 } },
     { id: 'esri-reference', type: 'raster', source: 'esriReference', paint: { 'raster-opacity': 0.82 } },
   ],
 }
-const defaultCenter: [number, number] = [121.47, 31.225]
+
+const defaultCenter: AMapPoint = [121.47, 31.225]
 
 type RouteMapProps = {
   places: Place[]
-  center?: [number, number]
+  center?: AMapPoint
   progress?: number
   compact?: boolean
   focus?: [number, number] | null
@@ -53,72 +37,136 @@ type RouteMapProps = {
   onReady?: () => void
 }
 
-const interpolate = (places: Place[], progress: number) => {
+const interpolate = (places: Place[], progress: number): AMapPoint => {
   if (places.length === 0) return defaultCenter
-  if (places.length === 1) return [places[0].lng, places[0].lat] as [number, number]
+  if (places.length === 1) return [places[0].lng, places[0].lat]
   const scaled = Math.max(0, Math.min(1, progress)) * (places.length - 1)
-  const i = Math.min(places.length - 2, Math.floor(scaled))
-  const t = scaled - i
-  const a = places[i]
-  const b = places[i + 1] ?? a
-  return [a.lng + (b.lng - a.lng) * t, a.lat + (b.lat - a.lat) * t] as [number, number]
+  const index = Math.min(places.length - 2, Math.floor(scaled))
+  const ratio = scaled - index
+  const from = places[index]
+  const to = places[index + 1] ?? from
+  return [from.lng + (to.lng - from.lng) * ratio, from.lat + (to.lat - from.lat) * ratio]
 }
 
-// Map travel is intentionally neutral: orbit/thinking motion is reserved for
-// the circular AI cards, not for a marker moving along a route.
-const visualBotState = (state: BotState, _progress: number): BotState => {
-  if (state === 'walking' || state === 'listening' || state === 'done') return 'transport'
-  return state
+const interpolateRoute = (path: AMapPoint[], progress: number): AMapPoint => {
+  if (path.length < 2) return path[0] ?? defaultCenter
+  const lengths = path.slice(1).map((point, index) => {
+    const previous = path[index]
+    return Math.hypot((point[0] - previous[0]) * Math.cos(point[1] * Math.PI / 180), point[1] - previous[1])
+  })
+  const total = lengths.reduce((sum, length) => sum + length, 0)
+  let remaining = total * Math.max(0, Math.min(1, progress))
+  for (let index = 0; index < lengths.length; index += 1) {
+    const length = lengths[index]
+    if (remaining > length) { remaining -= length; continue }
+    const ratio = length ? remaining / length : 0
+    const from = path[index]
+    const to = path[index + 1]
+    return [from[0] + (to[0] - from[0]) * ratio, from[1] + (to[1] - from[1]) * ratio]
+  }
+  return path[path.length - 1]
 }
 
-function MapLibreRouteMap({ places, center = defaultCenter, progress=0, compact=false, focus=null, botState='walking', onNodeSelect, onReady }: RouteMapProps) {
-  const host=useRef<HTMLDivElement>(null), map=useRef<MapLibreMap|null>(null), bot=useRef<Marker|null>(null), botRoot=useRef<ReturnType<typeof createRoot>|null>(null), markers=useRef<Marker[]>([])
+// Orbit/thinking belongs to circular AI cards, never to a map marker in transit.
+const visualBotState = (state: BotState): BotState => state === 'arriving' || state === 'paused' ? state : 'transport'
+
+function MapLibreRouteMap({ places, center = defaultCenter, progress = 0, compact = false, focus = null, botState = 'walking', onNodeSelect, onReady }: RouteMapProps) {
+  const host = useRef<HTMLDivElement>(null)
+  const map = useRef<MapLibreMap | null>(null)
+  const bot = useRef<Marker | null>(null)
+  const botRoot = useRef<ReturnType<typeof createRoot> | null>(null)
+  const markers = useRef<Marker[]>([])
   const [mapReady, setMapReady] = useState(false)
   const reducedMotion = useAppStore((state) => state.reducedMotion)
   const placesKey = useMemo(() => `${center.join(',')}|${places.map((place) => `${place.id}:${place.lng}:${place.lat}`).join('|')}`, [center, places])
-  useEffect(()=>{ if(!host.current||map.current)return; const instance=new Map({container:host.current,style,center,zoom:11.6,attributionControl:{compact:true},interactive:!compact}); map.current=instance
+  useEffect(() => {
+    if (!host.current || map.current) return
+    const instance = new Map({ container: host.current, style, center, zoom: 11.6, attributionControl: { compact: true }, interactive: !compact })
+    map.current = instance
     const resizeObserver = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(() => instance.resize())
     if (resizeObserver && host.current) resizeObserver.observe(host.current)
-    // `style.load` fires as soon as the style graph is ready, before remote
-    // raster tiles finish streaming. Draw the route and reveal the controls at
-    // that point so a slow tile provider never leaves an empty map surface.
-    instance.on('style.load',()=>{const coords=places.map(p=>[p.lng,p.lat]);instance.addSource('route',{type:'geojson',data:{type:'Feature',properties:{},geometry:{type:'LineString',coordinates:coords}}});instance.addLayer({id:'route-casing',type:'line',source:'route',paint:{'line-color':'#fff','line-width':7,'line-opacity':.95}});instance.addLayer({id:'route',type:'line',source:'route',paint:{'line-color':'#171717','line-width':3.5,'line-opacity':.9}})
-      const bounds=new LngLatBounds();places.forEach((p,index)=>{bounds.extend([p.lng,p.lat]);const el=document.createElement('button');el.type='button';el.className=`route-node ${index === 0 || index === places.length - 1 ? 'route-node--edge' : ''}`;el.dataset.index=String(index);el.setAttribute('aria-label',`聚焦${p.name}`);el.innerHTML=`<span>${index+1}</span><b>${p.name}</b>`;if(onNodeSelect){el.addEventListener('click',()=>onNodeSelect(index));el.addEventListener('keydown',(event)=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();onNodeSelect(index)}})}markers.current.push(new Marker({element:el,anchor:'center'}).setLngLat([p.lng,p.lat]).addTo(instance))});instance.fitBounds(bounds,{padding:compact?34:72,maxZoom:compact?13.8:12.8,duration:0});const botEl=document.createElement('div');botEl.className='route-bot';botEl.setAttribute('aria-hidden','true');botRoot.current=createRoot(botEl);botRoot.current.render(<BloubBotSvg state={visualBotState(botState,progress)} reducedMotion={reducedMotion} />);bot.current=new Marker({element:botEl,anchor:'center'}).setLngLat(interpolate(places,progress)).addTo(instance);window.requestAnimationFrame(() => instance.resize());setMapReady(true);onReady?.() })
-    return()=>{resizeObserver?.disconnect();setMapReady(false);markers.current.forEach(m=>m.remove());markers.current=[];bot.current?.remove();botRoot.current?.unmount();botRoot.current=null;instance.remove();map.current=null}
-  // The map instance is intentionally stable while markers and camera update independently.
-  // `placesKey` changes only when the actual route changes, not on every progress tick.
+    instance.on('style.load', () => {
+      const bounds = new LngLatBounds()
+      places.forEach((place, index) => {
+        bounds.extend([place.lng, place.lat])
+        const element = document.createElement('button')
+        element.type = 'button'
+        element.className = `route-node ${index === 0 || index === places.length - 1 ? 'route-node--edge' : ''}`
+        element.dataset.index = String(index)
+        element.setAttribute('aria-label', `聚焦${place.name}`)
+        element.innerHTML = `<span>${index + 1}</span><b>${place.name}</b>`
+        if (onNodeSelect) element.addEventListener('click', () => onNodeSelect(index))
+        markers.current.push(new Marker({ element, anchor: 'center' }).setLngLat([place.lng, place.lat]).addTo(instance))
+      })
+      instance.fitBounds(bounds, { padding: compact ? 34 : 72, maxZoom: compact ? 13.8 : 12.8, duration: 0 })
+      const botElement = document.createElement('div')
+      botElement.className = 'route-bot'
+      botElement.setAttribute('aria-hidden', 'true')
+      botRoot.current = createRoot(botElement)
+      botRoot.current.render(<BloubBotSvg state={visualBotState(botState)} reducedMotion={reducedMotion} />)
+      bot.current = new Marker({ element: botElement, anchor: 'center' }).setLngLat(interpolate(places, progress)).addTo(instance)
+      window.requestAnimationFrame(() => instance.resize())
+      setMapReady(true)
+      onReady?.()
+    })
+    return () => {
+      resizeObserver?.disconnect()
+      setMapReady(false)
+      markers.current.forEach((marker) => marker.remove())
+      markers.current = []
+      bot.current?.remove()
+      botRoot.current?.unmount()
+      botRoot.current = null
+      instance.remove()
+      map.current = null
+    }
+  // The fallback stays stable while route progress changes.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[placesKey])
-  useEffect(()=>{botRoot.current?.render(<BloubBotSvg state={visualBotState(botState, progress)} reducedMotion={reducedMotion} />)},[botState, reducedMotion, progress])
-  useEffect(()=>{if(!mapReady||!map.current||!focus)return;const [from,to]=focus;const a=places[from]??places[0];const b=places[to]??a;const bounds=new LngLatBounds([a.lng,a.lat],[b.lng,b.lat]);map.current.fitBounds(bounds,{padding:compact?48:128,maxZoom:compact?14:13,duration:550,essential:true})},[compact,focus,mapReady,places])
-  useEffect(()=>{if(map.current)map.current.resize()},[compact])
-  useEffect(()=>{bot.current?.setLngLat(interpolate(places,progress));const active=Math.floor(progress*(places.length-1)+.001);markers.current.forEach((m,i)=>{const el=m.getElement();el.classList.toggle('is-done',i<active);el.classList.toggle('is-current',i===active)})},[placesKey,progress])
-  return <div className="real-route-map" ref={host} role="region" aria-label="真实路线地图" aria-busy={!mapReady}>{!mapReady ? <span className="map-loading" role="status">正在准备地图</span> : null}</div>
+  }, [placesKey])
+  useEffect(() => { botRoot.current?.render(<BloubBotSvg state={visualBotState(botState)} reducedMotion={reducedMotion} />) }, [botState, reducedMotion])
+  useEffect(() => {
+    if (!mapReady || !map.current || !focus) return
+    const [from, to] = focus
+    const first = places[from] ?? places[0]
+    const last = places[to] ?? first
+    if (first && last) map.current.fitBounds(new LngLatBounds([first.lng, first.lat], [last.lng, last.lat]), { padding: compact ? 48 : 128, maxZoom: compact ? 14 : 13, duration: 550, essential: true })
+  }, [compact, focus, mapReady, places])
+  useEffect(() => { map.current?.resize() }, [compact])
+  useEffect(() => {
+    bot.current?.setLngLat(interpolate(places, progress))
+    const active = Math.floor(progress * (places.length - 1) + 0.001)
+    markers.current.forEach((marker, index) => {
+      marker.getElement().classList.toggle('is-done', index < active)
+      marker.getElement().classList.toggle('is-current', index === active)
+    })
+  }, [placesKey, progress])
+  return <div className="real-route-map" ref={host} role="region" aria-label="地图地点预览，路线服务暂不可用" aria-busy={!mapReady}>{!mapReady ? <span className="map-loading" role="status">正在准备地图</span> : <span className="map-route-status">路线服务暂不可用</span>}</div>
 }
 
-function AmapRouteMap({ places, center = defaultCenter, progress=0, compact=false, focus=null, botState='walking', onNodeSelect, onReady }: RouteMapProps) {
+function AmapRouteMap({ places, center = defaultCenter, progress = 0, compact = false, focus = null, botState = 'walking', onNodeSelect, onReady }: RouteMapProps) {
   const host = useRef<HTMLDivElement>(null)
   const map = useRef<AMapMapLike | null>(null)
   const bot = useRef<AMapOverlay | null>(null)
+  const routePath = useRef<AMapPoint[]>([])
   const nodeElements = useRef<HTMLElement[]>([])
   const nodeMarkers = useRef<AMapOverlay[]>([])
-  const botRoot = useRef<ReturnType<typeof createRoot>|null>(null)
+  const botRoot = useRef<ReturnType<typeof createRoot> | null>(null)
   const [loadFailed, setLoadFailed] = useState(false)
   const [mapReady, setMapReady] = useState(false)
+  const [routeError, setRouteError] = useState(false)
   const reducedMotion = useAppStore((state) => state.reducedMotion)
   const placesKey = useMemo(() => `${center.join(',')}|${places.map((place) => `${place.id}:${place.lng}:${place.lat}`).join('|')}`, [center, places])
   useEffect(() => {
     if (!host.current) return
     let cancelled = false
     let resizeObserver: ResizeObserver | null = null
-    loadAmap().then((AMap) => {
+    loadAmap().then(async (AMap) => {
       if (cancelled || !host.current) return
-      const instance = new AMap.Map(host.current, { zoom: 11.6, center, mapStyle: 'amap://styles/whitesmoke', viewMode: '2D', zoomEnable: !compact, dragEnable: !compact, doubleClickZoom: !compact, keyboardEnable: !compact })
-      const path = places.map((place) => [place.lng, place.lat] as [number, number])
-      const polyline = new AMap.Polyline({ path, strokeColor: '#171717', strokeWeight: compact ? 3 : 4, strokeOpacity: 0.9, lineJoin: 'round', lineCap: 'round' })
-      instance.add(polyline)
-      const overlays: AMapOverlay[] = [polyline]
-      const nodes = places.map((place, index) => {
+      const amapCenter = wgs84ToGcj02(center)
+      const amapPlaces = places.map((place) => wgs84ToGcj02([place.lng, place.lat]))
+      const instance = new AMap.Map(host.current, { zoom: 11.6, center: amapCenter, mapStyle: 'amap://styles/whitesmoke', viewMode: '2D', zoomEnable: !compact, dragEnable: !compact, doubleClickZoom: !compact, keyboardEnable: !compact })
+      const overlays: AMapOverlay[] = []
+      places.forEach((place, index) => {
         const element = document.createElement('button')
         element.type = 'button'
         element.className = `route-node ${index === 0 || index === places.length - 1 ? 'route-node--edge' : ''}`
@@ -127,18 +175,17 @@ function AmapRouteMap({ places, center = defaultCenter, progress=0, compact=fals
         element.innerHTML = `<span>${index + 1}</span><b>${place.name}</b>`
         if (onNodeSelect) element.addEventListener('click', () => onNodeSelect(index))
         nodeElements.current.push(element)
-        const marker = new AMap.Marker({ position: [place.lng, place.lat], content: element, offset: [-12, -12], zIndex: 12 })
+        const marker = new AMap.Marker({ position: amapPlaces[index], content: element, offset: [-12, -12], zIndex: 12 })
         nodeMarkers.current.push(marker)
         instance.add(marker)
         overlays.push(marker)
-        return marker
       })
       const botElement = document.createElement('div')
       botElement.className = 'route-bot'
-      botElement.setAttribute('aria-hidden','true')
+      botElement.setAttribute('aria-hidden', 'true')
       botRoot.current = createRoot(botElement)
-      botRoot.current.render(<BloubBotSvg state={visualBotState(botState, progress)} reducedMotion={reducedMotion} />)
-      const botMarker = new AMap.Marker({ position: interpolate(places, progress), content: botElement, offset: [-21, -21], zIndex: 18 })
+      botRoot.current.render(<BloubBotSvg state={visualBotState(botState)} reducedMotion={reducedMotion} />)
+      const botMarker = new AMap.Marker({ position: amapPlaces[0] ?? amapCenter, content: botElement, offset: [-21, -21], zIndex: 18 })
       instance.add(botMarker)
       overlays.push(botMarker)
       map.current = instance
@@ -147,19 +194,24 @@ function AmapRouteMap({ places, center = defaultCenter, progress=0, compact=fals
       resizeObserver = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(() => (instance as AMapMapLike & { resize?: () => void }).resize?.())
       if (resizeObserver && host.current) resizeObserver.observe(host.current)
       setMapReady(true)
-      const active = Math.floor(progress * (places.length - 1) + 0.001)
-      nodeElements.current.forEach((element, index) => { element.classList.toggle('is-done', index < active); element.classList.toggle('is-current', index === active) })
       onReady?.()
-    }).catch(() => {
-      // Configuration is checked before this component is mounted. If a remote
-      // script is blocked, the regular MapLibre branch remains the safe local
-      // fallback on the next render.
-      setLoadFailed(true)
-    })
+      try {
+        const path = await getAmapWalkingRoute(AMap, amapPlaces)
+        if (cancelled) return
+        routePath.current = path
+        const route = createAmapRoute(AMap, path, { strokeWeight: compact ? 3 : 4 })
+        instance.add(route)
+        instance.setFitView([...overlays, route], true, compact ? [34, 34, 34, 34] : [52, 52, 52, 52])
+        botMarker.setPosition?.(interpolateRoute(path, progress))
+      } catch {
+        if (!cancelled) setRouteError(true)
+      }
+    }).catch(() => setLoadFailed(true))
     return () => {
       cancelled = true
       setMapReady(false)
       resizeObserver?.disconnect()
+      routePath.current = []
       nodeElements.current = []
       nodeMarkers.current = []
       bot.current = null
@@ -168,23 +220,25 @@ function AmapRouteMap({ places, center = defaultCenter, progress=0, compact=fals
       map.current?.destroy()
       map.current = null
     }
-  // The AMap instance is intentionally stable while only the bot marker moves.
+  // The AMap instance is stable; only route-marker position changes during playback.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [placesKey])
-  useEffect(() => { botRoot.current?.render(<BloubBotSvg state={visualBotState(botState, progress)} reducedMotion={reducedMotion} />) }, [botState, reducedMotion, progress])
+  useEffect(() => { botRoot.current?.render(<BloubBotSvg state={visualBotState(botState)} reducedMotion={reducedMotion} />) }, [botState, reducedMotion])
   useEffect(() => {
     if (!mapReady || !map.current || !focus) return
     const selected = focus.flatMap((index) => nodeMarkers.current[index] ? [nodeMarkers.current[index]] : [])
     if (selected.length) map.current.setFitView(selected, false, compact ? [48, 48, 48, 48] : [128, 128, 128, 128])
   }, [compact, focus, mapReady])
-  // The provider keeps its map instance during progress and layout changes.
   useEffect(() => {
-    bot.current?.setPosition?.(interpolate(places, progress))
+    if (routePath.current.length) bot.current?.setPosition?.(interpolateRoute(routePath.current, progress))
     const active = Math.floor(progress * (places.length - 1) + 0.001)
-    nodeElements.current.forEach((element, index) => { element.classList.toggle('is-done', index < active); element.classList.toggle('is-current', index === active) })
+    nodeElements.current.forEach((element, index) => {
+      element.classList.toggle('is-done', index < active)
+      element.classList.toggle('is-current', index === active)
+    })
   }, [placesKey, progress])
   if (loadFailed) return <MapLibreRouteMap places={places} center={center} progress={progress} compact={compact} focus={focus} botState={botState} onNodeSelect={onNodeSelect} onReady={onReady} />
-  return <div className="real-route-map real-route-map--amap" ref={host} role="region" aria-label="高德真实路线地图" aria-busy={!mapReady}>{!mapReady ? <span className="map-loading" role="status">正在准备地图</span> : null}</div>
+  return <div className="real-route-map real-route-map--amap" ref={host} role="region" aria-label="高德真实步行路线地图" aria-busy={!mapReady}>{!mapReady ? <span className="map-loading" role="status">正在计算真实步行路线</span> : routeError ? <span className="map-route-status">路线服务暂不可用</span> : null}</div>
 }
 
 export function RealRouteMap(props: RouteMapProps) {
