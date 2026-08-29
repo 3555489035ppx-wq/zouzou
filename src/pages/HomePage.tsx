@@ -3,6 +3,7 @@ import { Bell, ChevronDown, CloudRain, CloudSnow, CloudSun, Sun, Wind } from 'lu
 import { useNavigate } from 'react-router-dom'
 import { AppShell } from '../components/AppShell'
 import { CityPicker, TripEntryIcon, ZouAvatar, ZouCard } from '../components/ui'
+import { getDemoTripPlaces } from '../demo-data/cities'
 import { useAppStore } from '../stores/appStore'
 import { weatherService, type Weather } from '../services/weather'
 
@@ -44,9 +45,13 @@ export const HomePage = () => {
   const city = useAppStore((s) => s.city)
   const avatar = useAppStore((s) => s.avatar)
   const tripMode = useAppStore((s) => s.tripMode)
+  const tripCity = useAppStore((s) => s.tripCity)
   const [citiesOpen, setCitiesOpen] = useState(false)
   const [weather, setWeather] = useState<Weather | null>(null)
   const recommendations = localRecommendations[city] ?? localRecommendations['上海']
+  const activeCity = tripCity ?? city
+  const activePlaces = getDemoTripPlaces(activeCity, 'Day 1')
+  const activeNext = activePlaces[1] ?? activePlaces[0]
   useEffect(() => {
     let cancelled = false
     setWeather(null)
@@ -61,7 +66,7 @@ export const HomePage = () => {
     <header className="home-header"><button className="home-city" onClick={() => setCitiesOpen(true)}><strong>{city}</strong><ChevronDown /><span title={weather?.note ?? '正在读取实时天气'} aria-live="polite">{weather ? <WeatherIcon condition={weather.condition} /> : <CloudSun aria-hidden="true" />}{weatherText}</span></button><div className="home-header__actions"><button className="icon-button notification-button" aria-label="通知中心" onClick={() => navigate('/notifications')}><Bell /><span>3</span></button><button className="avatar-button" aria-label="打开我的主页" onClick={() => navigate('/profile')}><ZouAvatar src={avatar} name="小鹏" /></button></div></header>
     <section className="home-recommend" aria-labelledby="home-recommend-title"><h2 id="home-recommend-title">为你推荐</h2><span>从一次想走的路开始</span></section>
     <section className="entry-list" aria-label="创建场景">{entries.map((entry) => <ZouCard key={entry.title} className="entry-card" onClick={() => navigate(entry.path)}><span className="entry-card__icon"><TripEntryIcon type={entry.type} /></span><span><strong>{entry.title}</strong><small>{entry.body}</small></span><span className="entry-card__arrow">→</span></ZouCard>)}</section>
-    <section className="home-dynamic"><div><span className="soft-label">{tripMode === 'active' ? '正在进行' : tripMode === 'upcoming' ? '即将开始' : '最近浏览'}</span><h2>{tripMode === 'active' ? `${city} · Day 1` : tripMode === 'upcoming' ? `${city} · 3天2晚` : '武康路 City Walk'}</h2><p>{tripMode === 'active' ? '下一站 · 武康路 · 09:30' : tripMode === 'upcoming' ? '明天 09:00 出发' : '一条走路不多的周末路线'}</p></div><button onClick={() => navigate(tripMode === 'active' ? '/trips' : '/travel/new')}>{tripMode === 'active' ? '继续行程' : tripMode === 'upcoming' ? '查看行程' : '打开'}<span>→</span></button></section>
+    <section className={`home-dynamic home-dynamic--${tripMode}`}><div><span className="soft-label">{tripMode === 'active' ? '正在进行' : tripMode === 'upcoming' ? '即将开始' : '准备开始'}</span><h2>{tripMode === 'active' ? `${activeCity} · Day 1` : tripMode === 'upcoming' ? `${activeCity} · 3天2晚` : '开始一次走走'}</h2><p>{tripMode === 'active' ? `下一站 · ${activeNext?.name ?? '下一站'} · ${activeNext?.time ?? '09:30'}` : tripMode === 'upcoming' ? '明天 09:00 出发' : '从一个想法开始，走出一条自己的路线'}</p></div><button onClick={() => navigate(tripMode === 'active' ? '/trips' : '/travel/new')}>{tripMode === 'active' ? '继续行程' : tripMode === 'upcoming' ? '查看行程' : '开始规划'}<span>→</span></button></section>
     <section className="home-local-recommendations" aria-labelledby="home-local-title"><header><h2 id="home-local-title">在{city}，你可能喜欢</h2><span>和你所在的城市一起更新</span></header><div className="home-local-list">{recommendations.map((item) => <button key={item.name} onClick={() => navigate('/community')}><img src={item.image} alt="" width={52} height={50} /><span><strong>{item.name}</strong><small>{item.type}</small></span><span aria-hidden="true">→</span></button>)}</div></section>
     <CityPicker open={citiesOpen} onClose={() => setCitiesOpen(false)} />
   </div></AppShell>

@@ -27,6 +27,39 @@ describe('Shanghai itinerary planner', () => {
     expect(result.intent.missing).toEqual(expect.arrayContaining(['具体出行日期', '到达时间和地点', '返程时间和地点', '酒店位置']))
   })
 
+  it('uses only confirmed screenshot facts as scheduling anchors', () => {
+    const result = understandTrip({
+      text: '我想去上海三天，住在静安寺附近。',
+      media: [{ id: 'ticket-1', src: 'data:image/png;base64,AA==', name: '车票.png' }],
+      mediaFacts: [{
+        mediaId: 'ticket-1',
+        name: '车票.png',
+        kind: 'ticket',
+        rawText: '2026年9月18日 10:30 虹桥火车站',
+        facts: {
+          dates: { start: '2026-09-18', end: '2026-09-20' },
+          times: ['10:30'],
+          locations: ['虹桥火车站'],
+          arrivalLocation: '虹桥火车站',
+          departureLocation: null,
+          hotel: null,
+          placeNames: [],
+          budget: null,
+          notes: [],
+        },
+        confidence: 0.95,
+        needsConfirmation: false,
+        warnings: [],
+        provider: 'zhipu',
+      }],
+    })
+
+    expect(result.intent.dates).toEqual({ start: '2026-09-18', end: '2026-09-20' })
+    expect(result.intent.arrivalTime).toBe('10:30')
+    expect(result.intent.arrivalLocation).toBe('虹桥火车站')
+    expect(result.intent.missing).toContain('返程时间和地点')
+  })
+
   it('creates three variants that pass deterministic schedule checks', () => {
     const understanding = understandTrip({ text: DEFAULT_SHANGHAI_PROMPT, media: [] })
     const generated = generatePlans(understanding.intent)

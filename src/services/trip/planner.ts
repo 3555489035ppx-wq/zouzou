@@ -1,3 +1,4 @@
+import { cityNames } from '../../demo-data/cities'
 import type { Place, Plan } from '../../demo-data/trips'
 
 export const DEFAULT_SHANGHAI_PROMPT = '我和朋友计划 2026年9月18日到9月20日去上海 3天2晚。9月18日10:30到虹桥火车站，住静安寺附近酒店，9月20日18:30从虹桥返程。两个人，本地总预算4000元（含住宿和市内交通，不含往返车票）。想去武康路、安福路、看展和外滩，不想太赶，喜欢咖啡，最好每天留一段缓冲。'
@@ -14,9 +15,34 @@ export type TripMedia = {
   category?: string
 }
 
+export type MediaFactKind = 'ticket' | 'hotel' | 'reservation' | 'chat' | 'map' | 'other'
+
+export type MediaFact = {
+  mediaId: string
+  name: string
+  kind: MediaFactKind
+  rawText: string
+  facts: {
+    dates: { start: string; end: string } | null
+    times: string[]
+    locations: string[]
+    arrivalLocation: string | null
+    departureLocation: string | null
+    hotel: string | null
+    placeNames: string[]
+    budget: number | null
+    notes: string[]
+  }
+  confidence: number
+  needsConfirmation: boolean
+  warnings: string[]
+  provider: string
+}
+
 export type TripRequest = {
   text: string
   media: TripMedia[]
+  mediaFacts?: MediaFact[]
 }
 
 export type Pace = 'relaxed' | 'balanced' | 'full'
@@ -33,6 +59,7 @@ export type TripIntent = {
   mustVisit: string[]
   preferences: string[]
   constraints: string[]
+  conflicts: string[]
   arrivalTime: string | null
   arrivalLocation: string | null
   departureTime: string | null
@@ -45,6 +72,7 @@ export type TripUnderstanding = {
   intent: TripIntent
   evidence: string[]
   summary: string
+  mediaFacts?: MediaFact[]
 }
 
 export type TravelMode = 'walk' | 'metro' | 'taxi' | 'train'
@@ -91,7 +119,7 @@ export type ValidationReport = {
 }
 
 export type GeneratedPlan = Plan & {
-  city: '上海'
+  city: string
   dates: { start: string; end: string } | null
   nights: number
   partySize: number
@@ -179,19 +207,75 @@ export function paceLabel(pace: Pace) {
   return pace === 'relaxed' ? '松弛' : pace === 'full' ? '充实' : '平衡'
 }
 
+export function buildUnderstandingSummary(intent: TripIntent) {
+  const conflicts = intent.conflicts ?? []
+  const dateText = intent.dates ? `${intent.dates.start} 到 ${intent.dates.end}` : `${intent.durationDays} 天（日期待确认）`
+  const budgetText = intent.budget === null ? '预算待确认' : `预算约 ¥${intent.budget}`
+  const parts = [`我理解你要去${intent.destination}，计划在 ${dateText} 出行，${intent.partySize} 人同行，${budgetText}，整体节奏偏${paceLabel(intent.pace)}`]
+  if (intent.arrivalTime || intent.arrivalLocation) parts.push(`已记录到达锚点：${intent.arrivalTime ?? '时间待确认'} · ${intent.arrivalLocation ?? '地点待确认'}`)
+  if (intent.departureTime || intent.departureLocation) parts.push(`已记录返程锚点：${intent.departureTime ?? '时间待确认'} · ${intent.departureLocation ?? '地点待确认'}`)
+  if (intent.mustVisit.length > 0) parts.push(`重点是${intent.mustVisit.join('、')}`)
+  if (intent.preferences.length > 0) parts.push(`同时照顾${intent.preferences.join('、')}偏好`)
+  if (intent.constraints.length > 0) parts.push(`并且${intent.constraints.join('、')}`)
+  if (conflicts.length > 0) parts.push(`发现需要先核对的冲突：${conflicts.join('；')}`)
+  if (intent.missing.length > 0) parts.push(`目前还缺${intent.missing.join('、')}`)
+  return `${parts.join('。')}。`
+}
+
 export function understandTrip(request: TripRequest): TripUnderstanding {
   const text = request.text.trim()
-  const mediaText = request.media.map((item) => `${item.name} ${item.category ?? ''}`).join(' ')
-  const combined = `${text} ${mediaText}`
-  const dates = parseDateRange(text)
+  const mediaFacts = request.mediaFacts ?? []
+  const confirmedMediaFacts = mediaFacts.filter((fact) => fact.confidence >= 0.85 && !fact.needsConfirmation)
+  const confirmedFactText = confirmedMediaFacts.map((fact) => [
+    fact.rawText,
+    fact.facts.locations.join(' '),
+    fact.facts.arrivalLocation ?? '',
+    fact.facts.departureLocation ?? '',
+    fact.facts.hotel ?? '',
+    fact.facts.placeNames.join(' '),
+    fact.facts.notes.join(' '),
+  ].join(' ')).join(' ')
+  const combined = `${text} ${confirmedFactText}`
+  const textDates = parseDateRange(text)
   const durationMatch = text.match(/(\d+)\s*(?:天|日)/)
-  const durationDays = inclusiveDays(dates) ?? (durationMatch ? Number(durationMatch[1]) : 3)
-  const times = parseTimes(text)
-  const arrivalLocation = /虹桥/.test(text) ? '虹桥火车站' : /浦东机场|虹桥机场|机场/.test(text) ? '机场' : null
-  const departureLocation = arrivalLocation
+  const mediaDateRanges = mediaFacts.map((fact) => fact.facts.dates).filter((value): value is { start: string; end: string } => Boolean(value))
+  const confirmedMediaDateRanges = confirmedMediaFacts.map((fact) => fact.facts.dates).filter((value): value is { start: string; end: string } => Boolean(value))
+  const uniqueMediaDates = unique(mediaDateRanges.map((value) => `${value.start}~${value.end}`))
+  const uniqueConfirmedMediaDates = unique(confirmedMediaDateRanges.map((value) => `${value.start}~${value.end}`))
+  const textDurationDays = durationMatch ? Number(durationMatch[1]) : null
+  const confirmedMediaDurationDays = uniqueConfirmedMediaDates.length === 1 ? inclusiveDays(confirmedMediaDateRanges[0] ?? null) : null
+  const mediaDateMatchesTextDuration = textDurationDays === null || confirmedMediaDurationDays === textDurationDays
+  const dates = textDates ?? (uniqueConfirmedMediaDates.length === 1 && mediaDateMatchesTextDuration ? confirmedMediaDateRanges[0] : null)
+  const durationDays = inclusiveDays(textDates) ?? textDurationDays ?? inclusiveDays(dates) ?? 3
+  const textTimes = parseTimes(text)
+  const confirmedMediaTimes = unique(confirmedMediaFacts.flatMap((fact) => fact.facts.times))
+  const times = unique([...textTimes, ...confirmedMediaTimes])
+  const normalizeAnchorLocation = (value: string) => {
+    if (/浦东机场/.test(value)) return '浦东机场'
+    if (/虹桥机场/.test(value)) return '虹桥机场'
+    if (/虹桥火车站|虹桥站|虹桥/.test(value)) return '虹桥火车站'
+    if (/机场/.test(value)) return '机场'
+    return null
+  }
+  const textArrivalLocation = normalizeAnchorLocation(text.match(/(?:到达|抵达|落地|到站|到)\s*(浦东机场|虹桥机场|虹桥火车站|虹桥站|虹桥|机场)/)?.[1] ?? '')
+  const textDepartureLocation = normalizeAnchorLocation(text.match(/(?:从|由|离开|返程(?:从)?|返回)\s*(浦东机场|虹桥机场|虹桥火车站|虹桥站|虹桥|机场)/)?.[1] ?? '')
+  const mediaArrivalLocation = confirmedMediaFacts.map((fact) => fact.facts.arrivalLocation).find((value): value is string => Boolean(value))
+  const mediaDepartureLocation = confirmedMediaFacts.map((fact) => fact.facts.departureLocation).find((value): value is string => Boolean(value))
+  const arrivalLocation = textArrivalLocation ?? mediaArrivalLocation ?? null
+  const departureLocation = textDepartureLocation ?? mediaDepartureLocation ?? null
   const mustVisit: string[] = []
   const preferences: string[] = []
   const constraints: string[] = []
+  const conflicts: string[] = []
+
+  const mediaArrivalLocations = mediaFacts.map((fact) => fact.facts.arrivalLocation).filter((value): value is string => Boolean(value))
+  const mediaDepartureLocations = mediaFacts.map((fact) => fact.facts.departureLocation).filter((value): value is string => Boolean(value))
+  if (uniqueMediaDates.length > 1) conflicts.push(`截图日期存在冲突：${uniqueMediaDates.join(' 与 ')}`)
+  if (textDates && uniqueMediaDates.some((value) => value !== `${textDates.start}~${textDates.end}`)) conflicts.push(`文字日期 ${textDates.start}~${textDates.end} 与截图日期 ${uniqueMediaDates.find((value) => value !== `${textDates.start}~${textDates.end}`)}`)
+  if (new Set(mediaArrivalLocations).size > 1) conflicts.push(`截图到达地点存在冲突：${unique(mediaArrivalLocations).join('、')}`)
+  if (new Set(mediaDepartureLocations).size > 1) conflicts.push(`截图返程地点存在冲突：${unique(mediaDepartureLocations).join('、')}`)
+  if (textArrivalLocation && mediaArrivalLocations.some((value) => !value.includes(textArrivalLocation.replace('火车站', '')) && !textArrivalLocation.includes(value.replace('火车站', '')))) conflicts.push(`文字到达地点 ${textArrivalLocation} 与截图地点 ${mediaArrivalLocations[0]}`)
+  if (textDepartureLocation && mediaDepartureLocations.some((value) => !value.includes(textDepartureLocation.replace('火车站', '')) && !textDepartureLocation.includes(value.replace('火车站', '')))) conflicts.push(`文字返程地点 ${textDepartureLocation} 与截图地点 ${mediaDepartureLocations[0]}`)
 
   if (/武康路/.test(combined)) mustVisit.push('武康路')
   if (/安福路/.test(combined)) mustVisit.push('安福路')
@@ -208,46 +292,55 @@ export function understandTrip(request: TripRequest): TripUnderstanding {
   if (!dates) missing.push('具体出行日期')
   if (!times[0] || !arrivalLocation) missing.push('到达时间和地点')
   if (!times[1] || !departureLocation) missing.push('返程时间和地点')
-  if (!/酒店|住宿|住在|住于/.test(combined)) missing.push('酒店位置')
-  if (!parseBudget(text)) missing.push('总预算')
+  if (!/酒店|住宿|住在|住于/.test(text) && !confirmedMediaFacts.some((fact) => fact.facts.hotel)) missing.push('酒店位置')
 
+  const textBudget = parseBudget(text)
+  const mediaBudget = confirmedMediaFacts.map((fact) => fact.facts.budget).find((value): value is number => value !== null)
+
+  const destination = cityNames.find((city) => combined.includes(city)) ?? '上海'
   const intent: TripIntent = {
-    destination: /上海/.test(combined) ? '上海' : '上海',
+    destination,
     dates,
     durationDays: Math.max(1, durationDays),
     nights: Math.max(0, durationDays - 1),
     partySize: parsePartySize(combined),
-    budget: parseBudget(text),
+    budget: textBudget ?? mediaBudget ?? null,
     budgetScope: /不含[^。！？]*车票|不含[^。！？]*机票/.test(text) ? '含住宿和市内交通，不含城际交通' : '范围待确认',
     pace: /特种兵|赶行程|充实/.test(combined) ? 'full' : /不想太赶|不太赶|不赶|轻松|松弛|慢慢/.test(combined) ? 'relaxed' : 'balanced',
     mustVisit: unique(mustVisit),
     preferences: unique(preferences),
     constraints: unique(constraints),
+    conflicts: unique(conflicts),
     arrivalTime: times[0] ?? null,
     arrivalLocation,
     departureTime: times[1] ?? null,
     departureLocation,
-    hotel: /静安寺|静安/.test(combined) ? '静安寺附近酒店' : /酒店|住宿|住在|住于/.test(combined) ? '已提供住宿，但地址待确认' : null,
+    hotel: confirmedMediaFacts.map((fact) => fact.facts.hotel).find((value): value is string => Boolean(value))
+      ?? (/静安寺|静安/.test(text) ? '静安寺附近酒店' : /酒店|住宿|住在|住于/.test(text) ? '已提供住宿，但地址待确认' : null),
     missing: unique(missing),
   }
+
+  if (intent.budget === null) intent.missing.push('总预算')
 
   const evidence = [
     `用户文字：${text || '未提供文字描述'}`,
     ...request.media.map((item) => `截图线索：${item.name}`),
+    ...(request.mediaFacts ?? []).map((fact) => `截图识别：${fact.name} · ${fact.kind} · 置信度 ${Math.round(fact.confidence * 100)}%${fact.needsConfirmation ? ' · 需要确认' : ''}`),
     '本地上海地点库：真实公共地标；交通、价格和营业状态在生产环境需由服务端实时复核。',
   ]
 
   return {
     intent,
     evidence,
-    summary: `${intent.destination} · ${intent.durationDays}天${intent.nights}晚 · ${intent.partySize}人 · ${paceLabel(intent.pace)}`,
+    summary: buildUnderstandingSummary(intent),
+    ...(request.mediaFacts && request.mediaFacts.length > 0 ? { mediaFacts: request.mediaFacts } : {}),
   }
 }
 
 const realShanghaiDays = (): Record<string, PlannedStop[]> => ({
   'Day 1': [
     makeStop({ id: 'arrival-hongqiao', time: '10:30', name: '虹桥火车站', type: '到达', stay: '30min', budget: 0, transport: '前往静安寺约 35 分钟', note: '到站后先去酒店放行李，把到达作为今天的固定锚点。', lng: 121.327, lat: 31.198, durationMinutes: 30, travelFromPreviousMinutes: 0, zone: '虹桥', mode: 'train', fixed: true, factState: 'estimated', factSource: '用户计划 + 真实交通节点' }),
-    makeStop({ id: 'jingan-hotel-checkin', time: '11:45', name: '静安寺附近酒店', type: '住宿', stay: '30min', budget: 980, transport: '步行 / 地铁约 20 分钟', note: '两晚住宿参考价已计入，实际以预订平台为准。', lng: 121.445, lat: 31.223, durationMinutes: 30, travelFromPreviousMinutes: 35, zone: '静安', mode: 'taxi', fixed: true, factState: 'estimated', factSource: '用户计划：住宿已锁定；住宿为本地参考价' }),
+    makeStop({ id: 'jingan-hotel-checkin', time: '11:45', name: '静安寺附近酒店', type: '住宿', stay: '30min', budget: 490, transport: '步行 / 地铁约 20 分钟', note: '两晚住宿参考价 ¥980，按 ¥490/晚展示，实际以预订平台为准。', lng: 121.445, lat: 31.223, durationMinutes: 30, travelFromPreviousMinutes: 35, zone: '静安', mode: 'taxi', fixed: true, factState: 'estimated', factSource: '用户计划：住宿已锁定；住宿为本地参考价' }),
     makeStop({ id: 'jingan-lunch', time: '12:20', name: '静安午餐', type: '午餐', stay: '45min', budget: 80, transport: '前往武康路约 25 分钟', note: '用一顿不需要排长队的午餐开始，给下午留出弹性。', lng: 121.444, lat: 31.225, durationMinutes: 45, travelFromPreviousMinutes: 5, zone: '静安', mode: 'walk', factState: 'estimated', factSource: '本地餐饮估算' }),
     makeStop({ id: 'wukang-road', time: '13:30', name: '武康路', type: 'City Walk', stay: '1h 30min', budget: 0, transport: '步行 10 分钟', note: '保留街区漫步时间，不把整条路压成打卡点。', lng: 121.4374, lat: 31.2111, durationMinutes: 90, travelFromPreviousMinutes: 25, zone: '徐汇', mode: 'taxi', fixed: true, factState: 'estimated', factSource: '真实公共街区' }),
     makeStop({ id: 'anfu-road', time: '15:10', name: '安福路', type: '街区', stay: '1h', budget: 0, transport: '步行 10 分钟', note: '和武康路放在同一片区，减少折返。', lng: 121.4435, lat: 31.2161, durationMinutes: 60, travelFromPreviousMinutes: 10, zone: '徐汇', mode: 'walk', fixed: true, factState: 'estimated', factSource: '真实公共街区' }),
@@ -255,7 +348,7 @@ const realShanghaiDays = (): Record<string, PlannedStop[]> => ({
     makeStop({ id: 'jingan-dinner', time: '18:00', name: '静安晚餐', type: '晚餐', stay: '1h 30min', budget: 220, transport: '步行回酒店约 12 分钟', note: '晚餐后直接回酒店，第一天不安排夜间跨区。', lng: 121.448, lat: 31.229, durationMinutes: 90, travelFromPreviousMinutes: 20, zone: '静安', mode: 'taxi', factState: 'estimated', factSource: '本地餐饮估算' }),
   ],
   'Day 2': [
-    makeStop({ id: 'hotel-start', time: '09:30', name: '静安寺附近酒店', type: '住宿', stay: '15min', budget: 0, transport: '前往浦东约 35 分钟', note: '第二天从酒店直接出发，不再回头取行李。', lng: 121.445, lat: 31.223, durationMinutes: 15, travelFromPreviousMinutes: 0, zone: '静安', mode: 'walk', fixed: true, factState: 'estimated', factSource: '用户计划：住宿已锁定' }),
+    makeStop({ id: 'hotel-start', time: '09:30', name: '静安寺附近酒店', type: '住宿', stay: '15min', budget: 490, transport: '前往浦东约 35 分钟', note: '第二晚住宿参考价 ¥490，实际以预订平台为准。', lng: 121.445, lat: 31.223, durationMinutes: 15, travelFromPreviousMinutes: 0, zone: '静安', mode: 'walk', fixed: true, factState: 'estimated', factSource: '用户计划：住宿已锁定；住宿为本地参考价' }),
     makeStop({ id: 'shanghai-museum-east', time: '10:25', name: '上海博物馆东馆', type: '展览', stay: '2h', budget: 60, transport: '步行 10 分钟', note: '安排在上午的室内主活动，避开午后跨区和天气波动。', lng: 121.544, lat: 31.228, durationMinutes: 120, travelFromPreviousMinutes: 35, zone: '浦东', mode: 'metro', opening: { from: '10:00', to: '18:00', label: '周二至周日 10:00–18:00', closedWeekdays: [1] }, fixed: true, factState: 'estimated', factSource: '真实博物馆；开放状态需出行前复核' }),
     makeStop({ id: 'lujiazui-lunch', time: '12:35', name: '陆家嘴午餐', type: '午餐', stay: '1h 15min', budget: 100, transport: '前往滨江约 10 分钟', note: '用餐地点靠近下一段滨江路线，不为找餐厅额外绕路。', lng: 121.507, lat: 31.239, durationMinutes: 75, travelFromPreviousMinutes: 10, zone: '陆家嘴', mode: 'walk', factState: 'estimated', factSource: '本地餐饮估算' }),
     makeStop({ id: 'pudong-riverside', time: '14:00', name: '陆家嘴滨江', type: '散步', stay: '1h 10min', budget: 0, transport: '前往外滩约 30 分钟', note: '给看展和晚餐之间留出一段无任务的江边时间。', lng: 121.518, lat: 31.240, durationMinutes: 70, travelFromPreviousMinutes: 10, zone: '浦东', mode: 'walk', factState: 'estimated', factSource: '真实公共滨水空间' }),
@@ -327,8 +420,10 @@ export function validatePlan(plan: Pick<GeneratedPlan, 'days' | 'intent' | 'budg
   if (!budgetValid) issues.push(`预算超出上限 ¥${plan.budget - (plan.budgetLimit ?? 0)}。`)
   checks.push({ name: '预算上限', passed: budgetValid, detail: budgetValid ? `计划估算 ¥${plan.budget}，不超过 ¥${plan.budgetLimit ?? '待确认'}。` : `计划估算 ¥${plan.budget}，超过预算。` })
 
-  const inputComplete = plan.intent.missing.length === 0
-  if (!inputComplete) issues.push(`需要先确认：${plan.intent.missing.join('、')}。`)
+  const conflicts = plan.intent.conflicts ?? []
+  const inputComplete = plan.intent.missing.length === 0 && conflicts.length === 0
+  if (plan.intent.missing.length > 0) issues.push(`需要先确认：${plan.intent.missing.join('、')}。`)
+  if (conflicts.length > 0) issues.push(`存在待核对冲突：${conflicts.join('；')}。`)
   checks.push({ name: '出行信息', passed: inputComplete, detail: inputComplete ? '日期、到达、返程、住宿和预算信息完整。' : '仍有关键输入未确认。' })
 
   const passed = checks.every((check) => check.passed)
@@ -353,7 +448,7 @@ function createPlan(
     walking,
     pace: id === 'easy' ? '很轻松' : id === 'rich' ? '充实' : paceLabel(intent.pace),
     difference,
-    city: '上海',
+    city: intent.destination,
     dates: intent.dates,
     nights: intent.nights,
     partySize: intent.partySize,

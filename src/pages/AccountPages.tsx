@@ -3,14 +3,13 @@ import { useNavigate } from 'react-router-dom'
 import { Smartphone, Upload } from 'lucide-react'
 import { AppShell } from '../components/AppShell'
 import { ZouButton, ZouMotionBot, ZouNavigationBar } from '../components/ui'
-import { ZouLogo } from '../components/ZouLogo'
 import { useAppStore } from '../stores/appStore'
 import { localAuthAdapter } from '../services/auth/adapter'
 
 export const SplashPage = () => {
   const navigate = useNavigate()
-  useEffect(() => { const id = window.setTimeout(() => navigate('/login'), 1300); return () => window.clearTimeout(id) }, [navigate])
-  return <AppShell><section className="splash"><ZouLogo className="splash__logo" walking /><div className="splash__wordmark">走走</div><button className="sr-only" onClick={() => navigate('/login')}>跳过启动页</button></section></AppShell>
+  useEffect(() => { const id = window.setTimeout(() => navigate('/login'), 1000); return () => window.clearTimeout(id) }, [navigate])
+  return <AppShell><section className="splash"><img className="splash__logo" src="/assets/brand/zouzou-walker.png" alt="" width="250" height="305" /><div className="splash__wordmark">走走</div><button className="sr-only" onClick={() => navigate('/login')}>跳过启动页</button></section></AppShell>
 }
 
 export const LoginPage = () => {
@@ -38,8 +37,9 @@ export const LoginPage = () => {
 export const OnboardingPage = () => {
   const navigate = useNavigate()
   const setProfile = useAppStore((s) => s.setProfile)
+  const setTripMode = useAppStore((s) => s.setTripMode)
   const existingAvatar = useAppStore((s) => s.avatar)
   const [avatar, setAvatar] = useState(existingAvatar)
   const [nickname, setNickname] = useState('小鹏')
-  return <AppShell><div className="account-page"><ZouNavigationBar title="创建个人资料" /><div className="onboarding"><h1>让朋友认出你</h1><p>第一次只需要头像和昵称，其他偏好会在使用中慢慢学习。</p><label className="avatar-upload"><img src={avatar} alt="当前头像" /><span><Upload />更换头像</span><input type="file" accept="image/*" onChange={(event) => { const file = event.target.files?.[0]; if (file) setAvatar(URL.createObjectURL(file)) }} /></label><label>昵称<input value={nickname} onChange={(e) => setNickname(e.target.value)} /></label><ZouButton onClick={() => { setProfile(nickname || '小鹏', avatar); navigate('/home') }}>进入走走</ZouButton></div></div></AppShell>
+  return <AppShell><div className="account-page"><ZouNavigationBar title="创建个人资料" /><div className="onboarding"><h1>让朋友认出你</h1><p>第一次只需要头像和昵称，其他偏好会在使用中慢慢学习。</p><label className="avatar-upload"><img src={avatar} alt="当前头像" /><span><Upload />更换头像</span><input type="file" accept="image/*" onChange={(event) => { const file = event.target.files?.[0]; if (file) setAvatar(URL.createObjectURL(file)) }} /></label><label>昵称<input value={nickname} onChange={(e) => setNickname(e.target.value)} /></label><ZouButton onClick={() => { setProfile(nickname || '小鹏', avatar); setTripMode('none'); navigate('/home') }}>进入走走</ZouButton></div></div></AppShell>
 }

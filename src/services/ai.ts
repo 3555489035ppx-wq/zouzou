@@ -3,6 +3,7 @@ import {
   replacePlanPlace,
   understandTrip,
   type GeneratedPlan,
+  type MediaFact,
   type TripRequest,
   type TripUnderstanding,
 } from './trip/planner'
@@ -10,7 +11,115 @@ import {
 export type AIStage = 'listening' | 'reading' | 'thinking' | 'planning' | 'updating' | 'done' | 'success' | 'error'
 export type StageListener = (stage: AIStage, label: string) => void
 
-const wait = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms))
+const wait = (ms: number) => new Promise((resolve) => globalThis.setTimeout(resolve, ms))
+const remoteAIEnabled = import.meta.env.VITE_REMOTE_AI === '1'
+const apiBase = (import.meta.env.VITE_API_BASE_URL ?? '').trim().replace(/\/$/, '')
+// The local parser is the reliable path for this private prototype. Keep a
+// remote provider from holding the first-run flow open when a key, model, or
+// network is unavailable.
+const REMOTE_AI_TIMEOUT_MS = 1_500
+const REMOTE_VISION_TIMEOUT_MS = 1_500
+const MAX_VISION_MEDIA_COUNT = 6
+const MAX_VISION_IMAGE_BYTES = 3_500_000
+
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number, onTimeout?: () => void) {
+  return new Promise<T>((resolve, reject) => {
+    const timeout = globalThis.setTimeout(() => {
+      onTimeout?.()
+      reject(new Error(`远程服务超过 ${timeoutMs}ms 未响应`))
+    }, timeoutMs)
+    promise.then(
+      (value) => { globalThis.clearTimeout(timeout); resolve(value) },
+      (reason) => { globalThis.clearTimeout(timeout); reject(reason) },
+    )
+  })
+}
+
+type MediaAnalysisResponse = {
+  mediaFacts: MediaFact[]
+  provider: string
+  model?: string
+  warnings: string[]
+}
+
+function isMediaAnalysisResponse(value: unknown): value is MediaAnalysisResponse {
+  if (!value || typeof value !== 'object') return false
+  const candidate = value as Partial<MediaAnalysisResponse>
+  return Array.isArray(candidate.mediaFacts) && typeof candidate.provider === 'string' && Array.isArray(candidate.warnings)
+}
+
+function readBlobAsDataUrl(blob: Blob) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => typeof reader.result === 'string' ? resolve(reader.result) : reject(new Error('图片读取失败'))
+    reader.onerror = () => reject(reader.error ?? new Error('图片读取失败'))
+    reader.readAsDataURL(blob)
+  })
+}
+
+async function mediaSourceToDataUrl(source: string) {
+  if (source.startsWith('data:image/')) return source
+  const response = await fetch(source)
+  if (!response.ok) throw new Error(`图片读取失败（${response.status}）`)
+  const blob = await response.blob()
+  if (!blob.type.startsWith('image/')) return null
+  if (blob.size <= MAX_VISION_IMAGE_BYTES || typeof createImageBitmap !== 'function' || typeof document === 'undefined') {
+    return readBlobAsDataUrl(blob)
+  }
+
+  const bitmap = await createImageBitmap(blob)
+  try {
+    const maxSide = 2_000
+    const scale = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height))
+    const canvas = document.createElement('canvas')
+    canvas.width = Math.max(1, Math.round(bitmap.width * scale))
+    canvas.height = Math.max(1, Math.round(bitmap.height * scale))
+    const context = canvas.getContext('2d')
+    if (!context) return readBlobAsDataUrl(blob)
+    context.drawImage(bitmap, 0, 0, canvas.width, canvas.height)
+    return canvas.toDataURL('image/jpeg', 0.84)
+  } finally {
+    bitmap.close()
+  }
+}
+
+type PlanningAIAdapterOptions = {
+  remoteAIEnabled?: boolean
+  apiBase?: string
+}
+
+function remoteRequestKey(request: TripRequest) {
+  return JSON.stringify({
+    text: request.text,
+    media: request.media.map(({ id, name, category }) => ({ id, name, category })),
+    mediaFacts: request.mediaFacts ?? [],
+  })
+}
+
+function isTripUnderstanding(value: unknown): value is TripUnderstanding {
+  if (!value || typeof value !== 'object') return false
+  const candidate = value as Partial<TripUnderstanding>
+  return Boolean(candidate.intent && Array.isArray(candidate.evidence) && typeof candidate.summary === 'string')
+}
+
+function isUsableRemoteUnderstanding(value: TripUnderstanding) {
+  const intent = value.intent
+  if (!intent || typeof intent !== 'object') return false
+  // A provider response that contains only defaults is structurally valid but
+  // cannot drive the planner. Treat it as a failed provider response and use
+  // the deterministic local parser instead.
+  if (intent.destination === '未确定') return false
+  if (intent.durationDays < 1 || intent.partySize < 1) return false
+  return Boolean(
+    intent.dates
+      || intent.budget !== null
+      || intent.arrivalTime
+      || intent.departureTime
+      || intent.hotel
+      || intent.mustVisit.length > 0
+      || intent.preferences.length > 0,
+  )
+}
 
 export interface AIService {
   understandTrip(request: TripRequest, onStage: StageListener): Promise<TripUnderstanding>
@@ -66,4 +175,175 @@ class LocalPlanningAIAdapter implements AIService {
   }
 }
 
-export const aiService: AIService = new LocalPlanningAIAdapter()
+export class PlanningAIAdapter implements AIService {
+  private readonly local = new LocalPlanningAIAdapter()
+  private readonly remoteAIEnabled: boolean
+  private readonly apiBase: string
+  private readonly inFlight = new Map<string, Promise<TripUnderstanding>>()
+  private readonly understandingInFlight = new Map<string, Promise<TripUnderstanding>>()
+  private readonly mediaInFlight = new Map<string, Promise<MediaAnalysisResponse>>()
+
+  constructor(options: PlanningAIAdapterOptions = {}) {
+    this.remoteAIEnabled = options.remoteAIEnabled ?? remoteAIEnabled
+    this.apiBase = options.apiBase ?? apiBase
+  }
+
+  private fetchRemoteMediaFacts(request: TripRequest) {
+    const key = JSON.stringify({
+      text: request.text,
+      media: request.media.slice(0, MAX_VISION_MEDIA_COUNT).map(({ id, name, category }) => ({ id, name, category })),
+    })
+    const existing = this.mediaInFlight.get(key)
+    if (existing) return existing
+
+    const requestPromise = (async () => {
+      const media = (await Promise.all(request.media.slice(0, MAX_VISION_MEDIA_COUNT).map(async (item) => {
+        if (!item.src) return null
+        try {
+          const dataUrl = await mediaSourceToDataUrl(item.src)
+          return dataUrl ? { id: item.id, name: item.name, category: item.category, dataUrl } : null
+        } catch {
+          return null
+        }
+      }))).filter((item): item is { id: string; name: string; category: string | undefined; dataUrl: string } => Boolean(item))
+
+      if (media.length === 0) {
+        return { mediaFacts: [], provider: 'local', warnings: ['截图无法从当前页面读取，已继续使用文字理解。'] }
+      }
+
+      const controller = new AbortController()
+      try {
+        return await withTimeout((async () => {
+          const response = await fetch(`${this.apiBase}/api/trips/media/analyze`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            signal: controller.signal,
+            body: JSON.stringify({ text: request.text, media }),
+          })
+          const payload: unknown = await response.json().catch(() => null)
+          if (!response.ok) {
+            const message = payload && typeof payload === 'object' && 'message' in payload && typeof payload.message === 'string'
+              ? payload.message
+              : `截图理解服务返回 ${response.status}`
+            throw new Error(message)
+          }
+          if (!isMediaAnalysisResponse(payload)) throw new Error('截图理解服务没有返回结构化事实。')
+          return payload
+        })(), REMOTE_VISION_TIMEOUT_MS, () => controller.abort())
+      } finally {
+        controller.abort()
+      }
+    })()
+
+    this.mediaInFlight.set(key, requestPromise)
+    void requestPromise.then(
+      () => { if (this.mediaInFlight.get(key) === requestPromise) this.mediaInFlight.delete(key) },
+      () => { if (this.mediaInFlight.get(key) === requestPromise) this.mediaInFlight.delete(key) },
+    )
+    return requestPromise
+  }
+
+  private fetchRemoteUnderstanding(request: TripRequest) {
+    const key = remoteRequestKey(request)
+    const existing = this.inFlight.get(key)
+    if (existing) return existing
+
+    const requestPromise = (async () => {
+      const controller = new AbortController()
+      try {
+        return await withTimeout((async () => {
+          const response = await fetch(`${this.apiBase}/api/trips/understand`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            signal: controller.signal,
+            body: JSON.stringify({
+              text: request.text,
+              media: request.media.map(({ id, name, category }) => ({ id, name, category })),
+              ...(request.mediaFacts && request.mediaFacts.length > 0 ? { mediaFacts: request.mediaFacts } : {}),
+            }),
+          })
+          const payload: unknown = await response.json().catch(() => null)
+          if (!response.ok) {
+            const message = payload && typeof payload === 'object' && 'message' in payload && typeof payload.message === 'string'
+              ? payload.message
+              : `文本理解服务返回 ${response.status}`
+            throw new Error(message)
+          }
+          if (!isTripUnderstanding(payload) || !isUsableRemoteUnderstanding(payload)) {
+            throw new Error('文本理解服务没有返回可用于排程的旅行意图。')
+          }
+          return payload
+        })(), REMOTE_AI_TIMEOUT_MS, () => controller.abort())
+      } finally {
+        controller.abort()
+      }
+    })()
+
+    this.inFlight.set(key, requestPromise)
+    void requestPromise.then(
+      () => { if (this.inFlight.get(key) === requestPromise) this.inFlight.delete(key) },
+      () => { if (this.inFlight.get(key) === requestPromise) this.inFlight.delete(key) },
+    )
+    return requestPromise
+  }
+
+  private async runRemoteUnderstanding(request: TripRequest, onStage: StageListener) {
+    if (!request.text.trim()) throw new Error('请先写下你的旅行想法。')
+    onStage('listening', '正在连接文本理解服务')
+
+    let enrichedRequest = request
+    if (request.media.length > 0) {
+      onStage('reading', `正在识别 ${request.media.length} 张截图中的日期、时间和地点`)
+      try {
+        const mediaResult = await this.fetchRemoteMediaFacts(request)
+        if (mediaResult.mediaFacts.length > 0) {
+          enrichedRequest = { ...request, mediaFacts: mediaResult.mediaFacts }
+          const uncertainCount = mediaResult.mediaFacts.filter((fact) => fact.needsConfirmation).length
+          onStage('thinking', uncertainCount > 0 ? `已提取截图事实，还有 ${uncertainCount} 张需要核对` : '已提取截图事实，正在结合旅行描述')
+        } else {
+          onStage('thinking', '截图没有得到确定事实，正在结合旅行描述')
+        }
+      } catch {
+        onStage('thinking', '截图识别暂不可用，先根据文字继续理解')
+      }
+    }
+
+    try {
+      const payload = await this.fetchRemoteUnderstanding(enrichedRequest)
+      onStage('success', '已完成结构化理解')
+      return payload
+    } catch {
+      // Local fallback keeps the prototype usable before a server or API key is configured.
+      onStage('reading', '服务端暂不可用，切换本地解析')
+      return this.local.understandTrip(enrichedRequest, onStage)
+    }
+  }
+
+  async understandTrip(request: TripRequest, onStage: StageListener) {
+    if (!this.remoteAIEnabled) return this.local.understandTrip(request, onStage)
+    const key = remoteRequestKey(request)
+    const existing = this.understandingInFlight.get(key)
+    if (existing) return existing
+    const requestPromise = this.runRemoteUnderstanding(request, onStage)
+    this.understandingInFlight.set(key, requestPromise)
+    void requestPromise.then(
+      () => { if (this.understandingInFlight.get(key) === requestPromise) this.understandingInFlight.delete(key) },
+      () => { if (this.understandingInFlight.get(key) === requestPromise) this.understandingInFlight.delete(key) },
+    )
+    return requestPromise
+  }
+
+  generatePlans(understanding: TripUnderstanding, onStage: StageListener) {
+    return this.local.generatePlans(understanding, onStage)
+  }
+
+  replacePlace(plan: GeneratedPlan, placeId: string, replacementName: string, onStage: StageListener) {
+    return this.local.replacePlace(plan, placeId, replacementName, onStage)
+  }
+
+  personalizeTrip(postId: string, mode: 'keep' | 'optimize') {
+    return this.local.personalizeTrip(postId, mode)
+  }
+}
+
+export const aiService: AIService = new PlanningAIAdapter()

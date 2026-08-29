@@ -715,3 +715,111 @@ input[role="switch"]:checked::after { transform: translateX(20px); }
 /* A map is an async surface; keep the first paint intentional instead of a
    white/grey flash while tiles and overlays are prepared. */
 .map-loading { position: absolute; z-index: 5; left: 12px; top: 12px; padding: 6px 10px; border-radius: 14px; background: rgb(255 255 255 / .88); color: var(--color-neutral); font-size: 11px; box-shadow: 0 2px 10px rgb(0 0 0 / .08); }
+
+/* V7 final product pass --------------------------------------------------
+   The mock phone owns the status bar and home indicator. App surfaces stop
+   below that chrome and the primary dock is a native-looking full-width
+   layer, never a floating capsule that reveals content underneath. */
+.app-shell.is-embedded .zou-tabbar {
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  max-width: none;
+  transform: none !important;
+  margin: 0;
+  height: calc(72px + env(safe-area-inset-bottom, 0px));
+  padding: 5px 8px env(safe-area-inset-bottom, 0px);
+  border-radius: 0;
+  box-shadow: 0 -1px 0 rgb(0 0 0 / .08);
+}
+.zou-tabbar {
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: min(100%, 402px) !important;
+  max-width: 402px;
+  transform: none !important;
+  border-radius: 0;
+  box-shadow: 0 -1px 0 rgb(0 0 0 / .08);
+}
+.zou-tabbar::after { display: none; }
+.zou-tab { min-height: 60px; font-size: 12px; gap: 2px; }
+.zou-tab__icon { width: 23px; height: 23px; }
+.app-shell.has-tabbar .app-page { padding-bottom: calc(92px + env(safe-area-inset-bottom, 0px)); }
+.app-shell.is-embedded .app-page { padding-bottom: calc(92px + env(safe-area-inset-bottom, 0px)); }
+
+/* Keep home content close to the status bar while preserving a 6px optical
+   breathing room. Community remains on the more conservative 72px inset. */
+.app-shell.is-embedded:has(.home-page) .app-page { margin-top: 60px; height: calc(874px - 60px); min-height: calc(874px - 60px); }
+.app-shell.is-embedded:has(.profile-page) .app-page { margin-top: 54px; height: calc(874px - 54px); min-height: calc(874px - 54px); }
+.app-shell.is-embedded:has(.profile-page) .profile-cover__actions { top: 4px; }
+
+/* A full-bleed cover starts immediately below the status area. */
+.profile-cover { width: 100%; }
+
+/* Community cards use a real interactive like control. Red is reserved for
+   the active heart, matching familiar iOS/social feedback. */
+.community-card__like { min-width: 38px; min-height: 30px; border: 0; background: transparent; color: var(--color-muted); display: inline-flex; align-items: center; justify-content: flex-end; gap: 3px; padding: 0; font-size: 11px; }
+.community-card__like svg { width: 16px; height: 16px; transition: transform var(--dur-instant) var(--ease-out), color var(--dur-quick) var(--ease-out); }
+.community-card__like[aria-pressed="true"] { color: #ff3b30; }
+.community-card__like[aria-pressed="true"] svg { transform: scale(1.15); }
+.detail-actions > button[aria-label="喜欢"] { color: var(--color-neutral); }
+.detail-actions > button[aria-label="喜欢"][aria-pressed="true"] { color: #ff3b30; }
+.detail-action-count { font-size: 11px; font-variant-numeric: tabular-nums; }
+
+.detail-replay-button { width: 100%; min-height: 62px; border: 1px solid var(--color-rule-strong); border-radius: 16px; background: var(--color-paper); padding: 10px 14px; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; text-align: start; gap: 1px 10px; }
+.detail-replay-button span:first-child { font-family: var(--font-display); font-weight: 700; }
+.detail-replay-button small { color: var(--color-neutral); font-size: 12px; grid-column: 1; }
+.detail-replay-button > span:last-child { grid-column: 2; grid-row: 1 / span 2; font-size: 19px; }
+.detail-map-note { min-height: 48px; display: flex; align-items: center; border-radius: 14px; padding: 10px 12px; background: var(--color-paper-soft); color: var(--color-neutral); font-size: 12px; }
+
+/* Keep the route legible at a glance: the first, current and final stops are
+   labelled; intermediate labels remain available through their buttons. */
+.route-node:not(.route-node--edge):not(.is-current) b { display: none; }
+.route-node--edge b, .route-node.is-current b { display: block; }
+.route-node { transition: transform var(--dur-quick) var(--ease-out); }
+.route-node.is-current { transform: scale(1.05); }
+.route-node[data-index="1"] { translate: -11px -11px; }
+.route-node[data-index="2"] { translate: 11px -11px; }
+.route-node[data-index="3"] { translate: -11px 11px; }
+.route-node[data-index="4"] { translate: 11px 11px; }
+.route-node[data-index="5"] { translate: 0 16px; }
+.route-node[data-index="6"] { translate: 24px -20px; }
+.route-bot { background: transparent !important; border: 0 !important; box-shadow: none !important; filter: drop-shadow(0 2px 5px rgb(0 0 0 / .14)); }
+
+/* Fixed action bars follow the same width rule as the dock and never expose
+   a photo or page surface below their rounded corners. */
+.detail-actions { left: 0 !important; right: 0 !important; bottom: 0 !important; width: min(100%, 402px) !important; max-width: 402px; transform: none !important; border-radius: 0; box-shadow: 0 -1px 0 rgb(0 0 0 / .08); }
+.detail-actions::after { display: none; }
+.community-detail { padding-bottom: calc(86px + env(safe-area-inset-bottom, 0px)); }
+.detail-author { grid-template-columns: 36px 42px minmax(0, 1fr) auto 44px; }
+.detail-back { width: 36px; height: 44px; padding: 9px 4px; }
+.community-page, .profile-page { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
+.profile-grid, .folder-grid { padding-bottom: 12px; }
+
+/* Prevent desktop-only scrollbars on every horizontal chip strip. */
+.community-categories, .favorite-filters, .search-suggestions, .plans-carousel, .screenshot-row { scrollbar-width: none; }
+.community-categories::-webkit-scrollbar, .favorite-filters::-webkit-scrollbar, .search-suggestions::-webkit-scrollbar, .plans-carousel::-webkit-scrollbar, .screenshot-row::-webkit-scrollbar { display: none; }
+
+/* Provider-safe map surface. AMap remains the preferred provider when its
+   credentials are valid; this quiet vector fallback keeps the route legible
+   while a provider is blocked, rate-limited, or still streaming tiles. */
+.real-route-map {
+  background-color: #eef2f1;
+  background-image: url('/assets/map-light.svg');
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+.real-route-map .maplibregl-canvas,
+.real-route-map .amap-layer,
+.real-route-map .amap-overlay-pane,
+.real-route-map .amap-maps { background-color: transparent !important; }
+.mini-map { position: relative; }
+.mini-map > svg { display: none; }
+.mini-map > .real-route-map { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: inherit; }
+.trip-prompt__clear { position: absolute; left: 8px; bottom: 4px; min-height: 30px; border: 0; border-radius: 15px; background: var(--color-paper-soft); color: var(--color-neutral); padding-inline: 10px; font-size: 12px; }
+.upload-error { color: #c9342e; font-size: 12px; margin-top: -4px; }
+.real-route-map .amap-logo, .real-route-map .amap-copyright { opacity: .58; }
+.real-route-map .amap-copyright { font-size: 9px !important; }

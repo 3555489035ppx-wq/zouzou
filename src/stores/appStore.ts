@@ -8,6 +8,8 @@ type AppState = {
   avatar: string
   cover: string
   city: string
+  /** 城市选择是用户偏好；已保存行程则固化自己的目的地。 */
+  tripCity: string | null
   communityCity: string
   communityMapVisible: boolean
   reducedMotion: boolean
@@ -19,6 +21,7 @@ type AppState = {
   setProfile: (nickname: string, avatar: string) => void
   setCover: (cover: string) => void
   setCity: (city: string) => void
+  setTripCity: (city: string | null) => void
   setCommunityCity: (city: string) => void
   setCommunityMapVisible: (value: boolean) => void
   setReducedMotion: (value: boolean) => void
@@ -37,9 +40,12 @@ export const useAppStore = create<AppState>()(persist((set) => ({
   avatar: '/assets/date.jpg',
   cover: '/assets/shanghai-skyline.jpg',
   city: '上海',
+  tripCity: null,
   communityCity: '上海',
   communityMapVisible: true,
   reducedMotion: false,
+  // Keep deep-linked preview routes useful; the first-user onboarding path
+  // explicitly switches this to `none` before entering Home.
   tripMode: 'active',
   likedPosts: [],
   savedPosts: [],
@@ -49,7 +55,11 @@ export const useAppStore = create<AppState>()(persist((set) => ({
   setCover: (cover) => set({ cover }),
   // City is a product-wide preference. Home, community, trip copy and
   // recommendation data should never drift apart after a single selection.
-  setCity: (city) => set({ city, communityCity: city }),
+  // City is a single product context. When a saved trip already exists, a
+  // deliberate city switch also retargets that demo route so Home, Community
+  // and Trips cannot drift into different destinations.
+  setCity: (city) => set((state) => ({ city, communityCity: city, tripCity: state.tripCity ? city : state.tripCity })),
+  setTripCity: (tripCity) => set({ tripCity }),
   setCommunityCity: (communityCity) => set({ communityCity }),
   setCommunityMapVisible: (communityMapVisible) => set({ communityMapVisible }),
   setReducedMotion: (reducedMotion) => set({ reducedMotion }),
@@ -58,5 +68,5 @@ export const useAppStore = create<AppState>()(persist((set) => ({
   toggleSaved: (id) => set((state) => ({ savedPosts: toggleInList(state.savedPosts, id) })),
   toggleFollow: (author) => set((state) => ({ followedAuthors: toggleInList(state.followedAuthors, author) })),
   setVote: (vote) => set({ vote }),
-  resetDemo: () => set({ tripMode: 'active', vote: null, likedPosts: [], savedPosts: [], followedAuthors: [], reducedMotion: false, communityMapVisible: true }),
+  resetDemo: () => set({ tripMode: 'active', tripCity: null, vote: null, likedPosts: [], savedPosts: [], followedAuthors: [], reducedMotion: false, communityMapVisible: true }),
 }), { name: 'zouzou-demo-v2' }))

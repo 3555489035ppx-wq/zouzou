@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react'
 import { BatteryMedium, Signal, Wifi } from 'lucide-react'
-import { ZouLogo } from '../components/ZouLogo'
 import { ZouMotionBot } from '../components/ui'
 import type { BotState } from '../character/engine/motionEngine'
 
 export const PresentationPage = () => {
   const [splashVisible, setSplashVisible] = useState(true)
   useEffect(() => {
-    const timer = window.setTimeout(() => setSplashVisible(false), 2000)
+    // The brand frame is deliberately brief: it establishes identity, then
+    // hands control to the first-user login flow within the 0.8–1.2s target.
+    const timer = window.setTimeout(() => setSplashVisible(false), 1100)
     return () => window.clearTimeout(timer)
   }, [])
   return (
@@ -15,9 +16,11 @@ export const PresentationPage = () => {
       <section className="iphone-shell" aria-label="iPhone 17 Pro 展示模式">
         <div className="iphone-screen">
           <div className="ios-status"><b>9:41</b><span className="dynamic-island" /><span className="ios-signals" aria-hidden="true"><Signal /><Wifi /><BatteryMedium /></span></div>
-          <iframe title="走走应用" src="/home?embedded=1" className={splashVisible ? 'is-splashing' : ''} />
+          {/* V7 的首次用户路径从品牌首屏进入登录，而不是把已有 Demo 状态直接
+              塞进首页。登录完成后 iframe 内的 Router 会继续走资料引导和首页。 */}
+          <iframe title="走走应用" src="/login?embedded=1" className={splashVisible ? 'is-splashing' : ''} />
           {splashVisible ? <div className="presentation-splash" role="status" aria-label="正在进入走走">
-            <ZouLogo className="presentation-splash__logo" walking />
+            <img className="presentation-splash__logo" src="/assets/brand/zouzou-walker.png" alt="" width="250" height="305" />
             <strong>走走</strong>
           </div> : null}
           <span className="home-indicator" />

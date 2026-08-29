@@ -143,7 +143,7 @@ export const ZouMotionBot = ({ state = 'idle', label, size = 'lg', gaze = null }
     <div
       ref={botRef}
       className={`motion-bot motion-bot--${size}`}
-      aria-label={label ?? `走走角色状态：${state}`}
+      aria-label={label ?? `Bloub / Grok Bot 状态：${state}`}
     >
       <BloubBotSvg state={state} reducedMotion={reducedMotion} gaze={pointerGaze ?? gaze} />
     </div>
@@ -162,24 +162,31 @@ export const ZouPlanCard = ({ plan, selected, onSelect, onOpen }: { plan: Plan; 
   </article>
 )
 
-export const ZouPlaceCard = ({ place, locked, onLock, onReplace, onDelete }: { place: Place; locked?: boolean; onLock: () => void; onReplace: () => void; onDelete: () => void }) => (
+export const ZouPlaceCard = ({ place, locked, onLock, onReplace, onDelete, onMore }: { place: Place; locked?: boolean; onLock: () => void; onReplace: () => void; onDelete: () => void; onMore?: () => void }) => (
   <article className="place-card">
     <div className="place-card__time">{place.time}</div>
     <div className="place-card__body"><div><h3>{place.name}</h3><p>{place.type} · 停留 {place.stay} · ¥{place.budget}</p></div><p className="place-card__note">{place.note}</p><div className="place-card__transport">下一段 · {place.transport}</div></div>
-    <div className="place-card__actions"><button aria-label={locked ? '解锁地点' : '锁定地点'} aria-pressed={locked} onClick={onLock}><Lock /></button><button onClick={onReplace}>替换</button><button aria-label="删除地点" onClick={onDelete}><Trash2 /></button><button aria-label="更多操作"><MoreHorizontal /></button></div>
+    <div className="place-card__actions">{locked ? <button aria-label="解锁地点" aria-pressed="true" onClick={onLock}><Lock /></button> : null}<button onClick={onReplace}>替换</button><button aria-label="更多操作" aria-haspopup="menu" onClick={onMore ?? onDelete}><MoreHorizontal /></button></div>
   </article>
 )
 
 const ratioMap = { portrait: '4 / 5', square: '1 / 1', landscape: '4 / 3', tall: '3 / 4' }
 export const ZouCommunityCard = ({ post, onOpen }: { post: CommunityPost; onOpen: () => void }) => (
-  <article className="community-card">
+  <CommunityCardWithLike post={post} onOpen={onOpen} />
+)
+
+const CommunityCardWithLike = ({ post, onOpen }: { post: CommunityPost; onOpen: () => void }) => {
+  const liked = useAppStore((state) => state.likedPosts.includes(post.id))
+  const toggleLiked = useAppStore((state) => state.toggleLiked)
+  const likes = post.likes + (liked ? 1 : 0)
+  return <article className="community-card">
     <button className="community-card__open" onClick={onOpen} aria-label={`打开${post.title}`}>
-      <div className="community-card__image" style={{ aspectRatio: ratioMap[post.ratio] }}><img src={post.image} alt="" loading="lazy" width={420} height={560} /><span className="community-card__city"><MapPin />{post.city}</span>{post.completed ? <span className="community-card__done"><Check />已完成</span> : null}</div>
+      <div className="community-card__image" style={{ aspectRatio: ratioMap[post.ratio] }}><img src={post.image} alt="" loading="lazy" width={420} height={560} />{post.completed ? <span className="community-card__done"><Check />已完成</span> : null}</div>
       <h3>{post.title}</h3>
     </button>
-    <div className="community-card__meta"><ZouAvatar src={post.avatar} name={post.author} size="sm" /><span>{post.author}</span><Heart /><span>{post.likes}</span></div>
+    <div className="community-card__meta"><ZouAvatar src={post.avatar} name={post.author} size="sm" /><span>{post.author}</span><button className="community-card__like" aria-label={`喜欢${post.title}`} aria-pressed={liked} onClick={() => toggleLiked(post.id)}><Heart fill={liked ? 'currentColor' : 'none'} /><span>{likes}</span></button></div>
   </article>
-)
+}
 
 export const ZouPhotoCarousel = ({ images, title }: { images: string[]; title: string }) => {
   const [index, setIndex] = useState(0)
@@ -208,12 +215,13 @@ export const CityPicker = ({ open, onClose }: { open: boolean; onClose: () => vo
   return <ZouBottomSheet open={open} onClose={onClose} title="选择城市"><ZouSearchBar value={query} onChange={setQuery} placeholder="搜索城市" /><button className="sheet-row"><MapPin />当前位置<span>未开启定位</span></button><h3>热门城市</h3><div className="city-grid">{cities.map((item) => <button key={item} aria-pressed={city === item} onClick={() => { setCity(item); onClose() }}>{item}</button>)}</div></ZouBottomSheet>
 }
 
-export const DetailActionBar = ({ post, onUse, onComments }: { post: CommunityPost; onUse: () => void; onComments: () => void }) => {
+export const DetailActionBar = ({ post, onUse, onComments, onFavorite }: { post: CommunityPost; onUse: () => void; onComments: () => void; onFavorite?: (saved: boolean) => void }) => {
   const liked = useAppStore((s) => s.likedPosts.includes(post.id))
   const saved = useAppStore((s) => s.savedPosts.includes(post.id))
   const toggleLiked = useAppStore((s) => s.toggleLiked)
   const toggleSaved = useAppStore((s) => s.toggleSaved)
-  return <div className="detail-actions"><ZouButton onClick={onUse}>使用这个行程</ZouButton><button aria-label="喜欢" aria-pressed={liked} onClick={() => toggleLiked(post.id)}><Heart fill={liked ? 'currentColor' : 'none'} /></button><button aria-label="收藏" aria-pressed={saved} onClick={() => toggleSaved(post.id)}><Bookmark fill={saved ? 'currentColor' : 'none'} /></button><button aria-label="评论" onClick={onComments}><MessageCircle /></button></div>
+  const likes = post.likes + (liked ? 1 : 0)
+  return <div className="detail-actions"><ZouButton onClick={onUse}>使用这个行程</ZouButton><button aria-label="喜欢" aria-pressed={liked} onClick={() => toggleLiked(post.id)}><Heart fill={liked ? 'currentColor' : 'none'} /><span className="detail-action-count">{likes}</span></button><button aria-label="收藏" aria-pressed={saved} onClick={() => { toggleSaved(post.id); onFavorite?.(!saved) }}><Bookmark fill={saved ? 'currentColor' : 'none'} /></button><button aria-label="评论" onClick={onComments}><MessageCircle /></button></div>
 }
 
 export const FriendStatus = ({ accepted }: { accepted: boolean }) => <span className={accepted ? 'status accepted' : 'status pending'}>{accepted ? <><Check />已接受</> : '等待接受'}</span>
