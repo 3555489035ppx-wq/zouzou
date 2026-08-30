@@ -1,4 +1,5 @@
 import { getCityImage } from './city-images'
+import { cityProfiles, getCityProfile } from './cities'
 
 export type ContentSource = 'official' | 'knowledge' | 'user'
 export type ContentStatus = 'draft' | 'published' | 'hidden'
@@ -19,11 +20,49 @@ const routeSeeds = [
   ['深圳','南头到深圳湾','城中村、海边和日落都放进同一天。','周末',['南头古城','华侨城创意园','深圳湾公园','人才公园','海上世界']],
 ] as const
 
-export const routes: Route[] = routeSeeds.map(([city, title, summary, category, names], routeIndex) => {
+const seededRoutes: Route[] = routeSeeds.map(([city, title, summary, category, names], routeIndex) => {
   const [longitude, latitude] = cityCoordinates[city]
   const image = getCityImage(city).src
   return { id: `route-${routeIndex + 1}`, cityId: city, title, summary, category, tags: [category, '慢慢走'], peopleType: category === '约会' ? ['情侣', '朋友'] : ['朋友', '独自'], weatherType: ['晴天', '阴天'], timePeriod: ['下午', '周末'], duration: routeIndex === 0 ? '4.5h' : '4h', budgetMin: 120, budgetMax: 220, pois: names.map((name, index) => ({ id: `poi-${routeIndex + 1}-${index + 1}`, name, cityId: city, latitude: latitude + index * .003, longitude: longitude + index * .003, address: `${city}${name}`, category: index === 2 ? '咖啡 / 休息' : '地点', image, mapProviderId: undefined, stay: index === 2 ? '50min' : '35min', transportation: index ? '步行约 12 分钟' : '从这里开始', introduction: `在${name}停留一会，按自己的节奏感受${city}。` })), tips: ['出发前核对营业时间与预约要求。', '热门时段建议预留等候时间。'], recommendedReason: '地点顺序按相邻区域组织，走起来不需要折返。' }
 })
+
+const fallbackRoutes: Route[] = Object.keys(cityProfiles).filter((city) => !routeSeeds.some(([seedCity]) => seedCity === city)).map((city, index) => {
+  const profile = getCityProfile(city)
+  const [longitude, latitude] = profile.mapCenter
+  const names = profile.demoLabels.slice(0, 5)
+  const image = getCityImage(city).src
+  return {
+    id: `route-city-${index + 1}`,
+    cityId: city,
+    title: `${city}慢慢走`,
+    summary: `从${names[0]}走到${names.at(-1)}，把当地风景、休息和一顿好饭放进同一天。`,
+    category: '周末',
+    tags: ['周末', '慢慢走'],
+    peopleType: ['朋友', '独自'],
+    weatherType: ['晴天', '阴天'],
+    timePeriod: ['上午', '下午', '周末'],
+    duration: '4h',
+    budgetMin: 100,
+    budgetMax: 220,
+    pois: names.map((name, poiIndex) => ({
+      id: `poi-city-${index + 1}-${poiIndex + 1}`,
+      name,
+      cityId: city,
+      latitude: latitude + poiIndex * .003,
+      longitude: longitude + poiIndex * .003,
+      address: `${city}${name}`,
+      category: poiIndex === 2 ? '咖啡 / 休息' : '地点',
+      image,
+      stay: poiIndex === 2 ? '50min' : '35min',
+      transportation: poiIndex ? '步行约 12 分钟' : '从这里开始',
+      introduction: `在${name}停留一会，按自己的节奏感受${city}。`,
+    })),
+    tips: ['出发前核对营业时间与预约要求。', '热门时段建议预留等候时间。'],
+    recommendedReason: '地点顺序按相邻区域组织，走起来不需要折返。',
+  }
+})
+
+export const routes: Route[] = [...seededRoutes, ...fallbackRoutes]
 
 const item = (route: Route, contentSource: ContentSource, suffix: string, score: number): DiscoverItem => ({ id: `post-${route.id}-${suffix}`, contentSource, authorId: contentSource === 'user' ? 'user-xiaopeng' : undefined, authorName: contentSource === 'user' ? '小鹏' : undefined, cityId: route.cityId, title: contentSource === 'knowledge' ? `从${route.pois[0].name}走到${route.pois.at(-1)?.name}` : route.title, subtitle: route.summary, cover: route.pois[0].image, category: route.category, tags: route.tags, routeId: route.id, duration: route.duration, budget: `¥${route.budgetMin}-${route.budgetMax}/人`, poiCount: route.pois.length, likeCount: 96 + score, saveCount: 38 + score, useCount: 12 + score, publishedAt: '2026-08-28', status: 'published', sourceName: contentSource === 'knowledge' ? `${route.cityId}城市攻略知识库` : undefined, sourceUrl: contentSource === 'knowledge' ? 'https://www.mfw.com/' : undefined, qualityScore: score, editorScore: score + 2, freshnessScore: 82, routeCompletenessScore: 94 })
 

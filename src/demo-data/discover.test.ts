@@ -11,4 +11,9 @@ describe('Discover knowledge feed', () => {
   it('mixes available content sources for a city', () => {
     expect(new Set(getDiscoverFeed('上海').map((item) => item.contentSource))).toEqual(new Set(['official', 'knowledge', 'user']))
   })
+
+  it('keeps the feed populated after switching to a city without a curated seed', () => {
+    expect(getDiscoverFeed('重庆').length).toBeGreaterThan(0)
+    expect(getDiscoverFeed('重庆')[0].cityId).toBe('重庆')
+  })
 })
