@@ -10,6 +10,7 @@ import type { BotState } from '../character/engine/motionEngine'
 import { BloubBotSvg } from './BloubBotSvg'
 import { useAppStore } from '../stores/appStore'
 import { track } from '../services/analytics'
+import { classifyServiceError, type AsyncErrorCode } from '../services/asyncState'
 
 setWorkerUrl(maplibreWorkerUrl)
 
@@ -108,6 +109,19 @@ const visualBotState = (state: BotState): BotState => state === 'arriving' || st
 
 const formatDistance = (meters: number) => meters >= 1000 ? `${(meters / 1000).toFixed(1)} km` : `${Math.round(meters)} m`
 const formatDuration = (seconds: number) => seconds >= 3600 ? `${Math.floor(seconds / 3600)}h ${Math.round(seconds % 3600 / 60)}min` : `${Math.max(1, Math.round(seconds / 60))}min`
+const routeErrorCopy: Record<AsyncErrorCode, string> = {
+  TIMEOUT: '路线服务响应超时，请稍后重试。',
+  UNAUTHORIZED: '路线服务未授权，请检查地图配置。',
+  RATE_LIMITED: '路线请求过于频繁，请稍后重试。',
+  OFFLINE: '当前处于离线状态，暂未绘制路线。',
+  CANCELLED: '路线请求已取消。',
+  INVALID_RESPONSE: '路线服务未返回可用道路几何。',
+  UNKNOWN: '路线服务暂时不可用，请稍后重试。',
+}
+
+function deferRootUnmount(root: ReturnType<typeof createRoot>) {
+  queueMicrotask(() => root.unmount())
+}
 
 function MapLibreRouteMap({ places, center = defaultCenter, progress = 0, compact = false, focus = null, botState = 'walking', onNodeSelect, onReady }: RouteMapProps) {
   const host = useRef<HTMLDivElement>(null)
@@ -120,6 +134,7 @@ function MapLibreRouteMap({ places, center = defaultCenter, progress = 0, compac
   const [mapReady, setMapReady] = useState(false)
   const [routeStatus, setRouteStatus] = useState<'loading' | 'ready' | 'partial' | 'unavailable'>('loading')
   const [routeSummary, setRouteSummary] = useState<WalkingRouteResult | null>(null)
+  const [routeErrorCode, setRouteErrorCode] = useState<AsyncErrorCode | null>(null)
   const [retryCount, setRetryCount] = useState(0)
   const reducedMotion = useAppStore((state) => state.reducedMotion)
   const placesKey = useMemo(() => `${center.join(',')}|${places.map((place) => `${place.id}:${place.lng}:${place.lat}`).join('|')}`, [center, places])
@@ -168,6 +183,7 @@ function MapLibreRouteMap({ places, center = defaultCenter, progress = 0, compac
       window.requestAnimationFrame(() => instance.resize())
       setMapReady(true)
       setRouteStatus('loading')
+      setRouteErrorCode(null)
       onReady?.()
 
       if (walkingGroups.length === 0) {
@@ -181,6 +197,8 @@ function MapLibreRouteMap({ places, center = defaultCenter, progress = 0, compac
           routePath.current = []
           routeSegments.current = []
           setRouteSummary(null)
+          const failed = settled.find((entry): entry is PromiseRejectedResult => entry.status === 'rejected')
+          setRouteErrorCode(failed ? classifyServiceError(failed.reason, controller.signal).code : null)
           setRouteStatus('unavailable')
           return
         }
@@ -224,6 +242,7 @@ function MapLibreRouteMap({ places, center = defaultCenter, progress = 0, compac
           routePath.current = []
           routeSegments.current = []
           setRouteSummary(null)
+          setRouteErrorCode(classifyServiceError(error, controller.signal).code)
           setRouteStatus('unavailable')
         }
       })
@@ -235,13 +254,15 @@ function MapLibreRouteMap({ places, center = defaultCenter, progress = 0, compac
       setMapReady(false)
       setRouteStatus('loading')
       setRouteSummary(null)
+      setRouteErrorCode(null)
       routePath.current = []
       routeSegments.current = []
       markers.current.forEach((marker) => marker.remove())
       markers.current = []
       bot.current?.remove()
-      botRoot.current?.unmount()
+      const root = botRoot.current
       botRoot.current = null
+      if (root) deferRootUnmount(root)
       instance.remove()
       map.current = null
     }
@@ -267,10 +288,10 @@ function MapLibreRouteMap({ places, center = defaultCenter, progress = 0, compac
   }, [placesKey, progress])
   const routeLabel = routeStatus === 'ready' ? '真实步行路线地图' : routeStatus === 'partial' ? '部分真实步行路线地图，非步行段以行程文案为准' : routeStatus === 'unavailable' ? '地图地点预览，未绘制假路线' : '地图地点预览，正在计算真实步行路线'
   const summaryText = routeSummary ? ` · OpenStreetMap / OSRM · ${formatDistance(routeSummary.distanceMeters)}${routeSummary.durationSeconds > 0 ? ` · ${formatDuration(routeSummary.durationSeconds)}` : ''}` : ''
-  const unavailableText = walkingGroups.length === 0 && places.some((place) => !hasVerifiedCoordinates(place))
-    ? '地点坐标尚未核验：未绘制假路线'
-    : '未绘制假路线：路线服务未返回'
-  return <div className="real-route-map" ref={host} role="region" aria-label={routeLabel} aria-busy={!mapReady || routeStatus === 'loading'}>{!mapReady ? <span className="map-loading" role="status">正在准备地图</span> : routeStatus === 'loading' ? <span className="map-loading" role="status">正在计算真实步行路线</span> : routeStatus === 'unavailable' ? <div className="map-route-status"><span role="status">{unavailableText}</span><button type="button" className="map-route-retry" onClick={() => { track('route_retried', { stops: places.length }); setRetryCount((value) => value + 1) }}>重试路线</button></div> : <span className="map-route-status map-route-status--success" role="status">{routeStatus === 'partial' ? '部分真实步行路线已加载' : '已加载真实步行路线'}{summaryText}{routeStatus === 'partial' ? ' · 非步行段以行程文案为准' : ''}</span>}</div>
+  const provenanceText = walkingGroups.length === 0 && places.some((place) => !hasVerifiedCoordinates(place)) ? '地点坐标尚未核验：未绘制假路线' : null
+  const unavailableText = provenanceText ?? (routeErrorCode ? routeErrorCopy[routeErrorCode] : '未绘制假路线：路线服务未返回')
+  const canRetryRoute = walkingGroups.length > 0 && routeErrorCode !== 'CANCELLED'
+  return <div className="real-route-map" ref={host} role="region" aria-label={routeLabel} aria-busy={!mapReady || routeStatus === 'loading'}>{!mapReady ? <span className="map-loading" role="status">正在准备地图</span> : routeStatus === 'loading' ? <span className="map-loading" role="status">正在计算真实步行路线</span> : routeStatus === 'unavailable' ? <div className="map-route-status"><span role="status">{unavailableText}</span>{canRetryRoute ? <button type="button" className="map-route-retry" onClick={() => { track('route_retried', { stops: places.length }); setRetryCount((value) => value + 1) }}>重试路线</button> : null}</div> : <span className="map-route-status map-route-status--success" role="status">{routeStatus === 'partial' ? '部分真实步行路线已加载' : '已加载真实步行路线'}{summaryText}{routeStatus === 'partial' ? ' · 非步行段以行程文案为准' : ''}</span>}</div>
 }
 
 function AmapRouteMap({ places, center = defaultCenter, progress = 0, compact = false, focus = null, botState = 'walking', onNodeSelect, onReady }: RouteMapProps) {
@@ -347,8 +368,9 @@ function AmapRouteMap({ places, center = defaultCenter, progress = 0, compact = 
       nodeElements.current = []
       nodeMarkers.current = []
       bot.current = null
-      botRoot.current?.unmount()
+      const root = botRoot.current
       botRoot.current = null
+      if (root) deferRootUnmount(root)
       map.current?.destroy()
       map.current = null
     }
