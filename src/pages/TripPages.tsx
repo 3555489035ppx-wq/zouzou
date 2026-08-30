@@ -8,6 +8,7 @@ import { getCityProfile, getDemoHotel, getDemoTripPlaces } from '../demo-data/ci
 import { useAppStore } from '../stores/appStore'
 import { TripPlaybackEngine, type TripPlaybackSnapshot } from '../services/trip/TripPlaybackEngine'
 import { readStoredPlans, type GeneratedPlan } from '../services/trip/planner'
+import { getRoute } from '../demo-data/discover'
 
 export const TripsPage = () => {
   const navigate = useNavigate()
@@ -16,19 +17,22 @@ export const TripsPage = () => {
   const city = useAppStore((state) => state.city)
   const tripCity = useAppStore((state) => state.tripCity)
   const setMode = useAppStore((state) => state.setTripMode)
+  const activeRouteId = useAppStore((state) => state.activeRouteId)
   const [day, setDay] = useState('Day 1')
   const [deviation, setDeviation] = useState(params.get('deviation') === '1')
   const routeCity = tripCity ?? city
   const cityProfile = useMemo(() => getCityProfile(routeCity), [routeCity])
   const hotel = useMemo(() => getDemoHotel(routeCity), [routeCity])
   const generatedPlan = useMemo<GeneratedPlan | null>(() => readStoredPlans()?.find((plan) => plan.id === 'match') ?? null, [])
+  const adoptedRoute = useMemo(() => activeRouteId ? getRoute(activeRouteId) : undefined, [activeRouteId])
   const places = useMemo(() => {
+    if (adoptedRoute) return adoptedRoute.pois.map((poi, index) => ({ id: poi.id, time: `${14 + index}:00`, name: poi.name, type: poi.category, stay: poi.stay, budget: Math.round(adoptedRoute.budgetMax / adoptedRoute.pois.length), transport: poi.transportation, note: poi.introduction, x: index, z: index, lng: poi.longitude, lat: poi.latitude }))
     if (generatedPlan && generatedPlan.city === routeCity) return generatedPlan.days[day] ?? generatedPlan.days['Day 1']
     const dayPlaces = getDemoTripPlaces(routeCity, day)
     return day === 'Day 1'
       ? [hotel, ...dayPlaces, { ...hotel, id: `${routeCity}-hotel-return`, time: '20:30', stay: '休息', note: '回到酒店结束今天。' }]
       : dayPlaces
-  }, [routeCity, day, hotel, generatedPlan])
+  }, [routeCity, day, hotel, generatedPlan, adoptedRoute])
   const playbackRef = useRef(new TripPlaybackEngine(places.length, 'live'))
   const [playback, setPlayback] = useState<TripPlaybackSnapshot>(() => playbackRef.current.snapshot)
   const [focus, setFocus] = useState<[number, number] | null>(null)
@@ -68,8 +72,8 @@ export const TripsPage = () => {
   }
 
   if (mode === 'none') return <AppShell showTabBar><EmptyState title="还没有行程" body="创建一次旅行后，完整路线会直接出现在这里。" action="去创建旅行" onAction={() => navigate('/travel/new')} /></AppShell>
-  if (mode === 'upcoming') return <AppShell showTabBar><div className="page-content upcoming-trip"><ZouMotionBot state="waiting" /><span className="trip-kicker">即将开始</span><h1>距离上海出发还有 2 天</h1><p>3 天 2 晚 · 4 位朋友</p><ZouButton onClick={() => setMode('active')}>开始这次走走</ZouButton></div></AppShell>
-  if (mode === 'completed') return <AppShell showTabBar><div className="completion-page"><ZouMotionBot state="completed" /><span className="trip-kicker">DAY 1 · 完成</span><h1>今天走完啦</h1><p>你们把计划真正走成了一段记忆。</p><dl><div><dt>总时间</dt><dd>8h 20min</dd></div><div><dt>地点</dt><dd>5</dd></div><div><dt>步行</dt><dd>6.8 km</dd></div></dl><ZouButton onClick={() => navigate('/trips/shanghai/replay')}>回放今天的路线</ZouButton><button className="text-button" onClick={() => { setMode('active'); setPlayback(playbackRef.current.reset()) }}>重新演示</button></div></AppShell>
+  if (mode === 'upcoming') return <AppShell showTabBar><div className="page-content upcoming-trip"><ZouMotionBot state="waiting" /><span className="trip-kicker">路线已加入</span><h1>{adoptedRoute?.title ?? '你的新行程'}</h1><p>{places.length} 个地点 · 预计 {adoptedRoute?.duration ?? '4h'}</p><ZouButton onClick={() => setMode('active')}>开始这次走走</ZouButton></div></AppShell>
+  if (mode === 'completed') return <AppShell showTabBar><div className="completion-page"><ZouMotionBot state="completed" /><span className="trip-kicker">DAY 1 · 完成</span><h1>今天走完啦</h1><p>你们把计划真正走成了一段记忆。</p><dl><div><dt>总时间</dt><dd>8h 20min</dd></div><div><dt>地点</dt><dd>{places.length}</dd></div><div><dt>步行</dt><dd>6.8 km</dd></div></dl><ZouButton onClick={() => navigate('/discover/publish')}>分享这次行程</ZouButton><button className="text-button" onClick={() => navigate('/trips/shanghai/replay')}>回放今天的路线</button></div></AppShell>
       return <AppShell showTabBar><div className="trip-page-v3"><header className="trip-live-header"><div><span>{routeCity} · {generatedPlan && generatedPlan.city === routeCity ? `${generatedPlan.nights + 1}天${generatedPlan.nights}晚` : '3天2晚'}</span><h1>{day} · 正在进行</h1></div><button className="icon-button" aria-label="分享行程"><Share2 /></button></header><ZouDaySelector day={day} onChange={(value) => { setDay(value); playbackRef.current.reset(); setFocus(null) }} /><section className="live-map"><RealRouteMap center={cityProfile.mapCenter} places={places} progress={effectiveProgress} focus={focus} botState={arrived ? 'arriving' : running ? (Math.floor(effectiveProgress * 9) % 3 === 1 ? 'listening' : Math.floor(effectiveProgress * 9) % 3 === 2 ? 'done' : 'walking') : 'paused'} onNodeSelect={(index) => setFocus([index, Math.min(places.length - 1, index + 1)])} /><button className="map-overview" aria-label="一览全程" onClick={() => setFocus([0, places.length - 1])}><Route />一览全程</button><div className={`map-context ${arrived ? 'is-arrived' : ''}`}><ZouMotionBot state={arrived ? 'arriving' : running ? (Math.floor(effectiveProgress * 9) % 3 === 1 ? 'listening' : Math.floor(effectiveProgress * 9) % 3 === 2 ? 'done' : 'walking') : 'paused'} size="sm" gaze={tripBotGaze} label="Bloub / Grok Bot" /><div><span>{arrived ? `${current.time} · 已到达` : '下一站 · ' + next.time}</span><strong>{arrived ? current.name : next.name}</strong><small>{arrived ? `${current.type} · ${current.stay} · 预计 ¥${current.budget}` : current.transport}</small></div></div></section><footer className="trip-controls"><div><span>今日进度</span><strong>{active + 1} / {places.length}</strong></div><button aria-label={running ? '暂停' : '继续'} onClick={togglePlayback}>{running ? <Pause /> : <Play />}{running ? '暂停' : '继续行程'}</button><button aria-label="定位" onClick={() => setDeviation(true)}><LocateFixed /></button></footer><section className="trip-itinerary" aria-labelledby="trip-itinerary-title"><header><h2 id="trip-itinerary-title">今日行程</h2><span>{day.replace('Day ', 'DAY ')}</span></header><ol>{places.slice(0, -1).map((place, index) => <li key={place.id} className={index === active ? 'is-current' : index < active ? 'is-done' : ''}><span className="trip-itinerary__index">{index + 1}</span><div><strong>{place.name}</strong><small>{place.time} · {place.type} · {place.stay}</small><p>{place.note}</p></div><b>¥{place.budget}</b></li>)}</ol></section></div><ZouBottomSheet open={deviation} onClose={() => setDeviation(false)} title="路线似乎偏离了"><div className="deviation-content"><ZouMotionBot state="alert" label="Bloub / Grok Bot" /><p>你离原路线约 260 米。要保持原计划，还是从当前位置局部调整？</p><ZouButton onClick={() => setDeviation(false)}>保持原路线</ZouButton><button className="secondary-action" onClick={() => setDeviation(false)}>从当前位置调整</button></div></ZouBottomSheet></AppShell>
 }
 

@@ -6,9 +6,9 @@ import type { BotState } from '../character/engine/motionEngine'
 export const PresentationPage = () => {
   const [splashVisible, setSplashVisible] = useState(true)
   useEffect(() => {
-    // The brand frame is deliberately brief: it establishes identity, then
-    // hands control to the first-user login flow within the 0.8–1.2s target.
-    const timer = window.setTimeout(() => setSplashVisible(false), 1100)
+    // Keep the brand frame visible for roughly two seconds before handing
+    // control to the first-user login flow.
+    const timer = window.setTimeout(() => setSplashVisible(false), 2000)
     return () => window.clearTimeout(timer)
   }, [])
   return (

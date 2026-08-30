@@ -8,7 +8,7 @@ import { localAuthAdapter } from '../services/auth/adapter'
 
 export const SplashPage = () => {
   const navigate = useNavigate()
-  useEffect(() => { const id = window.setTimeout(() => navigate('/login'), 1000); return () => window.clearTimeout(id) }, [navigate])
+  useEffect(() => { const id = window.setTimeout(() => navigate('/login'), 2000); return () => window.clearTimeout(id) }, [navigate])
   return <AppShell><section className="splash"><img className="splash__logo" src="/assets/brand/zouzou-walker.png" alt="" width="250" height="305" /><div className="splash__wordmark">走走</div><button className="sr-only" onClick={() => navigate('/login')}>跳过启动页</button></section></AppShell>
 }
 

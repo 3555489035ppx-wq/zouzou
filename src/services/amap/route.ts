@@ -55,10 +55,11 @@ const getRoutePoints = (result: unknown): AMapPoint[] => {
 }
 
 export async function getAmapWalkingRoute(AMap: AMapNamespace, stops: AMapPoint[]): Promise<AMapPoint[]> {
-  if (!AMap.Walking) throw new Error('高德步行路线服务未加载')
+  const Walking = AMap.Walking
+  if (!Walking) throw new Error('高德步行路线服务未加载')
   if (stops.length < 2) return stops
   const legs = await Promise.all(stops.slice(1).map((destination, index) => new Promise<AMapPoint[]>((resolve, reject) => {
-    const walking = new AMap.Walking()
+    const walking = new Walking()
     walking.search(stops[index], destination, (status, result) => {
       const points = status === 'complete' ? getRoutePoints(result) : []
       if (points.length < 2) reject(new Error('高德未返回可用步行路线'))

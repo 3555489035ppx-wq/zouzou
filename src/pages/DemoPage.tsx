@@ -9,8 +9,7 @@ const routes = [
   ['AI Loading', '/travel/understanding'], ['AI Error', '/travel/understanding?error=1'], ['三方案', '/travel/plans'], ['方案详情', '/travel/plan/match'],
   ['朋友意见', '/travel/friends'], ['Vote Open', '/travel/vote'], ['Vote Complete', '/travel/vote?complete=1'], ['行程', '/trips'],
   ['行程到站', '/trips?arrival=1'], ['行程偏离', '/trips?deviation=1'], ['行程回放', '/trips/shanghai/replay'],
-  ['社区发现', '/community'], ['社区搜索', '/community/search'], ['Community Replay', '/community/post-1/replay'],
-  ['发布', '/community/publish'], ['我的', '/profile'], ['我的收藏', '/profile/favorites'], ['通知', '/notifications'], ['设置', '/settings'],
+  ['发现', '/discover'], ['发布', '/discover/publish'], ['我的', '/profile'], ['我的收藏', '/profile/favorites'], ['通知', '/notifications'], ['设置', '/settings'],
 ]
 
 export const DemoPage = () => {

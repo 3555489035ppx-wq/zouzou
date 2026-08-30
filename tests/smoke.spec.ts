@@ -131,7 +131,7 @@ test('iPhone 展示壳在切换 Tab 后仍保留安全区', async ({ page }) => 
   await page.setViewportSize({ width: 402, height: 874 })
   await page.goto('/')
   const app = page.frameLocator('iframe[title="走走应用"]')
-  await page.waitForTimeout(1_200)
+  await page.waitForTimeout(2_100)
   await app.getByRole('button', { name: '通过 Apple 登录' }).click()
   await app.getByRole('button', { name: '进入走走' }).click()
   await app.getByRole('button', { name: '社区', exact: true }).click()

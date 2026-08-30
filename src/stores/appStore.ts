@@ -14,6 +14,8 @@ type AppState = {
   communityMapVisible: boolean
   reducedMotion: boolean
   tripMode: TripMode
+  activeRouteId: string | null
+  publishedRouteIds: string[]
   likedPosts: string[]
   savedPosts: string[]
   followedAuthors: string[]
@@ -26,6 +28,8 @@ type AppState = {
   setCommunityMapVisible: (value: boolean) => void
   setReducedMotion: (value: boolean) => void
   setTripMode: (mode: TripMode) => void
+  adoptRoute: (routeId: string, city: string) => void
+  publishRoute: (routeId: string) => void
   toggleLiked: (id: string) => void
   toggleSaved: (id: string) => void
   toggleFollow: (author: string) => void
@@ -47,6 +51,8 @@ export const useAppStore = create<AppState>()(persist((set) => ({
   // Keep deep-linked preview routes useful; the first-user onboarding path
   // explicitly switches this to `none` before entering Home.
   tripMode: 'active',
+  activeRouteId: null,
+  publishedRouteIds: [],
   likedPosts: [],
   savedPosts: [],
   followedAuthors: [],
@@ -64,9 +70,11 @@ export const useAppStore = create<AppState>()(persist((set) => ({
   setCommunityMapVisible: (communityMapVisible) => set({ communityMapVisible }),
   setReducedMotion: (reducedMotion) => set({ reducedMotion }),
   setTripMode: (tripMode) => set({ tripMode }),
+  adoptRoute: (routeId, city) => set({ activeRouteId: routeId, tripCity: city, city, communityCity: city, tripMode: 'upcoming' }),
+  publishRoute: (routeId) => set((state) => ({ publishedRouteIds: state.publishedRouteIds.includes(routeId) ? state.publishedRouteIds : [...state.publishedRouteIds, routeId] })),
   toggleLiked: (id) => set((state) => ({ likedPosts: toggleInList(state.likedPosts, id) })),
   toggleSaved: (id) => set((state) => ({ savedPosts: toggleInList(state.savedPosts, id) })),
   toggleFollow: (author) => set((state) => ({ followedAuthors: toggleInList(state.followedAuthors, author) })),
   setVote: (vote) => set({ vote }),
-  resetDemo: () => set({ tripMode: 'active', tripCity: null, vote: null, likedPosts: [], savedPosts: [], followedAuthors: [], reducedMotion: false, communityMapVisible: true }),
+  resetDemo: () => set({ tripMode: 'active', tripCity: null, activeRouteId: null, publishedRouteIds: [], vote: null, likedPosts: [], savedPosts: [], followedAuthors: [], reducedMotion: false, communityMapVisible: true }),
 }), { name: 'zouzou-demo-v2' }))

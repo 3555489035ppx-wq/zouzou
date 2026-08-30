@@ -3,7 +3,7 @@ import { SplashPage, LoginPage, OnboardingPage } from './pages/AccountPages'
 import { HomePage } from './pages/HomePage'
 import { FriendsPage, PlanDetailPage, PlansPage, TravelNewPage, UnderstandingPage, VotePage } from './pages/TravelPages'
 import { TripReplayPage, TripsPage } from './pages/TripPages'
-import { CommunityDetailPage, CommunityPage, CommunityReplayPage, CommunitySearchPage, PublishPage } from './pages/CommunityPages'
+import { DiscoverDetailPage, DiscoverPage, DiscoverPublishPage, DiscoverReplayPage } from './pages/DiscoverPages'
 import { PeopleListPage, ProfileEditPage, ProfilePage } from './pages/ProfilePages'
 import { NotificationsPage, QuickPlannerPage, SettingsPage } from './pages/UtilityPages'
 import { DemoPage } from './pages/DemoPage'
@@ -29,11 +29,15 @@ export default function App() {
     <Route path="/trips" element={<TripsPage />} />
     <Route path="/trips/:id" element={<TripsPage />} />
     <Route path="/trips/:id/replay" element={<TripReplayPage />} />
-    <Route path="/community" element={<CommunityPage />} />
-    <Route path="/community/search" element={<CommunitySearchPage />} />
-    <Route path="/community/:id" element={<CommunityDetailPage />} />
-    <Route path="/community/:id/replay" element={<CommunityReplayPage />} />
-    <Route path="/community/publish" element={<PublishPage />} />
+    <Route path="/community" element={<DiscoverPage />} />
+    <Route path="/community/search" element={<DiscoverPage />} />
+    <Route path="/community/:id/replay" element={<DiscoverReplayPage />} />
+    <Route path="/community/:id" element={<DiscoverDetailPage />} />
+    <Route path="/community/publish" element={<DiscoverPublishPage />} />
+    <Route path="/discover" element={<DiscoverPage />} />
+    <Route path="/discover/publish" element={<DiscoverPublishPage />} />
+    <Route path="/discover/:id/replay" element={<DiscoverReplayPage />} />
+    <Route path="/discover/:id" element={<DiscoverDetailPage />} />
     <Route path="/profile" element={<ProfilePage />} />
     <Route path="/profile/trips" element={<ProfilePage initialTab="行程" />} />
     <Route path="/profile/posts" element={<ProfilePage initialTab="发布" />} />

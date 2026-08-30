@@ -10,7 +10,6 @@ import { useAppStore } from '../stores/appStore'
 import type { BotState } from '../character/engine/motionEngine'
 import type { Look } from '../private-assets/bloub/bot/engine'
 import type { Place, Plan } from '../demo-data/trips'
-import type { CommunityPost } from '../demo-data/community'
 import { cityNames } from '../demo-data/cities'
 import { BloubBotSvg } from './BloubBotSvg'
 
@@ -59,7 +58,9 @@ export const ZouTabBar = () => {
   return (
     <nav className="zou-tabbar" aria-label="主导航">
       {tabs.map((tab) => {
-        const selected = location.pathname === tab.path || (tab.path !== '/home' && location.pathname.startsWith(tab.path))
+        const selected = tab.path === '/community'
+          ? location.pathname.startsWith('/community') || location.pathname.startsWith('/discover')
+          : location.pathname === tab.path || (tab.path !== '/home' && location.pathname.startsWith(tab.path))
         const Icon = tab.icon
         return (
           <button key={tab.path} className="zou-tab" aria-current={selected ? 'page' : undefined} onClick={() => navigate(tab.path)}>
@@ -170,24 +171,6 @@ export const ZouPlaceCard = ({ place, locked, onLock, onReplace, onDelete, onMor
   </article>
 )
 
-const ratioMap = { portrait: '4 / 5', square: '1 / 1', landscape: '4 / 3', tall: '3 / 4' }
-export const ZouCommunityCard = ({ post, onOpen }: { post: CommunityPost; onOpen: () => void }) => (
-  <CommunityCardWithLike post={post} onOpen={onOpen} />
-)
-
-const CommunityCardWithLike = ({ post, onOpen }: { post: CommunityPost; onOpen: () => void }) => {
-  const liked = useAppStore((state) => state.likedPosts.includes(post.id))
-  const toggleLiked = useAppStore((state) => state.toggleLiked)
-  const likes = post.likes + (liked ? 1 : 0)
-  return <article className="community-card">
-    <button className="community-card__open" onClick={onOpen} aria-label={`打开${post.title}`}>
-      <div className="community-card__image" style={{ aspectRatio: ratioMap[post.ratio] }}><img src={post.image} alt={post.title} loading="lazy" width={420} height={560} />{post.completed ? <span className="community-card__done"><Check />已完成</span> : null}</div>
-      <h3>{post.title}</h3>
-    </button>
-    <div className="community-card__meta"><ZouAvatar src={post.avatar} name={post.author} size="sm" /><span>{post.author}</span><button className="community-card__like" aria-label={`喜欢${post.title}`} aria-pressed={liked} onClick={() => toggleLiked(post.id)}><Heart fill={liked ? 'currentColor' : 'none'} /><span>{likes}</span></button></div>
-  </article>
-}
-
 export const ZouPhotoCarousel = ({ images, title }: { images: string[]; title: string }) => {
   const [index, setIndex] = useState(0)
   return (
@@ -213,15 +196,6 @@ export const CityPicker = ({ open, onClose }: { open: boolean; onClose: () => vo
   const [query, setQuery] = useState('')
   const cities = cityNames.filter((item) => item.includes(query))
   return <ZouBottomSheet open={open} onClose={onClose} title="选择城市"><ZouSearchBar value={query} onChange={setQuery} placeholder="搜索城市" /><button className="sheet-row"><MapPin />当前位置<span>未开启定位</span></button><h3>热门城市</h3><div className="city-grid">{cities.map((item) => <button key={item} aria-pressed={city === item} onClick={() => { setCity(item); onClose() }}>{item}</button>)}</div></ZouBottomSheet>
-}
-
-export const DetailActionBar = ({ post, onUse, onComments, onFavorite }: { post: CommunityPost; onUse: () => void; onComments: () => void; onFavorite?: (saved: boolean) => void }) => {
-  const liked = useAppStore((s) => s.likedPosts.includes(post.id))
-  const saved = useAppStore((s) => s.savedPosts.includes(post.id))
-  const toggleLiked = useAppStore((s) => s.toggleLiked)
-  const toggleSaved = useAppStore((s) => s.toggleSaved)
-  const likes = post.likes + (liked ? 1 : 0)
-  return <div className="detail-actions"><ZouButton onClick={onUse}>使用这个行程</ZouButton><button aria-label="喜欢" aria-pressed={liked} onClick={() => toggleLiked(post.id)}><Heart fill={liked ? 'currentColor' : 'none'} /><span className="detail-action-count">{likes}</span></button><button aria-label="收藏" aria-pressed={saved} onClick={() => { toggleSaved(post.id); onFavorite?.(!saved) }}><Bookmark fill={saved ? 'currentColor' : 'none'} /></button><button aria-label="评论" onClick={onComments}><MessageCircle /></button></div>
 }
 
 export const FriendStatus = ({ accepted }: { accepted: boolean }) => <span className={accepted ? 'status accepted' : 'status pending'}>{accepted ? <><Check />已接受</> : '等待接受'}</span>
