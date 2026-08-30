@@ -71,6 +71,7 @@ function recencyScore(value: string | null) {
 }
 
 function candidateScore(candidate: GuideCandidate, city: string, query: string) {
+  const normalizedQuery = normalizeText(query)
   const candidateText = normalizeText([
     candidate.title,
     candidate.summary,
@@ -85,8 +86,13 @@ function candidateScore(candidate: GuideCandidate, city: string, query: string) 
     if (!candidateText.includes(normalizeText(term))) return score
     return score + (candidate.title.includes(term) ? 8 : 3)
   }, 0)
+  const wantsFood = /本地美食|小吃|逛吃|吃|餐|早市|夜市/.test(normalizedQuery)
+  const wantsLocal = /本地人|土著|当地人|市井|烟火|早市|夜市|菜市场|洗浴|茶馆|采耳|骑行|赶海/.test(normalizedQuery)
+  const hintScore = (wantsFood && (candidate.foodHints?.length ?? 0) > 0 ? 4 : 0)
+    + (wantsLocal && (candidate.localExperienceHints?.length ?? 0) > 0 ? 4 : 0)
   return (candidate.city === city ? 30 : 0)
     + termScore
+    + hintScore
     + Math.min(8, Math.log10(parsedLikes(candidate.likes) + 1) * 2)
     + recencyScore(candidate.publishedAt)
 }

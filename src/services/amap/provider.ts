@@ -41,8 +41,10 @@ export function loadAmap(): Promise<AMapNamespace> {
     const script = document.createElement('script')
     script.src = `https://webapi.amap.com/maps?v=2.0&plugin=AMap.Walking&key=${encodeURIComponent(key)}`
     script.async = true
-    script.onload = () => window.AMap ? resolve(window.AMap as unknown as AMapNamespace) : reject(new Error('高德地图脚本未暴露 AMap'))
-    script.onerror = () => reject(new Error('高德地图脚本加载失败'))
+    const timeout = window.setTimeout(() => reject(new Error('高德地图脚本加载超时')), 8000)
+    const settle = (callback: () => void) => { window.clearTimeout(timeout); callback() }
+    script.onload = () => settle(() => window.AMap ? resolve(window.AMap as unknown as AMapNamespace) : reject(new Error('高德地图脚本未暴露 AMap')))
+    script.onerror = () => settle(() => reject(new Error('高德地图脚本加载失败')))
     document.head.appendChild(script)
   }).catch((error) => {
     pending = null

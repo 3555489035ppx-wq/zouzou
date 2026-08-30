@@ -5,7 +5,7 @@ import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import type { Place } from '../demo-data/trips'
 import { isAmapConfigured, loadAmap, type AMapMapLike, type AMapOverlay, type AMapPoint } from '../services/amap/provider'
-import { createAmapRoute, getAmapWalkingRoute, wgs84ToGcj02 } from '../services/amap/route'
+import { createAmapRoute, getAmapWalkingRoute, getPublicWalkingRoute, wgs84ToGcj02 } from '../services/amap/route'
 import type { BotState } from '../character/engine/motionEngine'
 import { BloubBotSvg } from './BloubBotSvg'
 import { useAppStore } from '../stores/appStore'
@@ -74,13 +74,17 @@ function MapLibreRouteMap({ places, center = defaultCenter, progress = 0, compac
   const host = useRef<HTMLDivElement>(null)
   const map = useRef<MapLibreMap | null>(null)
   const bot = useRef<Marker | null>(null)
+  const routePath = useRef<AMapPoint[]>([])
   const botRoot = useRef<ReturnType<typeof createRoot> | null>(null)
   const markers = useRef<Marker[]>([])
   const [mapReady, setMapReady] = useState(false)
+  const [routeStatus, setRouteStatus] = useState<'loading' | 'ready' | 'unavailable'>('loading')
   const reducedMotion = useAppStore((state) => state.reducedMotion)
   const placesKey = useMemo(() => `${center.join(',')}|${places.map((place) => `${place.id}:${place.lng}:${place.lat}`).join('|')}`, [center, places])
   useEffect(() => {
     if (!host.current || map.current) return
+    const controller = new AbortController()
+    let cancelled = false
     const instance = new Map({ container: host.current, style, center, zoom: 11.6, attributionControl: { compact: true }, interactive: !compact })
     map.current = instance
     const resizeObserver = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(() => instance.resize())
@@ -104,14 +108,52 @@ function MapLibreRouteMap({ places, center = defaultCenter, progress = 0, compac
       botElement.setAttribute('aria-hidden', 'true')
       botRoot.current = createRoot(botElement)
       botRoot.current.render(<BloubBotSvg state={visualBotState(botState)} reducedMotion={reducedMotion} />)
-      bot.current = new Marker({ element: botElement, anchor: 'center' }).setLngLat(interpolate(places, progress)).addTo(instance)
+      bot.current = new Marker({ element: botElement, anchor: 'center' }).setLngLat(places[0] ? [places[0].lng, places[0].lat] : defaultCenter).addTo(instance)
       window.requestAnimationFrame(() => instance.resize())
       setMapReady(true)
+      setRouteStatus('loading')
       onReady?.()
+
+      getPublicWalkingRoute(places.map((place) => [place.lng, place.lat]), controller.signal).then((path) => {
+        if (cancelled) return
+        routePath.current = path
+        instance.addSource('walking-route', {
+          type: 'geojson',
+          data: { type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: path } },
+        })
+        instance.addLayer({
+          id: 'walking-route-casing',
+          type: 'line',
+          source: 'walking-route',
+          layout: { 'line-cap': 'round', 'line-join': 'round' },
+          paint: { 'line-color': '#ffffff', 'line-width': compact ? 7 : 9, 'line-opacity': 0.88 },
+        })
+        instance.addLayer({
+          id: 'walking-route',
+          type: 'line',
+          source: 'walking-route',
+          layout: { 'line-cap': 'round', 'line-join': 'round' },
+          paint: { 'line-color': '#1f6fff', 'line-width': compact ? 3 : 4, 'line-opacity': 0.92 },
+        })
+        const routeBounds = new LngLatBounds()
+        path.forEach((point) => routeBounds.extend(point))
+        instance.fitBounds(routeBounds, { padding: compact ? 34 : 72, maxZoom: compact ? 13.8 : 12.8, duration: 0 })
+        bot.current?.setLngLat(interpolateRoute(path, progress))
+        setRouteStatus('ready')
+      }).catch((error: unknown) => {
+        if (!cancelled && !(error instanceof DOMException && error.name === 'AbortError')) {
+          routePath.current = []
+          setRouteStatus('unavailable')
+        }
+      })
     })
     return () => {
+      cancelled = true
+      controller.abort()
       resizeObserver?.disconnect()
       setMapReady(false)
+      setRouteStatus('loading')
+      routePath.current = []
       markers.current.forEach((marker) => marker.remove())
       markers.current = []
       bot.current?.remove()
@@ -133,14 +175,15 @@ function MapLibreRouteMap({ places, center = defaultCenter, progress = 0, compac
   }, [compact, focus, mapReady, places])
   useEffect(() => { map.current?.resize() }, [compact])
   useEffect(() => {
-    bot.current?.setLngLat(interpolate(places, progress))
+    bot.current?.setLngLat(routePath.current.length > 1 ? interpolateRoute(routePath.current, progress) : places[0] ? [places[0].lng, places[0].lat] : defaultCenter)
     const active = Math.floor(progress * (places.length - 1) + 0.001)
     markers.current.forEach((marker, index) => {
       marker.getElement().classList.toggle('is-done', index < active)
       marker.getElement().classList.toggle('is-current', index === active)
     })
   }, [placesKey, progress])
-  return <div className="real-route-map" ref={host} role="region" aria-label="地图地点预览，路线服务暂不可用" aria-busy={!mapReady}>{!mapReady ? <span className="map-loading" role="status">正在准备地图</span> : <span className="map-route-status">路线服务暂不可用</span>}</div>
+  const routeLabel = routeStatus === 'ready' ? '真实步行路线地图' : routeStatus === 'unavailable' ? '地图地点预览，未绘制假路线' : '地图地点预览，正在计算真实步行路线'
+  return <div className="real-route-map" ref={host} role="region" aria-label={routeLabel} aria-busy={!mapReady || routeStatus === 'loading'}>{!mapReady ? <span className="map-loading" role="status">正在准备地图</span> : routeStatus === 'loading' ? <span className="map-loading" role="status">正在计算真实步行路线</span> : routeStatus === 'unavailable' ? <span className="map-route-status" role="status">未绘制假路线：路线服务未返回</span> : <span className="map-route-status map-route-status--success" role="status">已加载真实步行路线</span>}</div>
 }
 
 function AmapRouteMap({ places, center = defaultCenter, progress = 0, compact = false, focus = null, botState = 'walking', onNodeSelect, onReady }: RouteMapProps) {
@@ -237,7 +280,7 @@ function AmapRouteMap({ places, center = defaultCenter, progress = 0, compact = 
       element.classList.toggle('is-current', index === active)
     })
   }, [placesKey, progress])
-  if (loadFailed) return <MapLibreRouteMap places={places} center={center} progress={progress} compact={compact} focus={focus} botState={botState} onNodeSelect={onNodeSelect} onReady={onReady} />
+  if (loadFailed || routeError) return <MapLibreRouteMap places={places} center={center} progress={progress} compact={compact} focus={focus} botState={botState} onNodeSelect={onNodeSelect} onReady={onReady} />
   return <div className="real-route-map real-route-map--amap" ref={host} role="region" aria-label="高德真实步行路线地图" aria-busy={!mapReady}>{!mapReady ? <span className="map-loading" role="status">正在计算真实步行路线</span> : routeError ? <span className="map-route-status">路线服务暂不可用</span> : null}</div>
 }
 
