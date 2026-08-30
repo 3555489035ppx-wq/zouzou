@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { AppShell } from '../components/AppShell'
 import { CityPicker, TripEntryIcon, ZouAvatar, ZouCard } from '../components/ui'
 import { getCityProfile, getDemoTripPlaces } from '../demo-data/cities'
-import { getCityImage } from '../demo-data/city-images'
+import { getCityImageGallery } from '../demo-data/city-images'
 import { useAppStore } from '../stores/appStore'
 import { weatherService, type Weather } from '../services/weather'
 
@@ -17,13 +17,13 @@ const entries = [
 
 function getLocalRecommendations(city: string) {
   const profile = getCityProfile(city)
-  const image = getCityImage(city)
+  const gallery = getCityImageGallery(city)
   const types = ['适合排在上午', '天气备选 / 室内外可切换', '留给慢走与休息']
   return profile.demoLabels.slice(0, 3).map((name, index) => ({
     name,
-    type: `${types[index]} · ${image.landmark}真实照片`,
-    image: image.src,
-    alt: image.alt,
+    type: `${types[index]} · ${gallery[index % gallery.length].landmark}真实照片`,
+    image: gallery[index % gallery.length].src,
+    alt: gallery[index % gallery.length].alt,
   }))
 }
 

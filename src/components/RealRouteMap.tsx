@@ -5,10 +5,11 @@ import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import type { Place } from '../demo-data/trips'
 import { isAmapConfigured, loadAmap, type AMapMapLike, type AMapOverlay, type AMapPoint } from '../services/amap/provider'
-import { createAmapRoute, getAmapWalkingRoute, getPublicWalkingRoute, wgs84ToGcj02 } from '../services/amap/route'
+import { createAmapRoute, getAmapWalkingRoute, getPublicWalkingRouteResult, wgs84ToGcj02, type WalkingRouteResult } from '../services/amap/route'
 import type { BotState } from '../character/engine/motionEngine'
 import { BloubBotSvg } from './BloubBotSvg'
 import { useAppStore } from '../stores/appStore'
+import { track } from '../services/analytics'
 
 setWorkerUrl(maplibreWorkerUrl)
 
@@ -27,7 +28,7 @@ const style: StyleSpecification = {
 const defaultCenter: AMapPoint = [121.47, 31.225]
 
 type RouteMapProps = {
-  places: Place[]
+  places: RoutePlace[]
   center?: AMapPoint
   progress?: number
   compact?: boolean
@@ -35,6 +36,41 @@ type RouteMapProps = {
   botState?: BotState
   onNodeSelect?: (index: number) => void
   onReady?: () => void
+}
+
+type RouteMode = 'walk' | 'metro' | 'taxi' | 'train'
+type RoutePlace = Place & { mode?: RouteMode }
+type WalkingGroup = { fromIndex: number; toIndex: number; places: RoutePlace[] }
+type WalkingSegment = WalkingGroup & { path: AMapPoint[]; result: WalkingRouteResult }
+
+const placeMode = (place: RoutePlace): RouteMode => {
+  if (place.mode) return place.mode
+  if (/地铁|公交|轮渡/.test(place.transport)) return 'metro'
+  if (/打车|出租|驾车/.test(place.transport)) return 'taxi'
+  if (/火车|高铁/.test(place.transport)) return 'train'
+  return 'walk'
+}
+
+const hasVerifiedCoordinates = (place: RoutePlace) => place.verified !== false && !/候选|待核验|占位/.test(place.coordinateSource ?? '')
+
+const buildWalkingGroups = (places: RoutePlace[]): WalkingGroup[] => {
+  const groups: WalkingGroup[] = []
+  let current: WalkingGroup | null = null
+  places.slice(1).forEach((place, legIndex) => {
+    const destinationIndex = legIndex + 1
+    if (placeMode(place) !== 'walk' || !hasVerifiedCoordinates(places[legIndex]) || !hasVerifiedCoordinates(place)) {
+      if (current) groups.push(current)
+      current = null
+      return
+    }
+    if (!current) current = { fromIndex: legIndex, toIndex: destinationIndex, places: [places[legIndex], place] }
+    else {
+      current.toIndex = destinationIndex
+      current.places.push(place)
+    }
+  })
+  if (current) groups.push(current)
+  return groups
 }
 
 const interpolate = (places: Place[], progress: number): AMapPoint => {
@@ -70,17 +106,37 @@ const interpolateRoute = (path: AMapPoint[], progress: number): AMapPoint => {
 // Orbit/thinking belongs to circular AI cards, never to a map marker in transit.
 const visualBotState = (state: BotState): BotState => state === 'arriving' || state === 'paused' ? state : 'transport'
 
+const formatDistance = (meters: number) => meters >= 1000 ? `${(meters / 1000).toFixed(1)} km` : `${Math.round(meters)} m`
+const formatDuration = (seconds: number) => seconds >= 3600 ? `${Math.floor(seconds / 3600)}h ${Math.round(seconds % 3600 / 60)}min` : `${Math.max(1, Math.round(seconds / 60))}min`
+
 function MapLibreRouteMap({ places, center = defaultCenter, progress = 0, compact = false, focus = null, botState = 'walking', onNodeSelect, onReady }: RouteMapProps) {
   const host = useRef<HTMLDivElement>(null)
   const map = useRef<MapLibreMap | null>(null)
   const bot = useRef<Marker | null>(null)
   const routePath = useRef<AMapPoint[]>([])
+  const routeSegments = useRef<WalkingSegment[]>([])
   const botRoot = useRef<ReturnType<typeof createRoot> | null>(null)
   const markers = useRef<Marker[]>([])
   const [mapReady, setMapReady] = useState(false)
-  const [routeStatus, setRouteStatus] = useState<'loading' | 'ready' | 'unavailable'>('loading')
+  const [routeStatus, setRouteStatus] = useState<'loading' | 'ready' | 'partial' | 'unavailable'>('loading')
+  const [routeSummary, setRouteSummary] = useState<WalkingRouteResult | null>(null)
+  const [retryCount, setRetryCount] = useState(0)
   const reducedMotion = useAppStore((state) => state.reducedMotion)
   const placesKey = useMemo(() => `${center.join(',')}|${places.map((place) => `${place.id}:${place.lng}:${place.lat}`).join('|')}`, [center, places])
+  const walkingGroups = useMemo(() => buildWalkingGroups(places), [places])
+  const positionForProgress = (value: number): AMapPoint => {
+    if (places.length === 0) return defaultCenter
+    if (routeSegments.current.length === 0) return [places[0].lng, places[0].lat]
+    const scaled = Math.max(0, Math.min(1, value)) * Math.max(1, places.length - 1)
+    const legIndex = Math.min(places.length - 2, Math.floor(scaled))
+    const segment = routeSegments.current.find((candidate) => legIndex >= candidate.fromIndex && legIndex < candidate.toIndex)
+    if (segment) {
+      const segmentProgress = (scaled - segment.fromIndex) / Math.max(1, segment.toIndex - segment.fromIndex)
+      return interpolateRoute(segment.path, segmentProgress)
+    }
+    const stop = places[Math.min(places.length - 1, Math.round(scaled))]
+    return stop ? [stop.lng, stop.lat] : defaultCenter
+  }
   useEffect(() => {
     if (!host.current || map.current) return
     const controller = new AbortController()
@@ -114,35 +170,60 @@ function MapLibreRouteMap({ places, center = defaultCenter, progress = 0, compac
       setRouteStatus('loading')
       onReady?.()
 
-      getPublicWalkingRoute(places.map((place) => [place.lng, place.lat]), controller.signal).then((path) => {
+      if (walkingGroups.length === 0) {
+        setRouteStatus('unavailable')
+        return
+      }
+      Promise.allSettled(walkingGroups.map((group) => getPublicWalkingRouteResult(group.places.map((place) => [place.lng, place.lat]), controller.signal))).then((settled) => {
         if (cancelled) return
-        routePath.current = path
-        instance.addSource('walking-route', {
-          type: 'geojson',
-          data: { type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: path } },
-        })
-        instance.addLayer({
-          id: 'walking-route-casing',
-          type: 'line',
-          source: 'walking-route',
-          layout: { 'line-cap': 'round', 'line-join': 'round' },
-          paint: { 'line-color': '#ffffff', 'line-width': compact ? 7 : 9, 'line-opacity': 0.88 },
-        })
-        instance.addLayer({
-          id: 'walking-route',
-          type: 'line',
-          source: 'walking-route',
-          layout: { 'line-cap': 'round', 'line-join': 'round' },
-          paint: { 'line-color': '#1f6fff', 'line-width': compact ? 3 : 4, 'line-opacity': 0.92 },
+        const successful = settled.flatMap((entry, index) => entry.status === 'fulfilled' ? [{ ...walkingGroups[index], path: entry.value.path, result: entry.value }] : [])
+        if (successful.length === 0) {
+          routePath.current = []
+          routeSegments.current = []
+          setRouteSummary(null)
+          setRouteStatus('unavailable')
+          return
+        }
+        routeSegments.current = successful
+        routePath.current = successful.flatMap((segment) => segment.path)
+        successful.forEach((segment, index) => {
+          const sourceId = `walking-route-${index}`
+          instance.addSource(sourceId, {
+            type: 'geojson',
+            data: { type: 'Feature', properties: { mode: 'walk' }, geometry: { type: 'LineString', coordinates: segment.path } },
+          })
+          instance.addLayer({
+            id: `${sourceId}-casing`,
+            type: 'line',
+            source: sourceId,
+            layout: { 'line-cap': 'round', 'line-join': 'round' },
+            paint: { 'line-color': '#ffffff', 'line-width': compact ? 7 : 9, 'line-opacity': 0.88 },
+          })
+          instance.addLayer({
+            id: sourceId,
+            type: 'line',
+            source: sourceId,
+            layout: { 'line-cap': 'round', 'line-join': 'round' },
+            paint: { 'line-color': '#1f6fff', 'line-width': compact ? 3 : 4, 'line-opacity': 0.92 },
+          })
         })
         const routeBounds = new LngLatBounds()
-        path.forEach((point) => routeBounds.extend(point))
+        routePath.current.forEach((point) => routeBounds.extend(point))
         instance.fitBounds(routeBounds, { padding: compact ? 34 : 72, maxZoom: compact ? 13.8 : 12.8, duration: 0 })
-        bot.current?.setLngLat(interpolateRoute(path, progress))
-        setRouteStatus('ready')
+        const summary: WalkingRouteResult = {
+          path: routePath.current,
+          distanceMeters: successful.reduce((total, segment) => total + segment.result.distanceMeters, 0),
+          durationSeconds: successful.reduce((total, segment) => total + segment.result.durationSeconds, 0),
+          provider: 'osrm-public',
+        }
+        setRouteSummary(summary)
+        bot.current?.setLngLat(positionForProgress(progress))
+        setRouteStatus(successful.length === walkingGroups.length ? 'ready' : 'partial')
       }).catch((error: unknown) => {
         if (!cancelled && !(error instanceof DOMException && error.name === 'AbortError')) {
           routePath.current = []
+          routeSegments.current = []
+          setRouteSummary(null)
           setRouteStatus('unavailable')
         }
       })
@@ -153,7 +234,9 @@ function MapLibreRouteMap({ places, center = defaultCenter, progress = 0, compac
       resizeObserver?.disconnect()
       setMapReady(false)
       setRouteStatus('loading')
+      setRouteSummary(null)
       routePath.current = []
+      routeSegments.current = []
       markers.current.forEach((marker) => marker.remove())
       markers.current = []
       bot.current?.remove()
@@ -164,7 +247,7 @@ function MapLibreRouteMap({ places, center = defaultCenter, progress = 0, compac
     }
   // The fallback stays stable while route progress changes.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [placesKey])
+  }, [placesKey, retryCount])
   useEffect(() => { botRoot.current?.render(<BloubBotSvg state={visualBotState(botState)} reducedMotion={reducedMotion} />) }, [botState, reducedMotion])
   useEffect(() => {
     if (!mapReady || !map.current || !focus) return
@@ -175,15 +258,19 @@ function MapLibreRouteMap({ places, center = defaultCenter, progress = 0, compac
   }, [compact, focus, mapReady, places])
   useEffect(() => { map.current?.resize() }, [compact])
   useEffect(() => {
-    bot.current?.setLngLat(routePath.current.length > 1 ? interpolateRoute(routePath.current, progress) : places[0] ? [places[0].lng, places[0].lat] : defaultCenter)
+    bot.current?.setLngLat(positionForProgress(progress))
     const active = Math.floor(progress * (places.length - 1) + 0.001)
     markers.current.forEach((marker, index) => {
       marker.getElement().classList.toggle('is-done', index < active)
       marker.getElement().classList.toggle('is-current', index === active)
     })
   }, [placesKey, progress])
-  const routeLabel = routeStatus === 'ready' ? '真实步行路线地图' : routeStatus === 'unavailable' ? '地图地点预览，未绘制假路线' : '地图地点预览，正在计算真实步行路线'
-  return <div className="real-route-map" ref={host} role="region" aria-label={routeLabel} aria-busy={!mapReady || routeStatus === 'loading'}>{!mapReady ? <span className="map-loading" role="status">正在准备地图</span> : routeStatus === 'loading' ? <span className="map-loading" role="status">正在计算真实步行路线</span> : routeStatus === 'unavailable' ? <span className="map-route-status" role="status">未绘制假路线：路线服务未返回</span> : <span className="map-route-status map-route-status--success" role="status">已加载真实步行路线</span>}</div>
+  const routeLabel = routeStatus === 'ready' ? '真实步行路线地图' : routeStatus === 'partial' ? '部分真实步行路线地图，非步行段以行程文案为准' : routeStatus === 'unavailable' ? '地图地点预览，未绘制假路线' : '地图地点预览，正在计算真实步行路线'
+  const summaryText = routeSummary ? ` · OpenStreetMap / OSRM · ${formatDistance(routeSummary.distanceMeters)}${routeSummary.durationSeconds > 0 ? ` · ${formatDuration(routeSummary.durationSeconds)}` : ''}` : ''
+  const unavailableText = walkingGroups.length === 0 && places.some((place) => !hasVerifiedCoordinates(place))
+    ? '地点坐标尚未核验：未绘制假路线'
+    : '未绘制假路线：路线服务未返回'
+  return <div className="real-route-map" ref={host} role="region" aria-label={routeLabel} aria-busy={!mapReady || routeStatus === 'loading'}>{!mapReady ? <span className="map-loading" role="status">正在准备地图</span> : routeStatus === 'loading' ? <span className="map-loading" role="status">正在计算真实步行路线</span> : routeStatus === 'unavailable' ? <div className="map-route-status"><span role="status">{unavailableText}</span><button type="button" className="map-route-retry" onClick={() => { track('route_retried', { stops: places.length }); setRetryCount((value) => value + 1) }}>重试路线</button></div> : <span className="map-route-status map-route-status--success" role="status">{routeStatus === 'partial' ? '部分真实步行路线已加载' : '已加载真实步行路线'}{summaryText}{routeStatus === 'partial' ? ' · 非步行段以行程文案为准' : ''}</span>}</div>
 }
 
 function AmapRouteMap({ places, center = defaultCenter, progress = 0, compact = false, focus = null, botState = 'walking', onNodeSelect, onReady }: RouteMapProps) {
@@ -202,6 +289,7 @@ function AmapRouteMap({ places, center = defaultCenter, progress = 0, compact = 
   useEffect(() => {
     if (!host.current) return
     let cancelled = false
+    const controller = new AbortController()
     let resizeObserver: ResizeObserver | null = null
     loadAmap().then(async (AMap) => {
       if (cancelled || !host.current) return
@@ -239,7 +327,7 @@ function AmapRouteMap({ places, center = defaultCenter, progress = 0, compact = 
       setMapReady(true)
       onReady?.()
       try {
-        const path = await getAmapWalkingRoute(AMap, amapPlaces)
+        const path = await getAmapWalkingRoute(AMap, amapPlaces, controller.signal)
         if (cancelled) return
         routePath.current = path
         const route = createAmapRoute(AMap, path, { strokeWeight: compact ? 3 : 4 })
@@ -252,6 +340,7 @@ function AmapRouteMap({ places, center = defaultCenter, progress = 0, compact = 
     }).catch(() => setLoadFailed(true))
     return () => {
       cancelled = true
+      controller.abort()
       setMapReady(false)
       resizeObserver?.disconnect()
       routePath.current = []

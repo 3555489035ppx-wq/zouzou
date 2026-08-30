@@ -5,6 +5,8 @@ import { AppShell } from '../components/AppShell'
 import { ZouBottomSheet, ZouButton, ZouNavigationBar, ZouPlanCard, ZouSegmentedControl } from '../components/ui'
 import { plans } from '../demo-data/trips'
 import { useAppStore } from '../stores/appStore'
+import { track } from '../services/analytics'
+import { requestCurrentLocation, type LocationStatus } from '../services/location'
 
 export const NotificationsPage = () => {
   const [tab, setTab] = useState('行程')
@@ -37,5 +39,34 @@ export const SettingsPage = () => {
   const setReducedMotion = useAppStore((s) => s.setReducedMotion)
   const communityMapVisible = useAppStore((s) => s.communityMapVisible)
   const setCommunityMapVisible = useAppStore((s) => s.setCommunityMapVisible)
-  return <AppShell><ZouNavigationBar title="设置" /><div className="page-content settings-list"><label className="settings-row"><span><strong>减少动态效果</strong><small>关闭大范围 Morph、Hero 位移与镜头推进</small></span><input aria-label="减少动态效果" type="checkbox" role="switch" checked={reducedMotion} onChange={(e) => setReducedMotion(e.target.checked)} /></label><label className="settings-row"><span><strong>社区回放显示地图</strong><small>只影响社区内容，自己的行程地图始终保留</small></span><input aria-label="社区回放显示地图" type="checkbox" role="switch" checked={communityMapVisible} onChange={(e) => setCommunityMapVisible(e.target.checked)} /></label>{['账号与安全', '隐私', '通知', '定位权限', '关于走走'].map((item) => <button key={item}>{item}<ChevronRight /></button>)}</div></AppShell>
+  const [info, setInfo] = useState<string | null>(null)
+  const [locationStatus, setLocationStatus] = useState<LocationStatus>('idle')
+  const settingCopy: Record<string, string> = {
+    '账号与安全': '本地预览使用演示账号。正式上线前需要接入服务端 session、退出登录、注销和数据删除。',
+    '隐私': '旅行文本、截图和精确路线只用于生成与展示；当前预览不上传埋点，生产环境需要提供留存期限、删除和导出入口。',
+    '通知': '通知设置会在正式账号服务接入后同步到设备，本地预览暂不发送推送。',
+    '关于走走': '走走是一个把城市路线整理成可执行行程的体验原型。路线和第三方价格仍需出行前核对。',
+  }
+  const openSetting = async (item: string) => {
+    if (item !== '定位权限') {
+      setInfo(settingCopy[item] ?? '')
+      return
+    }
+    setLocationStatus('requesting')
+    setInfo('正在请求定位权限…')
+    try {
+      await requestCurrentLocation()
+      setLocationStatus('granted')
+      setInfo('定位已授权。当前预览不会自动反查城市，你仍可以在城市选择器中手动确认。')
+      track('location_permission', { result: 'granted' })
+    } catch (error) {
+      const status = error && typeof error === 'object' && 'status' in error ? (error as { status?: LocationStatus }).status : 'error'
+      const next = status === 'denied' || status === 'unavailable' ? status : 'error'
+      setLocationStatus(next)
+      setInfo(next === 'denied' ? '定位权限已拒绝，你仍可正常使用并手动选择城市。' : '暂时无法获取当前位置，请检查系统设置后重试。')
+      track('location_permission', { result: next })
+    }
+  }
+  const locationLabel = locationStatus === 'granted' ? '已授权' : locationStatus === 'denied' ? '已拒绝' : locationStatus === 'requesting' ? '请求中' : ''
+  return <AppShell><ZouNavigationBar title="设置" /><div className="page-content settings-list"><label className="settings-row"><span><strong>减少动态效果</strong><small>关闭大范围 Morph、Hero 位移与镜头推进</small></span><input aria-label="减少动态效果" type="checkbox" role="switch" checked={reducedMotion} onChange={(e) => setReducedMotion(e.target.checked)} /></label><label className="settings-row"><span><strong>社区回放显示地图</strong><small>只影响社区内容，自己的行程地图始终保留</small></span><input aria-label="社区回放显示地图" type="checkbox" role="switch" checked={communityMapVisible} onChange={(e) => setCommunityMapVisible(e.target.checked)} /></label>{['账号与安全', '隐私', '通知', '定位权限', '关于走走'].map((item) => <button type="button" key={item} onClick={() => { void openSetting(item) }}>{item}{item === '定位权限' && locationLabel ? <small>{locationLabel}</small> : null}<ChevronRight /></button>)}</div><ZouBottomSheet open={info !== null} onClose={() => setInfo(null)} title="设置说明"><p>{info}</p></ZouBottomSheet></AppShell>
 }

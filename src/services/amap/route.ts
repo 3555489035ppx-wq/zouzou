@@ -1,4 +1,6 @@
 import type { AMapNamespace, AMapOverlay, AMapPoint } from './provider'
+import { ServiceError } from '../asyncState'
+import { track, trackPerformance } from '../analytics'
 
 export function createAmapRoute(AMap: AMapNamespace, path: AMapPoint[], options: Record<string, unknown> = {}): AMapOverlay {
   return new AMap.Polyline({ path, strokeColor: '#1f6fff', strokeWeight: 4, strokeOpacity: 0.92, lineJoin: 'round', lineCap: 'round', ...options })
@@ -54,45 +56,123 @@ const getRoutePoints = (result: unknown): AMapPoint[] => {
   return path.filter((point, index) => index === 0 || point[0] !== path[index - 1][0] || point[1] !== path[index - 1][1])
 }
 
-export async function getAmapWalkingRoute(AMap: AMapNamespace, stops: AMapPoint[]): Promise<AMapPoint[]> {
+const AMAP_ROUTE_TIMEOUT_MS = 8_000
+
+export async function getAmapWalkingRoute(AMap: AMapNamespace, stops: AMapPoint[], signal?: AbortSignal): Promise<AMapPoint[]> {
   const Walking = AMap.Walking
   if (!Walking) throw new Error('高德步行路线服务未加载')
   if (stops.length < 2) return stops
+  if (signal?.aborted) throw new ServiceError('路线请求已取消。', 'CANCELLED')
   const legs = await Promise.all(stops.slice(1).map((destination, index) => new Promise<AMapPoint[]>((resolve, reject) => {
-    const walking = new Walking()
-    walking.search(stops[index], destination, (status, result) => {
-      const points = status === 'complete' ? getRoutePoints(result) : []
-      if (points.length < 2) reject(new Error('高德未返回可用步行路线'))
-      else resolve(points)
-    })
+    let settled = false
+    const timer = globalThis.setTimeout(() => finish(new ServiceError('高德路线服务响应超时，请稍后重试。', 'TIMEOUT')), AMAP_ROUTE_TIMEOUT_MS)
+    const abort = () => finish(new ServiceError('路线请求已取消。', 'CANCELLED'))
+    const finish = (error?: Error, points?: AMapPoint[]) => {
+      if (settled) return
+      settled = true
+      globalThis.clearTimeout(timer)
+      signal?.removeEventListener('abort', abort)
+      error ? reject(error) : resolve(points ?? [])
+    }
+    signal?.addEventListener('abort', abort, { once: true })
+    try {
+      const walking = new Walking()
+      walking.search(stops[index], destination, (status, result) => {
+        const points = status === 'complete' ? getRoutePoints(result) : []
+        if (points.length < 2) finish(new ServiceError('高德未返回可用步行路线', 'INVALID_RESPONSE'))
+        else finish(undefined, points)
+      })
+    } catch (error) {
+      finish(new ServiceError('高德步行路线服务暂时不可用。', 'UNKNOWN', { cause: error }))
+    }
   })))
   return legs.reduce<AMapPoint[]>((route, leg) => route.concat(route.length ? leg.slice(1) : leg), [])
 }
 
 type PublicWalkingRouteResponse = {
   code?: string
-  routes?: Array<{ geometry?: { coordinates?: unknown[] } }>
+  routes?: Array<{ distance?: number; duration?: number; geometry?: { coordinates?: unknown[] } }>
+}
+
+export type WalkingRouteResult = {
+  path: AMapPoint[]
+  distanceMeters: number
+  durationSeconds: number
+  provider: 'osrm-public'
 }
 
 const publicWalkingRouteBase = (import.meta.env.VITE_WALKING_ROUTE_URL ?? 'https://routing.openstreetmap.de/routed-foot/route/v1/driving').replace(/\/+$/, '')
+const PUBLIC_ROUTE_TIMEOUT_MS = 8_000
+
+function pathDistanceMeters(path: AMapPoint[]) {
+  return path.slice(1).reduce((total, [lng, lat], index) => {
+    const [previousLng, previousLat] = path[index]
+    const earthRadius = 6_371_000
+    const dLat = (lat - previousLat) * Math.PI / 180
+    const dLng = (lng - previousLng) * Math.PI / 180
+    const a = Math.sin(dLat / 2) ** 2 + Math.cos(previousLat * Math.PI / 180) * Math.cos(lat * Math.PI / 180) * Math.sin(dLng / 2) ** 2
+    return total + 2 * earthRadius * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+  }, 0)
+}
 
 /**
  * A keyless walking fallback for local and preview environments. The service
  * returns an OSM road geometry; it is intentionally never replaced with a
  * straight line when it fails.
  */
-export async function getPublicWalkingRoute(stops: AMapPoint[], signal?: AbortSignal): Promise<AMapPoint[]> {
-  if (stops.length < 2) return stops
+export async function getPublicWalkingRouteResult(stops: AMapPoint[], signal?: AbortSignal): Promise<WalkingRouteResult> {
+  if (stops.length < 2) return { path: stops, distanceMeters: 0, durationSeconds: 0, provider: 'osrm-public' }
+  const startedAt = typeof performance === 'undefined' ? Date.now() : performance.now()
   const coordinates = stops.map(([lng, lat]) => `${lng},${lat}`).join(';')
   const params = new URLSearchParams({ overview: 'full', geometries: 'geojson', steps: 'false' })
-  const response = await fetch(`${publicWalkingRouteBase}/${coordinates}?${params.toString()}`, {
-    signal,
-    headers: { Accept: 'application/json' },
-  })
-  if (!response.ok) throw new Error(`公开步行路线服务 HTTP ${response.status}`)
-  const result = await response.json() as PublicWalkingRouteResponse
-  const path = result.routes?.[0]?.geometry?.coordinates
-    ?.filter((point): point is AMapPoint => Array.isArray(point) && typeof point[0] === 'number' && typeof point[1] === 'number') ?? []
-  if (result.code !== 'Ok' || path.length < 2) throw new Error('公开步行路线服务未返回可用道路几何')
-  return path
+  const controller = new AbortController()
+  const abortFromCaller = () => controller.abort()
+  if (signal?.aborted) throw new ServiceError('路线请求已取消。', 'CANCELLED')
+  signal?.addEventListener('abort', abortFromCaller, { once: true })
+  const timeout = globalThis.setTimeout(() => controller.abort(), PUBLIC_ROUTE_TIMEOUT_MS)
+  track('route_requested', { stops: stops.length, provider: 'osrm-public' })
+  try {
+    const response = await fetch(`${publicWalkingRouteBase}/${coordinates}?${params.toString()}`, {
+      signal: controller.signal,
+      headers: { Accept: 'application/json' },
+    })
+    if (!response.ok) {
+      const code = response.status === 401 || response.status === 403 ? 'UNAUTHORIZED' : response.status === 429 ? 'RATE_LIMITED' : 'UNKNOWN'
+      throw new ServiceError(`公开步行路线服务 HTTP ${response.status}`, code)
+    }
+    const result = await response.json() as PublicWalkingRouteResponse
+    const path = result.routes?.[0]?.geometry?.coordinates
+      ?.filter((point): point is AMapPoint => Array.isArray(point) && typeof point[0] === 'number' && typeof point[1] === 'number') ?? []
+    if (result.code !== 'Ok' || path.length < 2) throw new ServiceError('公开步行路线服务未返回可用道路几何', 'INVALID_RESPONSE')
+    const route = result.routes?.[0]
+    const value = {
+      path,
+      distanceMeters: typeof route?.distance === 'number' && route.distance >= 0 ? route.distance : pathDistanceMeters(path),
+      durationSeconds: typeof route?.duration === 'number' && route.duration >= 0 ? route.duration : 0,
+      provider: 'osrm-public' as const,
+    }
+    track('route_succeeded', { stops: stops.length, provider: value.provider, distanceMeters: Math.round(value.distanceMeters), durationSeconds: Math.round(value.durationSeconds) })
+    return value
+  } catch (error) {
+    if (signal?.aborted) {
+      track('route_failed', { code: 'CANCELLED' })
+      throw new ServiceError('路线请求已取消。', 'CANCELLED', { cause: error })
+    }
+    if (controller.signal.aborted) {
+      track('route_failed', { code: 'TIMEOUT' })
+      throw new ServiceError('路线服务响应超时，请稍后重试。', 'TIMEOUT', { cause: error })
+    }
+    const serviceError = error instanceof ServiceError ? error : new ServiceError('路线服务暂时不可用，请稍后重试。', 'UNKNOWN', { cause: error })
+    track('route_failed', { code: serviceError.code })
+    throw serviceError
+  } finally {
+    globalThis.clearTimeout(timeout)
+    signal?.removeEventListener('abort', abortFromCaller)
+    trackPerformance('walking_route', (typeof performance === 'undefined' ? Date.now() : performance.now()) - startedAt)
+  }
+}
+
+export async function getPublicWalkingRoute(stops: AMapPoint[], signal?: AbortSignal): Promise<AMapPoint[]> {
+  const result = await getPublicWalkingRouteResult(stops, signal)
+  return result.path
 }

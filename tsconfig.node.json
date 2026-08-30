@@ -17,7 +17,9 @@
     "scripts/**/*.ts",
     "src/services/trip/planner.ts",
     "src/services/trip/guides.ts",
+    "src/services/trip/dietary.ts",
     "src/services/trip/cityKnowledge.ts",
+    "src/services/storage.ts",
     "src/demo-data/trips.ts",
     "src/demo-data/cities.ts",
     "src/demo-data/city-images.ts"

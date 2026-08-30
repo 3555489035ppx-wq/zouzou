@@ -1,4 +1,4 @@
-import { getCityImage } from './city-images'
+import { getCityImageGallery } from './city-images'
 import { cityProfiles, getCityProfile } from './cities'
 
 export type ContentSource = 'official' | 'knowledge' | 'user'
@@ -31,15 +31,15 @@ const routeSeeds = [
 const seededRoutes: Route[] = routeSeeds.map(([city, title, summary, category, names], routeIndex) => {
   const [longitude, latitude] = cityCoordinates[city]
   const coordinates = verifiedRouteCoordinates[city]
-  const image = getCityImage(city).src
-  return { id: `route-${routeIndex + 1}`, cityId: city, title, summary, category, tags: [category, '慢慢走'], peopleType: category === '约会' ? ['情侣', '朋友'] : ['朋友', '独自'], weatherType: ['晴天', '阴天'], timePeriod: ['下午', '周末'], duration: routeIndex === 0 ? '4.5h' : '4h', budgetMin: 120, budgetMax: 220, pois: names.map((name, index) => { const [poiLongitude, poiLatitude] = coordinates?.[index] ?? [longitude + index * .003, latitude + index * .003]; return { id: `poi-${routeIndex + 1}-${index + 1}`, name, cityId: city, latitude: poiLatitude, longitude: poiLongitude, address: `${city}${name}`, category: index === 2 ? '咖啡 / 休息' : '地点', image, mapProviderId: undefined, coordinateSource: coordinates ? 'OpenStreetMap Nominatim · 2026-08-30' : undefined, stay: index === 2 ? '50min' : '35min', transportation: index ? '步行路线待服务核验' : '从这里开始', introduction: `在${name}停留一会，按自己的节奏感受${city}。` } }), tips: ['出发前核对营业时间与预约要求。', '热门时段建议预留等候时间。'], recommendedReason: coordinates ? '地点顺序使用已核验坐标，步行几何由路线服务返回。' : '地点顺序待核验，路线服务返回前不宣称可直接执行。' }
+  const gallery = getCityImageGallery(city)
+  return { id: `route-${routeIndex + 1}`, cityId: city, title, summary, category, tags: [category, '慢慢走'], peopleType: category === '约会' ? ['情侣', '朋友'] : ['朋友', '独自'], weatherType: ['晴天', '阴天'], timePeriod: ['下午', '周末'], duration: routeIndex === 0 ? '4.5h' : '4h', budgetMin: 120, budgetMax: 220, pois: names.map((name, index) => { const [poiLongitude, poiLatitude] = coordinates?.[index] ?? [longitude + index * .003, latitude + index * .003]; return { id: `poi-${routeIndex + 1}-${index + 1}`, name, cityId: city, latitude: poiLatitude, longitude: poiLongitude, address: `${city}${name}`, category: index === 2 ? '咖啡 / 休息' : '地点', image: gallery[index % gallery.length].src, mapProviderId: undefined, coordinateSource: coordinates ? 'OpenStreetMap Nominatim · 2026-08-30' : undefined, stay: index === 2 ? '50min' : '35min', transportation: index ? '步行路线待服务核验' : '从这里开始', introduction: `在${name}停留一会，按自己的节奏感受${city}。` } }), tips: ['出发前核对营业时间与预约要求。', '热门时段建议预留等候时间。'], recommendedReason: coordinates ? '地点顺序使用已核验坐标，步行几何由路线服务返回。' : '地点顺序待核验，路线服务返回前不宣称可直接执行。' }
 })
 
 const fallbackRoutes: Route[] = Object.keys(cityProfiles).filter((city) => !routeSeeds.some(([seedCity]) => seedCity === city)).map((city, index) => {
   const profile = getCityProfile(city)
   const [longitude, latitude] = profile.mapCenter
   const names = profile.demoLabels.slice(0, 5)
-  const image = getCityImage(city).src
+  const gallery = getCityImageGallery(city)
   return {
     id: `route-city-${index + 1}`,
     cityId: city,
@@ -61,7 +61,7 @@ const fallbackRoutes: Route[] = Object.keys(cityProfiles).filter((city) => !rout
       longitude: longitude + poiIndex * .003,
       address: `${city}${name}`,
       category: poiIndex === 2 ? '咖啡 / 休息' : '地点',
-      image,
+      image: gallery[poiIndex % gallery.length].src,
       stay: poiIndex === 2 ? '50min' : '35min',
       transportation: poiIndex ? '步行约 12 分钟' : '从这里开始',
       introduction: `在${name}停留一会，按自己的节奏感受${city}。`,
@@ -73,7 +73,10 @@ const fallbackRoutes: Route[] = Object.keys(cityProfiles).filter((city) => !rout
 
 export const routes: Route[] = [...seededRoutes, ...fallbackRoutes]
 
-const item = (route: Route, contentSource: ContentSource, suffix: string, score: number): DiscoverItem => ({ id: `post-${route.id}-${suffix}`, contentSource, authorId: contentSource === 'user' ? 'user-xiaopeng' : undefined, authorName: contentSource === 'user' ? '小鹏' : undefined, cityId: route.cityId, title: contentSource === 'knowledge' ? `从${route.pois[0].name}走到${route.pois.at(-1)?.name}` : route.title, subtitle: route.summary, cover: route.pois[0].image, category: route.category, tags: route.tags, routeId: route.id, duration: route.duration, budget: `¥${route.budgetMin}-${route.budgetMax}/人`, poiCount: route.pois.length, likeCount: 96 + score, saveCount: 38 + score, useCount: 12 + score, publishedAt: '2026-08-28', status: 'published', sourceName: contentSource === 'knowledge' ? `${route.cityId}城市攻略知识库` : undefined, sourceUrl: contentSource === 'knowledge' ? 'https://www.mfw.com/' : undefined, qualityScore: score, editorScore: score + 2, freshnessScore: 82, routeCompletenessScore: 94 })
+const item = (route: Route, contentSource: ContentSource, suffix: string, score: number): DiscoverItem => {
+  const coverIndex = contentSource === 'official' ? 0 : contentSource === 'knowledge' ? 1 : 2
+  return { id: `post-${route.id}-${suffix}`, contentSource, authorId: contentSource === 'user' ? 'user-xiaopeng' : undefined, authorName: contentSource === 'user' ? '小鹏' : undefined, cityId: route.cityId, title: contentSource === 'knowledge' ? `从${route.pois[0].name}走到${route.pois.at(-1)?.name}` : route.title, subtitle: route.summary, cover: route.pois[coverIndex % route.pois.length]?.image ?? route.pois[0].image, category: route.category, tags: route.tags, routeId: route.id, duration: route.duration, budget: `¥${route.budgetMin}-${route.budgetMax}/人`, poiCount: route.pois.length, likeCount: 96 + score, saveCount: 38 + score, useCount: 12 + score, publishedAt: '2026-08-28', status: 'published', sourceName: contentSource === 'knowledge' ? `${route.cityId}城市攻略知识库` : undefined, sourceUrl: contentSource === 'knowledge' ? 'https://www.mfw.com/' : undefined, qualityScore: score, editorScore: score + 2, freshnessScore: 82, routeCompletenessScore: 94 }
+}
 
 export const discoverItems: DiscoverItem[] = routes.flatMap((route, index) => {
   const primary = item(route, 'official', 'official', 90 - index)

@@ -8,6 +8,7 @@
     "server": "tsx server/index.ts",
     "guides:collect": "tsx scripts/collect-xhs-guides.ts",
     "images:sync": "tsx scripts/sync-city-images.ts",
+    "release:preflight": "tsx scripts/release-preflight.ts",
     "typecheck": "tsc -b --pretty false",
     "build": "tsc -b && vite build",
     "test": "vitest run",

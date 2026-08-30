@@ -1,4 +1,5 @@
 import { tripDays, type Place } from './trips'
+import { getCityKnowledge, type KnowledgeCategory } from '../services/trip/cityKnowledge'
 
 export type CityProfile = {
   mapCenter: [number, number]
@@ -263,12 +264,44 @@ export function getDemoTripPlaces(city: string, day: string): Place[] {
   const profile = getCityProfile(city)
   const sourcePlaces = tripDays[day] ?? tripDays['Day 1']
 
+  if (city !== '上海') {
+    const knowledgeItems = getCityKnowledge(city).items.filter((item) => item.coordinates.some((value) => value !== 0))
+    const used = new Set<string>()
+    const categoryFor = (type: string): KnowledgeCategory[] => /咖啡|早餐|午餐|晚餐|美食|小吃/.test(type)
+      ? ['restaurant', 'food']
+      : /展|博物馆|景点|园林|山|湖|公园/.test(type)
+        ? ['attraction', 'activity']
+        : ['activity', 'attraction']
+    const sourcedPlaces = sourcePlaces.map<Place | null>((place, index) => {
+      const categories = categoryFor(place.type)
+      const item = knowledgeItems.find((candidate) => !used.has(candidate.id) && categories.includes(candidate.category)) ?? knowledgeItems.find((candidate) => !used.has(candidate.id))
+      if (!item) return null
+      used.add(item.id)
+      return {
+        ...place,
+        id: `${city}-${day}-${place.id}`,
+        name: item.name,
+        type: item.category === 'restaurant' ? '晚餐候选' : item.category === 'food' ? '本地美食候选' : place.type,
+        note: `${item.summary} 来源：${item.source.label}。出行前仍需核对。`,
+        lng: item.coordinates[0],
+        lat: item.coordinates[1],
+        coordinateSource: `${item.source.label} · ${item.source.checkedAt}`,
+        verified: item.verified,
+        x: index,
+        z: index,
+      } satisfies Place
+    }).filter((place): place is Place => Boolean(place))
+    if (sourcedPlaces.length === sourcePlaces.length) return sourcedPlaces
+  }
+
   return sourcePlaces.map((place, index) => ({
     ...place,
     id: `${city}-${day}-${place.id}`,
     name: city === '上海' ? place.name : profile.demoLabels[index] ?? `${city} · 演示地点 ${index + 1}`,
     lng: profile.mapCenter[0] + (place.lng - sourceCenter[0]) * profile.routeScale,
     lat: profile.mapCenter[1] + (place.lat - sourceCenter[1]) * profile.routeScale,
+    coordinateSource: city === '上海' ? '行程种子坐标；路线由服务实时计算' : '城市候选骨架；坐标待 POI 核验',
+    verified: city === '上海',
   }))
 }
 
@@ -289,5 +322,7 @@ export function getDemoHotel(city: string): Place {
     z: 2.1,
     lng: profile.mapCenter[0],
     lat: profile.mapCenter[1],
+    coordinateSource: city === '上海' ? '行程种子坐标；路线由服务实时计算' : '城市候选酒店位置；坐标待 POI 核验',
+    verified: city === '上海',
   }
 }

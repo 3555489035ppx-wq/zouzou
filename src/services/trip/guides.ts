@@ -1,3 +1,5 @@
+import { extractDietaryProfile, foodCompatibilityIssues } from './dietary'
+
 export type GuidePlatform = 'xiaohongshu' | 'bilibili' | 'user-import' | 'licensed-search'
 
 export type GuideClaimType = 'place' | 'activity' | 'tip' | 'route' | 'food'
@@ -32,6 +34,8 @@ export type GuideCandidate = {
   foodHints?: string[]
   /** Local-life activities surfaced by community content. */
   localExperienceHints?: string[]
+  /** Coarse food-risk labels used before a community hint enters a plan. */
+  dietaryTags?: string[]
   claims: GuideClaim[]
   permission: 'user-provided' | 'licensed' | 'unknown'
 }
@@ -72,7 +76,19 @@ export function searchGuideCandidates(
   const wantsFood = /本地美食|小吃|逛吃|吃|餐|早市|夜市/.test(normalized)
   const wantsLocal = /本地人|土著|当地人|市井|烟火|早市|夜市|菜市场|洗浴|茶馆|采耳|骑行|赶海/.test(normalized)
   const cityGuides = knowledgeBase.guides.filter((guide) => guide.city === city)
-  const scored = cityGuides.map((guide) => {
+  const dietary = extractDietaryProfile(query)
+  const compatibleGuides = cityGuides.filter((guide) => {
+    const foodText = [
+      guide.title,
+      guide.summary,
+      ...(guide.foodHints ?? []),
+      ...(guide.dietaryTags ?? []),
+      ...guide.claims.filter((claim) => claim.type === 'food').map((claim) => claim.text),
+    ].join(' ')
+    const hasFoodSignal = (guide.foodHints?.length ?? 0) > 0 || guide.claims.some((claim) => claim.type === 'food') || /美食|小吃|吃|餐|火锅|海鲜/.test(foodText)
+    return !hasFoodSignal || foodCompatibilityIssues(foodText, dietary, guide.dietaryTags).length === 0
+  })
+  const scored = compatibleGuides.map((guide) => {
     const haystack = [
       guide.title,
       guide.summary,

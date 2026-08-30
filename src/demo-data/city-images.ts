@@ -217,7 +217,70 @@ export const cityImages: Record<string, CityImage> = {
   },
 }
 
+/**
+ * Place-level photos keep a route and its social cards from reusing one city
+ * cover for every stop. These are real Shanghai location photos downloaded
+ * from Wikimedia Commons; attribution is recorded in docs/THIRD_PARTY.md.
+ */
+const shanghaiLocationImages: CityImage[] = [
+  {
+    src: '/assets/locations/shanghai-wukang-mansion.jpg',
+    alt: '上海武康大楼街角实景',
+    landmark: '武康大楼',
+    sourceUrl: 'https://commons.wikimedia.org/wiki/File:Wukang_Mansion,_Shanghai,_May_2016_01.JPG',
+    credit: 'SSYoung',
+    license: 'CC BY-SA 4.0',
+    licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0',
+    downloadUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Wukang_Mansion%2C_Shanghai%2C_May_2016_01.JPG/1280px-Wukang_Mansion%2C_Shanghai%2C_May_2016_01.JPG',
+  },
+  {
+    src: '/assets/locations/shanghai-wukang-road.jpg',
+    alt: '上海武康路林荫街景',
+    landmark: '武康路',
+    sourceUrl: 'https://commons.wikimedia.org/wiki/File:Wukang_Road,_Shanghai,_May_2016.JPG',
+    credit: 'SSYoung',
+    license: 'CC BY-SA 4.0',
+    licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0',
+    downloadUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Wukang_Road%2C_Shanghai%2C_May_2016.JPG/1280px-Wukang_Road%2C_Shanghai%2C_May_2016.JPG',
+  },
+  {
+    src: '/assets/locations/shanghai-anfu-road.jpg',
+    alt: '上海安福路店铺实景',
+    landmark: '安福路',
+    sourceUrl: 'https://commons.wikimedia.org/wiki/File:A_brunch_spot_at_Anfu_Rd.jpg',
+    credit: 'RunningTurtle8964',
+    license: 'CC0',
+    licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/deed.en',
+    downloadUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/A_brunch_spot_at_Anfu_Rd.jpg/1280px-A_brunch_spot_at_Anfu_Rd.jpg',
+  },
+  {
+    src: '/assets/locations/shanghai-library.jpg',
+    alt: '上海图书馆东馆外立面实景',
+    landmark: '上海图书馆',
+    sourceUrl: 'https://commons.wikimedia.org/wiki/File:Shanghai_Library_East_Hall.jpg',
+    credit: 'NMaia',
+    license: 'CC BY-SA 4.0',
+    licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0',
+    downloadUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Shanghai_Library_East_Hall.jpg/1280px-Shanghai_Library_East_Hall.jpg',
+  },
+  {
+    src: '/assets/locations/shanghai-drama-center.jpg',
+    alt: '上海话剧艺术中心花园建筑实景',
+    landmark: '上海话剧艺术中心',
+    sourceUrl: 'https://commons.wikimedia.org/wiki/File:Shanghai_Dramatic_Arts_Center.JPG',
+    credit: 'Fayhoo',
+    license: 'CC BY-SA 3.0',
+    licenseUrl: 'https://creativecommons.org/licenses/by-sa/3.0',
+    downloadUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Shanghai_Dramatic_Arts_Center.JPG/1280px-Shanghai_Dramatic_Arts_Center.JPG',
+  },
+]
+
+const cityImageGalleries: Record<string, CityImage[]> = { 上海: shanghaiLocationImages }
+
 export function getCityImage(city: string): CityImage {
   return cityImages[city] ?? cityImages['上海']
 }
 
+export function getCityImageGallery(city: string): CityImage[] {
+  return cityImageGalleries[city] ?? [getCityImage(city)]
+}

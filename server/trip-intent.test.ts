@@ -59,6 +59,7 @@ describe('server text intent integration', () => {
       mustVisit: ['武康路', '外滩'],
       preferences: ['咖啡'],
       constraints: [],
+      dietary: { avoidSpicy: true, avoidSeafood: true, vegetarian: false, halal: false, allergies: ['花生'], dislikes: ['香菜'] },
       arrivalTime: '10:30',
       arrivalLocation: '虹桥火车站',
       departureTime: null,
@@ -69,6 +70,7 @@ describe('server text intent integration', () => {
 
     expect(intent.durationDays).toBe(3)
     expect(intent.nights).toBe(2)
+    expect(intent.dietary).toEqual({ avoidSpicy: true, avoidSeafood: true, vegetarian: false, halal: false, allergies: ['花生'], dislikes: ['香菜'] })
     expect(intent.missing).toContain('返程时间和地点')
   })
 
@@ -137,5 +139,38 @@ describe('server text intent integration', () => {
     expect(options.input).toContain('社区攻略知识库线索')
     expect(result.guideContext?.city).toBe('上海')
     expect(result.guideContext?.candidates.length).toBeGreaterThan(0)
+  })
+
+  test('keeps explicit dietary constraints when the model omits them', async () => {
+    process.env.AI_PROVIDER = 'deepseek'
+    process.env.DEEPSEEK_API_KEY = 'test-key'
+    responsesCreate.mockResolvedValueOnce({
+      output_text: JSON.stringify({
+        destination: '武汉',
+        dates: null,
+        durationDays: 3,
+        nights: 2,
+        partySize: 2,
+        budget: 3000,
+        budgetScope: '总预算',
+        pace: 'balanced',
+        mustVisit: [],
+        preferences: ['本地美食'],
+        constraints: [],
+        dietary: { avoidSpicy: false, avoidSeafood: false, vegetarian: false, halal: false, allergies: [], dislikes: [] },
+        conflicts: [],
+        arrivalTime: null,
+        arrivalLocation: null,
+        departureTime: null,
+        departureLocation: null,
+        hotel: null,
+        missing: [],
+      }),
+    })
+
+    const result = await understandTripWithProvider({ text: '武汉三天，两个人，预算3000元，不吃辣，海鲜过敏。', media: [] })
+
+    expect(result.intent.dietary).toMatchObject({ avoidSpicy: true, avoidSeafood: true })
+    expect(result.intent.constraints.some((item) => item.startsWith('饮食限制'))).toBe(true)
   })
 })

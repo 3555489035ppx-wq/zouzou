@@ -28,4 +28,10 @@ describe('Discover knowledge feed', () => {
     ])
     expect(route?.pois.every((poi) => poi.coordinateSource?.includes('OpenStreetMap Nominatim'))).toBe(true)
   })
+
+  it('uses distinct real place photos for the Shanghai route and feed covers', () => {
+    const route = getRoute('route-1')
+    expect(new Set(route?.pois.map((poi) => poi.image)).size).toBeGreaterThanOrEqual(5)
+    expect(new Set(getDiscoverFeed('上海').slice(0, 3).map((item) => item.cover)).size).toBe(3)
+  })
 })

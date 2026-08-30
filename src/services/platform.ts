@@ -15,6 +15,8 @@ export interface StorageAdapter {
   saveAsset(file: File): Promise<{ url: string }>
 }
 
+const telemetryKey = /(?:text|prompt|body|content|url|href|token|key|phone|email|lat|lng|lon|coord|address|location)/i
+
 class LocalAuthAdapter implements AuthAdapter {
   async signInWithPhone(phone: string, code: string) {
     if (!phone || code.length !== 6) throw new Error('手机号或验证码不完整')
@@ -32,7 +34,9 @@ class LocalDatabaseAdapter implements DatabaseAdapter {
 
 class LocalAnalyticsAdapter implements AnalyticsAdapter {
   track(event: string, properties: Record<string, string | number | boolean> = {}) {
-    if (import.meta.env.DEV) console.info('[ZOUZOU demo event]', event, properties)
+    if (!import.meta.env.DEV) return
+    const safeProperties = Object.fromEntries(Object.entries(properties).filter(([key]) => !telemetryKey.test(key)))
+    console.info('[ZOUZOU demo event]', event, safeProperties)
   }
 }
 

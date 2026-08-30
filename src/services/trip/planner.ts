@@ -1,7 +1,9 @@
 import { cityNames, getCityProfile } from '../../demo-data/cities'
 import type { Place, Plan } from '../../demo-data/trips'
+import { dietarySummary, emptyDietaryProfile, extractDietaryProfile, foodCompatibilityIssues, inferFoodTags } from './dietary'
 import { guidePlatformsLabel, type GuideCandidate, type GuideContext } from './guides'
 import { getCityKnowledge, knowledgeMatches, selectHotelOption, type CityKnowledge, type CityKnowledgeItem, type KnowledgeSource } from './cityKnowledge'
+import { readVersioned, writeVersioned } from '../storage'
 
 export const DEFAULT_SHANGHAI_PROMPT = '我和朋友计划 2026年9月18日到9月20日去上海 3天2晚。9月18日10:30到虹桥火车站，住静安寺附近酒店，9月20日18:30从虹桥返程。两个人，本地总预算4000元（含住宿和市内交通，不含往返车票）。想去武康路、安福路、看展和外滩，不想太赶，喜欢咖啡，最好每天留一段缓冲。'
 
@@ -61,6 +63,7 @@ export type TripIntent = {
   mustVisit: string[]
   preferences: string[]
   constraints: string[]
+  dietary: import('./dietary').DietaryProfile
   conflicts: string[]
   arrivalTime: string | null
   arrivalLocation: string | null
@@ -95,6 +98,7 @@ export type PlannedStop = Place & {
   mode: TravelMode
   opening?: OpeningWindow
   fixed?: boolean
+  dietaryTags?: string[]
   factState: 'verified' | 'estimated'
   factSource: string
 }
@@ -199,7 +203,7 @@ function parseBudget(text: string) {
 }
 
 function parsePartySize(text: string) {
-  const numeric = text.match(/(\d+)\s*人/)
+  const numeric = text.match(/(\d+)\s*(?:个)?人/)
   if (numeric) return Number(numeric[1])
   if (/两个人|两位|我和朋友/.test(text)) return 2
   return 1
@@ -229,6 +233,8 @@ export function buildUnderstandingSummary(intent: TripIntent) {
   if (intent.departureTime || intent.departureLocation) parts.push(`已记录返程锚点：${intent.departureTime ?? '时间待确认'} · ${intent.departureLocation ?? '地点待确认'}`)
   if (intent.mustVisit.length > 0) parts.push(`重点是${intent.mustVisit.join('、')}`)
   if (intent.preferences.length > 0) parts.push(`同时照顾${intent.preferences.join('、')}偏好`)
+  const diet = dietarySummary(intent.dietary ?? emptyDietaryProfile())
+  if (diet.length > 0) parts.push(`饮食上${diet.join('、')}`)
   if (intent.constraints.length > 0) parts.push(`并且${intent.constraints.join('、')}`)
   if (conflicts.length > 0) parts.push(`发现需要先核对的冲突：${conflicts.join('；')}`)
   if (intent.missing.length > 0) parts.push(`目前还缺${intent.missing.join('、')}`)
@@ -287,6 +293,7 @@ export function understandTrip(request: TripRequest): TripUnderstanding {
   const preferences: string[] = []
   const constraints: string[] = []
   const conflicts: string[] = []
+  const dietary = extractDietaryProfile(combined)
 
   const mediaArrivalLocations = mediaFacts.map((fact) => fact.facts.arrivalLocation).filter((value): value is string => Boolean(value))
   const mediaDepartureLocations = mediaFacts.map((fact) => fact.facts.departureLocation).filter((value): value is string => Boolean(value))
@@ -318,7 +325,8 @@ export function understandTrip(request: TripRequest): TripUnderstanding {
   if (/夜景|灯光|日落/.test(combined)) preferences.push('夜景')
   if (/室内|下雨|雨天/.test(combined)) preferences.push('室内备选')
   if (/不要太赶|不想太赶|不太赶|不赶|轻松|松弛|慢慢/.test(combined)) constraints.push('每天至少保留一段缓冲，不安排连续跨区移动')
-  if (/不吃|忌口/.test(combined)) constraints.push('存在饮食限制，需要在订餐前确认')
+  const dietaryLabels = dietarySummary(dietary)
+  if (dietaryLabels.length > 0) constraints.push(`饮食限制：${dietaryLabels.join('、')}；下单前确认调味、配料和交叉接触风险`)
 
   const missing: string[] = []
   if (!dates) missing.push('具体出行日期')
@@ -342,6 +350,7 @@ export function understandTrip(request: TripRequest): TripUnderstanding {
     mustVisit: unique(mustVisit),
     preferences: unique(preferences),
     constraints: unique(constraints),
+    dietary,
     conflicts: unique(conflicts),
     arrivalTime: times[0] ?? null,
     arrivalLocation,
@@ -458,6 +467,8 @@ function adaptDaysForCity(days: Record<string, PlannedStop[]>, intent: TripInten
         name: cityStopName(intent.destination, labels, stop, intent),
         lng: center[0] + offset.lng * profile.routeScale,
         lat: center[1] + offset.lat * profile.routeScale,
+        coordinateSource: `${intent.destination}结构化候选地点；坐标待 POI 核验`,
+        verified: false,
         zone: `${intent.destination}参考片区`,
         mode: isAnchor ? stop.mode : 'metro',
         transport,
@@ -509,11 +520,14 @@ function knowledgeItemToStop(
     note: `${item.summary}${item.price.note ? ` ${item.price.note}。` : ''}`,
     lng,
     lat,
+    coordinateSource: `${item.source.label} · ${item.source.checkedAt}`,
+    verified: item.verified,
     durationMinutes: Math.min(item.durationMinutes, type === '景点' || type === '展览' ? 120 : 90),
     travelFromPreviousMinutes,
     zone: item.area,
     mode,
     opening: item.opening,
+    dietaryTags: item.dietaryTags,
     factState,
     factSource: sourceText,
   })
@@ -582,6 +596,7 @@ function guideFoodHintItem(city: string, name: string, index: number, profile: R
     coordinates: [lng + (index - 1) * 0.006, lat + (index % 2 ? 0.003 : -0.003)],
     durationMinutes: 45,
     price: { min: 15, max: 80, unit: 'person', note: '社区体验估算，出行前核验' },
+    dietaryTags: inferFoodTags(name),
     source: communitySource(candidates, name, 'food'),
     verified: false,
   }
@@ -607,7 +622,9 @@ function guideLocalExperienceHintItem(city: string, name: string, index: number,
 function applyLegacyGuideHints(days: Record<string, PlannedStop[]>, intent: TripIntent, guideContext: GuideContext | undefined) {
   const candidates = guideContext?.candidates ?? []
   const profile = getCityProfile(intent.destination)
-  const foodHints = unique(candidates.flatMap((candidate) => candidate.foodHints ?? [])).slice(0, 2)
+  const foodHints = unique(candidates.flatMap((candidate) => candidate.foodHints ?? []))
+    .filter((hint) => foodCompatibilityIssues(hint, intent.dietary ?? emptyDietaryProfile(), inferFoodTags(hint)).length === 0)
+    .slice(0, 2)
   const localHints = unique(candidates.flatMap((candidate) => candidate.localExperienceHints ?? [])).slice(0, 1)
   const replaceStop = (day: string, stopId: string, item: CityKnowledgeItem) => {
     const stops = days[day]
@@ -630,9 +647,14 @@ function applyLegacyGuideHints(days: Record<string, PlannedStop[]>, intent: Trip
 
 function buildCityKnowledgeItems(intent: TripIntent, knowledge: CityKnowledge, guideContext: GuideContext | undefined) {
   const profile = getCityProfile(intent.destination)
-  const matched = knowledge.items.filter((item) => knowledgeMatches(item, [...intent.mustVisit, ...intent.preferences]))
+  const dietary = intent.dietary ?? emptyDietaryProfile()
+  const compatibleKnowledge = knowledge.items.filter((item) => item.category !== 'food' && item.category !== 'restaurant'
+    || foodCompatibilityIssues(`${item.name} ${item.summary}`, dietary, item.dietaryTags).length === 0)
+  const matched = compatibleKnowledge.filter((item) => knowledgeMatches(item, [...intent.mustVisit, ...intent.preferences]))
   const guideCandidates = guideContext?.candidates ?? []
-  const guideFoodHints = unique(guideCandidates.flatMap((candidate) => candidate.foodHints ?? [])).slice(0, 4)
+  const guideFoodHints = unique(guideCandidates.flatMap((candidate) => candidate.foodHints ?? []))
+    .filter((hint) => foodCompatibilityIssues(hint, dietary, inferFoodTags(hint)).length === 0)
+    .slice(0, 4)
   const guideLocalHints = unique(guideCandidates.flatMap((candidate) => candidate.localExperienceHints ?? [])).slice(0, 4)
   const guidePlaceHints = unique(guideCandidates.flatMap((candidate) => candidate.placeHints)).slice(0, 6)
   const communityItems = [
@@ -647,11 +669,11 @@ function buildCityKnowledgeItems(intent: TripIntent, knowledge: CityKnowledge, g
   if (knowledge.status === 'curated') {
     matched.forEach(addItem)
     communityItems.forEach(addItem)
-    knowledge.items.filter((item) => !matched.includes(item)).forEach(addItem)
+    compatibleKnowledge.filter((item) => !matched.includes(item)).forEach(addItem)
   } else {
     communityItems.forEach(addItem)
     matched.forEach(addItem)
-    knowledge.items.filter((item) => !matched.includes(item)).forEach(addItem)
+    compatibleKnowledge.filter((item) => !matched.includes(item)).forEach(addItem)
   }
   profile.demoLabels.forEach((label, index) => {
     if (knowledge.status === 'curated' && /咖啡|午餐|晚餐|本地/.test(label)) return
@@ -724,8 +746,9 @@ function buildKnowledgeDays(intent: TripIntent, knowledge: CityKnowledge, guideC
     const selectedItems = dayItems.slice(0, itemLimit)
     const lunches = selectedItems.filter((item) => knowledgeItemType(item) === '午餐')
     const dinners = selectedItems.filter((item) => knowledgeItemType(item) === '晚餐')
-    const otherItems = selectedItems.filter((item) => !lunches.includes(item) && !dinners.includes(item))
-    ;[...lunches, ...otherItems, ...dinners].forEach((item) => {
+    const nightItems = selectedItems.filter((item) => knowledgeItemType(item) === '夜景')
+    const otherItems = selectedItems.filter((item) => !lunches.includes(item) && !dinners.includes(item) && !nightItems.includes(item))
+    ;[...lunches, ...otherItems, ...dinners, ...nightItems].forEach((item) => {
       const travel = previous && previous.zone === item.area ? 10 : previous ? 25 : 0
       const mode: TravelMode = travel <= 12 ? 'walk' : 'metro'
       let time = addMinutes(cursor, travel)
@@ -734,6 +757,8 @@ function buildKnowledgeDays(intent: TripIntent, knowledge: CityKnowledge, guideC
       if (mealFloor && timeToMinutes(time) < timeToMinutes(mealFloor)) time = mealFloor
       if (type === '夜景' && !isLast && timeToMinutes(time) < timeToMinutes('18:00')) time = '18:00'
       if (item.opening && timeToMinutes(time) < timeToMinutes(item.opening.from)) time = item.opening.from
+      const latestEnd = isLast && intent.departureTime ? timeToMinutes(intent.departureTime) - 30 : 22 * 60
+      if (timeToMinutes(time) + Math.min(item.durationMinutes, type === '景点' || type === '展览' ? 120 : 90) > latestEnd) return
       const stop = knowledgeItemToStop(item, intent.destination, profile, time, travel, mode)
       addStop(stop)
     })
@@ -797,6 +822,8 @@ export function validatePlan(plan: Pick<GeneratedPlan, 'days' | 'intent' | 'budg
   const issues: string[] = []
   let scheduleValid = true
   let openingValid = true
+  let dietaryValid = true
+  const dietary = plan.intent.dietary ?? emptyDietaryProfile()
 
   Object.entries(plan.days).forEach(([day, stops]) => {
     const dayNumber = Number(day.replace(/\D/g, '')) || 1
@@ -823,11 +850,19 @@ export function validatePlan(plan: Pick<GeneratedPlan, 'days' | 'intent' | 'budg
           issues.push(`${day}：${stop.name} 不在营业时间内。`)
         }
       }
+      if (/午餐|晚餐|本地小吃|餐馆|餐饮/.test(stop.type)) {
+        const foodIssues = foodCompatibilityIssues(`${stop.name} ${stop.note}`, dietary, stop.dietaryTags)
+        if (foodIssues.length > 0) {
+          dietaryValid = false
+          issues.push(`${day}：${stop.name} 与饮食限制冲突（${foodIssues.join('、')}）。`)
+        }
+      }
     })
   })
 
   checks.push({ name: '时间顺序', passed: scheduleValid, detail: scheduleValid ? '每段交通和停留均有足够间隔。' : '存在交通或停留时间重叠。' })
   checks.push({ name: '营业时间', passed: openingValid, detail: openingValid ? '有营业时间的地点均落在可访问窗口内。' : '至少一个地点超出营业窗口。' })
+  checks.push({ name: '饮食匹配', passed: dietaryValid, detail: dietaryValid ? '行程中的餐饮节点没有命中已知忌口或过敏风险。' : '至少一个餐饮节点命中饮食限制，需要替换或人工确认。' })
 
   const allStops = Object.values(plan.days).flat()
   const requiredValid = plan.intent.mustVisit.every((requirement) => allStops.some((stop) => matchesMustVisit(stop, requirement)))
@@ -1004,13 +1039,7 @@ export function getDefaultGeneratedPlans() {
 }
 
 function readSession<T>(key: string): T | null {
-  if (typeof window === 'undefined') return null
-  try {
-    const raw = window.sessionStorage.getItem(key)
-    return raw ? JSON.parse(raw) as T : null
-  } catch {
-    return null
-  }
+  return readVersioned<T>(key, 'session')
 }
 
 export function readStoredUnderstanding() {
@@ -1023,9 +1052,9 @@ export function readStoredPlans() {
 }
 
 export function writeStoredUnderstanding(value: TripUnderstanding) {
-  if (typeof window !== 'undefined') window.sessionStorage.setItem(TRIP_UNDERSTANDING_STORAGE, JSON.stringify(value))
+  writeVersioned(TRIP_UNDERSTANDING_STORAGE, value, 'session')
 }
 
 export function writeStoredPlans(value: GeneratedPlan[]) {
-  if (typeof window !== 'undefined') window.sessionStorage.setItem(TRIP_PLANS_STORAGE, JSON.stringify(value))
+  writeVersioned(TRIP_PLANS_STORAGE, value, 'session')
 }

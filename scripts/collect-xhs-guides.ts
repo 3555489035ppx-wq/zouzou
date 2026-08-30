@@ -4,6 +4,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { dirname, resolve } from 'node:path'
 import { promisify } from 'node:util'
+import { inferFoodTags } from '../src/services/trip/dietary'
 import type { GuideCandidate, GuideClaim, GuideKnowledgeBase } from '../src/services/trip/guides'
 
 const execFileAsync = promisify(execFile)
@@ -287,6 +288,7 @@ function buildCandidate(city: string, platform: CollectionPlatform, result: Sear
     placeHints,
     foodHints,
     localExperienceHints,
+    dietaryTags: inferFoodTags(`${title} ${content} ${foodHints.join(' ')}`),
     claims: createClaims(city, searchable, tags, placeHints, foodHints, localExperienceHints),
     permission: 'unknown',
   }

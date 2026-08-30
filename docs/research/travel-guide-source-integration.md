@@ -62,6 +62,7 @@ type GuideCandidate = {
   placeHints: string[]
   foodHints?: string[]
   localExperienceHints?: string[]
+  dietaryTags?: string[]
   claims: Array<{
     type: 'place' | 'activity' | 'tip' | 'route' | 'food'
     text: string
@@ -91,6 +92,10 @@ type GuideCandidate = {
 ## 本轮执行记录（2026-08-30）
 
 - 使用用户控制的 Google Chrome 会话确认小红书登录状态；未读取密码、验证码、Cookie 或浏览器本地存储。
-- 通过低频只读采集补充 20 个城市的 B 站公开搜索结果；小红书保留已有来源并接入了少量已成功读取的笔记详情。当前 `data/travel-guides.json` 共 386 条摘要，其中 B 站 278 条、小红书 108 条。
+- 通过低频只读采集补充 20 个城市的 B 站公开搜索结果；小红书保留已有来源并接入了少量已成功读取的笔记详情。当前 `data/travel-guides.json` 共 390 条摘要，其中 B 站 282 条、小红书 108 条。
 - 结构化字段新增 `foodHints` 与 `localExperienceHints`，用于把“本地小吃”和“本地人项目”送入候选时间轴；所有社区线索仍标记为待核验。
 - 小红书后续批量搜索出现连续空结果，网页搜索交互也发生超时，因此没有继续高频重试或删除已有小红书数据。再次采集应使用更长间隔、分批执行，并保留失败时的旧数据。
+- 按 B 站 → 小红书 → 公开百科/官方页面 → 百度检索的轮换方式做了小批量核查：B 站补查武汉过早、南京音乐台/欢乐谷、杭州早市/夜市；小红书同批查询因接口频控返回空结果；百科接口连接超时；百度公开结果补到了武汉“过早”和热干面的线索。
+- 城市事实层从原先仅上海、长沙的精选条目扩展为 20 城、199 条结构化候选，覆盖知名景点、城市漫步、本地小吃和本地生活项目。南京新增“中山陵音乐台”和“南京欢乐谷”，武汉新增“黄鹤楼、东湖、湖北省博物馆、武汉欢乐谷、过早”等；这些候选保留地图 POI 来源，价格、营业和预约状态仍不作为静态事实。
+- 用户意图新增结构化 `dietary`：`avoidSpicy`、`avoidSeafood`、`vegetarian`、`halal`、`allergies`、`dislikes`。本地解析器、远程 JSON Schema、社区检索、城市条目筛选和最终行程校验共用同一套饮食风险判断；未明确说出的限制不会被猜测。
+- 官方核查记录：南京中山陵园管理局说明音乐台位于中山陵广场东南侧，并列出中山陵、明孝陵、灵谷、音乐台等景点；湖北省文化和旅游厅列出湖北省博物馆地址与职能；南京欢乐谷保留官方游玩页；杭州市文旅部门发布的精品线路包含西湖、灵隐寺和西溪湿地。对应链接：[音乐台](https://zschina.nanjing.gov.cn/fjms/jqjd/ylt/)、[中山陵景区景点](https://zschina.nanjing.gov.cn/fjms/)、[湖北省博物馆](https://wlt.hubei.gov.cn/zfxxgk/fdzdgknr/jgjj/zsdw/202008/t20200805_2740545.shtml)、[南京欢乐谷](https://nj.happyvalley.cn/play/index.shtml)、[杭州文化旅游精品线路](https://wgly.hangzhou.gov.cn/module/download/downfile.jsp?classid=0&filename=c3ccb4250d3143a09047ee20fbe1170c.pdf)。

@@ -192,4 +192,17 @@ describe('Shanghai itinerary planner', () => {
     expect(plan.budget).toBeLessThanOrEqual(3000)
     expect(plan.validation.passed).toBe(true)
   })
+
+  it('filters city food candidates against explicit dietary restrictions', () => {
+    const understanding = understandTrip({
+      text: '2026年9月18日到9月20日去武汉，3天2晚，2个人，预算4000元。10:30到武汉站，住江汉路附近酒店，18:30从武汉站返程。不吃辣，海鲜过敏，想去黄鹤楼、东湖和湖北省博物馆，想吃本地小吃。',
+      media: [],
+    })
+    const plans = generatePlans(understanding.intent)
+
+    expect(understanding.intent.partySize).toBe(2)
+    expect(understanding.intent.dietary).toMatchObject({ avoidSpicy: true, avoidSeafood: true })
+    expect(plans.every((plan) => plan.validation.passed)).toBe(true)
+    expect(plans.every((plan) => !Object.values(plan.days).flat().some((stop) => /热干面|糊汤粉|海鲜|虾|蟹|火锅/.test(stop.name)))).toBe(true)
+  })
 })

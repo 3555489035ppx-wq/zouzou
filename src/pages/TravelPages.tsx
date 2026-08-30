@@ -10,7 +10,6 @@ import {
 import { aiService, type AIStage } from '../services/ai'
 import { friends, plans as fallbackPlans } from '../demo-data/trips'
 import { cityNames, getCityProfile } from '../demo-data/cities'
-import { getCityImage } from '../demo-data/city-images'
 import {
   DEFAULT_SHANGHAI_PROMPT,
   TRIP_INPUT_STORAGE,
@@ -27,17 +26,14 @@ import {
   type TripMedia,
   type TripUnderstanding,
 } from '../services/trip/planner'
+import { readVersioned, removeStored, writeVersioned } from '../services/storage'
+import { track } from '../services/analytics'
 import { useAppStore } from '../stores/appStore'
 
 const defaultPrompt = DEFAULT_SHANGHAI_PROMPT
 
 function readTripMedia(): TripMedia[] {
-  try {
-    const raw = sessionStorage.getItem(TRIP_MEDIA_STORAGE)
-    return raw ? JSON.parse(raw) as TripMedia[] : []
-  } catch {
-    return []
-  }
+  return readVersioned<TripMedia[]>(TRIP_MEDIA_STORAGE, 'session') ?? []
 }
 
 export const TravelNewPage = () => {
@@ -48,12 +44,7 @@ export const TravelNewPage = () => {
   const [days, setDays] = useState('3')
   const [budget, setBudget] = useState('4000')
   const [goal, setGoal] = useState('城市漫步、看展和本地美食')
-  const [screenshots, setScreenshots] = useState<TripMedia[]>([
-    { id: 'guide', src: getCityImage('上海').src, name: '上海外滩攻略参考', category: '攻略' },
-    { id: 'citywalk', src: getCityImage('上海').src, name: '上海城市漫步参考', category: '攻略' },
-    { id: 'museum', src: getCityImage('上海').src, name: '上海展览参考', category: '攻略' },
-    { id: 'return', src: getCityImage('上海').src, name: '上海返程路线参考', category: '攻略' },
-  ])
+  const [screenshots, setScreenshots] = useState<TripMedia[]>([])
   const [uploadError, setUploadError] = useState('')
   const [dragging,setDragging]=useState<number|null>(null)
   const reorder=(from:number,to:number)=>{if(from===to)return;setScreenshots(items=>{const next=[...items],item=next.splice(from,1)[0];next.splice(to,0,item);return next})}
@@ -67,9 +58,9 @@ export const TravelNewPage = () => {
   const submit = () => {
     const structuredPrompt = `${days}天去${destination}，预算${budget || '待定'}元，想做${goal || '城市漫步和本地美食'}。`
     const prompt = isExample ? input : `${structuredPrompt}${input.trim()}`
-    sessionStorage.setItem(TRIP_INPUT_STORAGE, prompt)
-    sessionStorage.setItem(TRIP_MEDIA_STORAGE, JSON.stringify(screenshots))
-    sessionStorage.removeItem(TRIP_PLANS_STORAGE)
+    writeVersioned(TRIP_INPUT_STORAGE, prompt, 'session')
+    writeVersioned(TRIP_MEDIA_STORAGE, screenshots, 'session')
+    removeStored(TRIP_PLANS_STORAGE, 'session')
     navigate('/travel/understanding')
   }
   return <AppShell><ZouNavigationBar title="创建旅行" /><div className="page-content travel-new"><header><h1>想去哪走走？</h1><p>先告诉我城市、预算、天数和想做什么，我会把景点、吃住和移动排成完整攻略。</p></header><section className="trip-constraints" aria-label="旅行条件"><label><span>目的地</span><select aria-label="目的地" value={destination} onChange={(event) => updateStructured(setDestination, event.target.value)}>{cityNames.map((city) => <option key={city} value={city}>{city}</option>)}</select></label><label><span>天数</span><input aria-label="旅行天数" type="number" min="1" max="14" value={days} onChange={(event) => updateStructured(setDays, event.target.value)} /></label><label><span>预算（元）</span><input aria-label="旅行预算" type="number" min="0" step="100" value={budget} onChange={(event) => updateStructured(setBudget, event.target.value)} /></label><label className="trip-constraints__wide"><span>想做什么</span><input aria-label="旅行目的" value={goal} placeholder="本地美食、城市漫步、看展、夜景" onChange={(event) => updateStructured(setGoal, event.target.value)} /></label></section><label className="trip-prompt"><span>补充想法（可选）</span><textarea aria-label="旅行想法" value={input} onChange={(event) => { setInput(event.target.value); setIsExample(false) }} placeholder="例如：9月18日 10:30 到长沙南站，住五一广场附近，想吃臭豆腐和湘菜。" /><small aria-live="polite">{input.length}/500{isExample ? ' · 示例' : ''}</small>{isExample ? <button type="button" className="trip-prompt__clear" onClick={() => { setInput(''); setIsExample(false) }}>清空示例</button> : null}</label><section className="upload-section"><div className="section-title"><h2>旅行截图</h2><span>{screenshots.length} 张 · 长按排序</span></div><div className="screenshot-row">{screenshots.map((shot,index)=><article key={shot.id} draggable onDragStart={()=>setDragging(index)} onDragOver={e=>e.preventDefault()} onDrop={()=>{if(dragging!==null)reorder(dragging,index);setDragging(null)}}><img src={shot.src} alt={`${shot.name}截图`} width={120} height={160} /><span>{shot.name}</span><button aria-label={`删除${shot.name}`} onClick={() => setScreenshots((items) => items.filter((item) => item.id !== shot.id))}><X /></button></article>)}<label className="add-screenshot"><ImagePlus /><span>添加</span><input type="file" multiple accept="image/*" onChange={(event) => { const selected = Array.from(event.target.files ?? []); const files = selected.filter((file) => file.type.startsWith('image/') && file.size <= 8 * 1024 * 1024); setUploadError(files.length < selected.length ? '仅支持 8MB 以内的图片截图。' : ''); setScreenshots((items) => [...items, ...files.map((file) => ({ id: `${file.name}-${file.lastModified}`, src: URL.createObjectURL(file), name: file.name, category: '上传截图' }))]) }} /></label></div>{uploadError ? <p className="upload-error" role="alert">{uploadError}</p> : null}</section><ZouButton aria-label="帮我看看" onClick={submit}>生成完整攻略</ZouButton></div></AppShell>
@@ -90,6 +81,11 @@ export const UnderstandingPage = () => {
   const [ready, setReady] = useState(false)
   const [planning, setPlanning] = useState(false)
   const [error, setError] = useState('')
+  const [attempt, setAttempt] = useState(0)
+  const [editorOpen, setEditorOpen] = useState(false)
+  const [draftDestination, setDraftDestination] = useState('上海')
+  const [draftPartySize, setDraftPartySize] = useState('2')
+  const [draftBudget, setDraftBudget] = useState('')
   useEffect(() => {
     if (errorParam === '1') {
       setStage('error')
@@ -97,12 +93,36 @@ export const UnderstandingPage = () => {
       return
     }
     let active = true
-    const request = { text: sessionStorage.getItem(TRIP_INPUT_STORAGE) ?? defaultPrompt, media: readTripMedia() }
+    setReady(false)
+    setError('')
+    setStage('listening')
+    const request = { text: readVersioned<string>(TRIP_INPUT_STORAGE, 'session', true) ?? defaultPrompt, media: readTripMedia() }
     aiService.understandTrip(request, (next, text) => { if (active) { setStage(next); setLabel(text) } })
-      .then((result) => { if (active) { setUnderstanding(result); setReady(true); sessionStorage.setItem(TRIP_UNDERSTANDING_STORAGE, JSON.stringify(result)) } })
+      .then((result) => { if (active) { setUnderstanding(result); setReady(true); setDraftDestination(result.intent.destination); setDraftPartySize(String(result.intent.partySize)); setDraftBudget(result.intent.budget === null ? '' : String(result.intent.budget)); writeVersioned(TRIP_UNDERSTANDING_STORAGE, result, 'session') } })
       .catch((reason: Error) => { if (active) { setStage('error'); setError(reason.message) } })
     return () => { active = false }
-  }, [errorParam])
+  }, [attempt, errorParam])
+  const retryUnderstanding = () => {
+    if (errorParam) {
+      navigate('/travel/understanding', { replace: true })
+      return
+    }
+    track('trip_understanding_retried')
+    setAttempt((value) => value + 1)
+  }
+  const saveIntentCorrections = () => {
+    if (!understanding) return
+    const partySize = Math.max(1, Math.min(20, Number.parseInt(draftPartySize, 10) || understanding.intent.partySize))
+    const parsedBudget = draftBudget.trim() === '' ? null : Number(draftBudget)
+    const budget = parsedBudget !== null && Number.isFinite(parsedBudget) && parsedBudget >= 0 ? Math.round(parsedBudget) : understanding.intent.budget
+    const destination = cityNames.includes(draftDestination) ? draftDestination : understanding.intent.destination
+    const missing = understanding.intent.missing.filter((item) => item !== '总预算')
+    if (budget === null && !missing.includes('总预算')) missing.push('总预算')
+    const next: TripUnderstanding = { ...understanding, intent: { ...understanding.intent, destination, partySize, budget, missing } }
+    setUnderstanding(next)
+    writeVersioned(TRIP_UNDERSTANDING_STORAGE, next, 'session')
+    setEditorOpen(false)
+  }
   const startPlanning = async () => {
     if (!understanding) return
     setPlanning(true)
@@ -121,7 +141,7 @@ export const UnderstandingPage = () => {
   const mediaFacts = understanding?.mediaFacts ?? []
   const uncertainMediaCount = mediaFacts.filter((fact) => fact.needsConfirmation).length
   const knowledge = understanding?.knowledge
-  return <AppShell><ZouNavigationBar title="理解旅行" /><div className="page-content understanding-page"><div className="bot-stage"><ZouMotionBot state={stage === 'error' ? 'error' : stage} label="Bloub / Grok Bot" /><h1>{planning ? '正在生成 3 套方案' : ready ? '这是我理解的旅行' : error ? '这次没有理解完成' : '正在理解你的旅行'}</h1><p aria-live="polite">{error || label}</p><div className="progress-steps">{['读取你的描述', `识别 ${mediaCount} 张截图`, '整理地点与偏好', '检查路线与天气', '生成可行方案'].map((item, index) => { const stageIndex = understandingStepOrder.indexOf(stage); const done = ready ? index < 4 : stageIndex >= 0 && index < stageIndex; return <span key={item} className={done ? 'is-done' : ''}>{done ? <Check /> : <i />}{item}</span> })}</div></div>{ready && !planning && intent ? <><section className="understanding-card"><div className="understanding-card__top"><div><span>目的地</span><strong>{intent.destination}</strong></div><div><span>行程</span><strong>{intent.durationDays} 天 {intent.nights} 晚</strong></div><div><span>朋友</span><strong>{intent.partySize} 人</strong></div><div><span>预算</span><strong>{intent.budget ? `¥${intent.budget}` : '待确认'}</strong></div></div><p className="understanding-card__summary">我理解的是一趟{paceLabel(intent.pace)}的 {intent.destination} 行程{intent.mustVisit.length > 0 ? `，重点包括 ${intent.mustVisit.join('、')}` : ''}{intent.preferences.length > 0 ? `，同时照顾${intent.preferences.join('、')}偏好` : ''}。</p><dl><div><dt>节奏</dt><dd>{paceLabel(intent.pace)}</dd></div><div><dt>必去</dt><dd>{intent.mustVisit.length > 0 ? intent.mustVisit.join(' · ') : '暂未识别'}</dd></div><div><dt>偏好</dt><dd>{intent.preferences.length > 0 ? intent.preferences.join(' · ') : '暂未识别'}</dd></div></dl></section><section className="missing-card"><h2>{intent.missing.length > 0 ? `还有 ${intent.missing.length} 项需要确认` : '关键条件已确认'}</h2>{intent.missing.length > 0 ? <ul>{intent.missing.map((item) => <li key={item}>{item}</li>)}</ul> : <p>日期、到达、返程、住宿和预算已经作为排程约束。</p>}{mediaFacts.length > 0 ? <p>{mediaFacts.length} 张截图已纳入理解{uncertainMediaCount > 0 ? `，其中 ${uncertainMediaCount} 张关键字段置信度较低，请在开始规划前核对。` : '，关键字段已完成初步提取。'}</p> : null}{knowledge ? <p>已载入{knowledge.city}城市攻略包：{knowledge.items.length} 个景点、餐饮和体验候选，住宿按预算分为 {knowledge.hotelOptions.length} 档；价格、营业时间和路线仍需出行前核对。</p> : null}</section><ZouButton onClick={startPlanning}>开始规划</ZouButton></> : null}{error ? <ZouButton onClick={() => navigate('/travel/new')}>返回修改输入</ZouButton> : null}</div></AppShell>
+  return <AppShell><ZouNavigationBar title="理解旅行" /><div className="page-content understanding-page"><div className="bot-stage"><ZouMotionBot state={stage === 'error' ? 'error' : stage} label="Bloub / Grok Bot" /><h1>{planning ? '正在生成 3 套方案' : ready ? '这是我理解的旅行' : error ? '这次没有理解完成' : '正在理解你的旅行'}</h1><p aria-live="polite">{error || label}</p><div className="progress-steps">{['读取你的描述', `识别 ${mediaCount} 张截图`, '整理地点与偏好', '检查路线与天气', '生成可行方案'].map((item, index) => { const stageIndex = understandingStepOrder.indexOf(stage); const done = ready ? index < 4 : stageIndex >= 0 && index < stageIndex; return <span key={item} className={done ? 'is-done' : ''}>{done ? <Check /> : <i />}{item}</span> })}</div></div>{ready && !planning && intent ? <><section className="understanding-card"><div className="understanding-card__top"><div><span>目的地</span><strong>{intent.destination}</strong></div><div><span>行程</span><strong>{intent.durationDays} 天 {intent.nights} 晚</strong></div><div><span>朋友</span><strong>{intent.partySize} 人</strong></div><div><span>预算</span><strong>{intent.budget ? `¥${intent.budget}` : '待确认'}</strong></div></div><p className="understanding-card__summary">我理解的是一趟{paceLabel(intent.pace)}的 {intent.destination} 行程{intent.mustVisit.length > 0 ? `，重点包括 ${intent.mustVisit.join('、')}` : ''}{intent.preferences.length > 0 ? `，同时照顾${intent.preferences.join('、')}偏好` : ''}。</p><dl><div><dt>节奏</dt><dd>{paceLabel(intent.pace)}</dd></div><div><dt>必去</dt><dd>{intent.mustVisit.length > 0 ? intent.mustVisit.join(' · ') : '暂未识别'}</dd></div><div><dt>偏好</dt><dd>{intent.preferences.length > 0 ? intent.preferences.join(' · ') : '暂未识别'}</dd></div></dl><button className="text-button intent-edit-button" type="button" onClick={() => setEditorOpen(true)}>修改识别结果</button></section><section className="missing-card"><h2>{intent.missing.length > 0 ? `还有 ${intent.missing.length} 项需要确认` : '关键条件已确认'}</h2>{intent.missing.length > 0 ? <ul>{intent.missing.map((item) => <li key={item}>{item}</li>)}</ul> : <p>日期、到达、返程、住宿和预算已经作为排程约束。</p>}{mediaFacts.length > 0 ? <p>{mediaFacts.length} 张截图已纳入理解{uncertainMediaCount > 0 ? `，其中 ${uncertainMediaCount} 张关键字段置信度较低，请在开始规划前核对。` : '，关键字段已完成初步提取。'}</p> : null}{knowledge ? <p>已载入{knowledge.city}城市攻略包：{knowledge.items.length} 个景点、餐饮和体验候选，住宿按预算分为 {knowledge.hotelOptions.length} 档；价格、营业时间和路线仍需出行前核对。</p> : null}</section><ZouButton onClick={startPlanning}>开始规划</ZouButton></> : null}{error ? <><ZouButton variant="secondary" onClick={retryUnderstanding}>重试理解</ZouButton><ZouButton onClick={() => navigate('/travel/new')}>返回修改输入</ZouButton></> : null}<ZouBottomSheet open={editorOpen} onClose={() => setEditorOpen(false)} title="核对识别结果"><div className="intent-editor"><label>目的地<select name="trip-destination" value={draftDestination} onChange={(event) => setDraftDestination(event.target.value)}>{cityNames.map((city) => <option key={city}>{city}</option>)}</select></label><label>同行人数<input name="trip-party-size" type="number" min="1" max="20" inputMode="numeric" value={draftPartySize} onChange={(event) => setDraftPartySize(event.target.value)} /></label><label>总预算（元）<input name="trip-budget" type="number" min="0" inputMode="decimal" value={draftBudget} onChange={(event) => setDraftBudget(event.target.value)} placeholder="暂不填写" /></label><p>这里只修正排程关键字段；地点、日期、交通和营业时间仍会在生成方案前再次核对。</p><ZouButton onClick={saveIntentCorrections}>保存修正</ZouButton></div></ZouBottomSheet></div></AppShell>
 }
 
 export const PlansPage = () => {
@@ -135,6 +155,7 @@ export const PlansPage = () => {
   useEffect(() => () => { if (selectionTimer.current !== null) window.clearTimeout(selectionTimer.current) }, [])
   const selectPlan = (planId: string) => {
     setSelected(planId)
+    track('plan_selected', { planId })
     const carousel = carouselRef.current
     const item = carousel?.querySelector<HTMLElement>(`[data-plan-id="${planId}"]`)
     if (!carousel || !item) return
@@ -215,7 +236,8 @@ export const PlanDetailPage = () => {
 export const FriendsPage = () => {
   const navigate = useNavigate()
   const [invite, setInvite] = useState(false)
-  const [accepted, setAccepted] = useState(false)
+  const accepted = useAppStore((state) => state.friendInviteAccepted)
+  const setAccepted = useAppStore((state) => state.setFriendInviteAccepted)
   return <AppShell><ZouNavigationBar title="朋友" right={<button className="text-button" onClick={() => setInvite(true)}>邀请</button>} /><div className="page-content friends-page"><header><h1>和朋友一起决定</h1><p>意见表控制在 30 秒内，AI 只总结共识和冲突。</p></header><section className="friend-list">{friends.map((friend, index) => { const isAccepted = friend.status === 'accepted' || (friend.status === 'pending' && accepted); return <article key={friend.id}><ZouAvatar src={friend.image} name={friend.name} muted={!isAccepted} /><div><strong>{friend.name}</strong><small>{index === 0 ? '发起人' : '已填写意见'}</small></div><FriendStatus accepted={isAccepted} /></article> })}</section>{!accepted ? <ZouButton variant="secondary" onClick={() => setAccepted(true)}>确认安安已接受</ZouButton> : null}<section className="opinion-summary"><span>AI 总结</span><h2>4 位朋友已提交</h2><ul><li>3 人希望行程松弛</li><li>1 人不吃海鲜</li><li>3 人希望去外滩</li></ul><div className="conflict"><strong>有 1 项需要协调</strong><p>安安希望加入夜景，但周周希望第二天更早结束。</p></div></section><div className="floating-cta"><ZouButton onClick={() => navigate('/travel/vote')}>进入方案投票</ZouButton></div></div><ZouBottomSheet open={invite} onClose={() => setInvite(false)} title="邀请朋友"><button className="sheet-action"><Link2 /><span><strong>分享链接</strong><small>复制邀请链接</small></span></button><button className="sheet-action"><QrCode /><span><strong>二维码</strong><small>面对面扫描加入</small></span></button></ZouBottomSheet></AppShell>
 }
 

@@ -26,9 +26,13 @@ export type AMapNamespace = {
 
 const key = (import.meta.env.VITE_AMAP_KEY ?? '').trim()
 const securityKey = (import.meta.env.VITE_AMAP_SECURITY_KEY ?? '').trim()
+const mapProvider = (import.meta.env.VITE_MAP_PROVIDER ?? 'maplibre').trim().toLowerCase()
 
 export const amapConfig = { key, securityKey }
-export const isAmapConfigured = Boolean(key && securityKey)
+// MapLibre is the deterministic local/preview default. AMap is opt-in so a
+// stale key or an unlisted preview domain cannot emit third-party auth errors
+// before the route fallback has a chance to render.
+export const isAmapConfigured = mapProvider === 'amap' && Boolean(key && securityKey)
 
 let pending: Promise<AMapNamespace> | null = null
 

@@ -2,6 +2,7 @@ import OpenAI from 'openai'
 import { TRIP_INTENT_INSTRUCTIONS } from './ai-guidelines'
 import { normalizeMediaFacts } from './trip-vision'
 import { getGuideContextForTrip, guideContextForPrompt } from './travel-guides'
+import { dietarySummary, emptyDietaryProfile, type DietaryProfile } from '../src/services/trip/dietary'
 import {
   understandTrip as understandTripLocally,
   buildUnderstandingSummary,
@@ -60,6 +61,19 @@ export const tripIntentJsonSchema: Record<string, unknown> = {
     mustVisit: { type: 'array', items: { type: 'string' } },
     preferences: { type: 'array', items: { type: 'string' } },
     constraints: { type: 'array', items: { type: 'string' } },
+    dietary: {
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        avoidSpicy: { type: 'boolean' },
+        avoidSeafood: { type: 'boolean' },
+        vegetarian: { type: 'boolean' },
+        halal: { type: 'boolean' },
+        allergies: { type: 'array', items: { type: 'string' } },
+        dislikes: { type: 'array', items: { type: 'string' } },
+      },
+      required: ['avoidSpicy', 'avoidSeafood', 'vegetarian', 'halal', 'allergies', 'dislikes'],
+    },
     conflicts: { type: 'array', items: { type: 'string' } },
     arrivalTime: { anyOf: [{ type: 'string' }, { type: 'null' }] },
     arrivalLocation: { anyOf: [{ type: 'string' }, { type: 'null' }] },
@@ -80,6 +94,7 @@ export const tripIntentJsonSchema: Record<string, unknown> = {
     'mustVisit',
     'preferences',
     'constraints',
+    'dietary',
     'conflicts',
     'arrivalTime',
     'arrivalLocation',
@@ -105,6 +120,30 @@ const asStringArray = (value: unknown) => (
 const asNumber = (value: unknown) => typeof value === 'number' && Number.isFinite(value) ? value : null
 
 const asNullableString = (value: unknown) => value === null ? null : asString(value)
+
+function normalizeDietary(value: unknown): DietaryProfile {
+  if (!isRecord(value)) return emptyDietaryProfile()
+  return {
+    avoidSpicy: value.avoidSpicy === true,
+    avoidSeafood: value.avoidSeafood === true,
+    vegetarian: value.vegetarian === true,
+    halal: value.halal === true,
+    allergies: asStringArray(value.allergies),
+    dislikes: asStringArray(value.dislikes),
+  }
+}
+
+function mergeDietaryProfiles(primary: DietaryProfile, fallback: DietaryProfile): DietaryProfile {
+  const merged = {
+    avoidSpicy: primary.avoidSpicy || fallback.avoidSpicy,
+    avoidSeafood: primary.avoidSeafood || fallback.avoidSeafood,
+    vegetarian: primary.vegetarian || fallback.vegetarian,
+    halal: primary.halal || fallback.halal,
+    allergies: [...new Set([...primary.allergies, ...fallback.allergies])],
+    dislikes: [...new Set([...primary.dislikes, ...fallback.dislikes])],
+  }
+  return merged
+}
 
 function normalizeDateRange(value: unknown): TripIntent['dates'] {
   if (!isRecord(value)) return null
@@ -189,6 +228,7 @@ export function normalizeTripIntent(value: unknown): TripIntent {
     mustVisit: asStringArray(value.mustVisit),
     preferences: asStringArray(value.preferences),
     constraints: asStringArray(value.constraints),
+    dietary: normalizeDietary(value.dietary),
     conflicts: asStringArray(value.conflicts),
     arrivalTime: normalizeTime(value.arrivalTime),
     arrivalLocation: asNullableString(value.arrivalLocation),
@@ -322,12 +362,14 @@ function createProviderClient(config: AIProviderConfig) {
 }
 
 export async function understandTripWithProvider(request: TripRequest): Promise<ServerTripUnderstanding> {
+  // Run the deterministic preflight first so city and explicit dietary
+  // constraints are known before community retrieval and model extraction.
+  const localPreflight = understandTripLocally(request)
   const guideContext = getGuideContextForTrip(request)
   const config = getAIProviderConfig()
   const client = createProviderClient(config)
   if (!client || config.provider === 'local') {
-    const local = understandTripLocally(request)
-    return makeUnderstanding(local.intent, request, 'local', undefined, guideContext)
+    return makeUnderstanding(localPreflight.intent, request, 'local', undefined, guideContext)
   }
 
   // DeepSeek's Responses API supports json_schema but does not document the
@@ -356,6 +398,14 @@ export async function understandTripWithProvider(request: TripRequest): Promise<
     throw new Error(`${config.provider} 返回的文本不是有效 JSON：${error instanceof Error ? error.message : '结构不完整'}`)
   }
 
-  const intent = normalizeTripIntent(parsed)
+  const normalizedIntent = normalizeTripIntent(parsed)
+  const fallbackDietary = localPreflight.intent.dietary ?? emptyDietaryProfile()
+  const intent = {
+    ...normalizedIntent,
+    dietary: mergeDietaryProfiles(normalizedIntent.dietary, fallbackDietary),
+    constraints: dietarySummary(fallbackDietary).length > 0 && !normalizedIntent.constraints.some((item) => item.startsWith('饮食限制'))
+      ? [...normalizedIntent.constraints, `饮食限制：${dietarySummary(fallbackDietary).join('、')}；下单前确认调味、配料和交叉接触风险`]
+      : normalizedIntent.constraints,
+  }
   return makeUnderstanding(intent, request, config.provider, config.model, guideContext)
 }

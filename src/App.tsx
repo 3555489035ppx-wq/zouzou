@@ -1,16 +1,34 @@
+import { lazy, Suspense } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
-import { SplashPage, LoginPage, OnboardingPage } from './pages/AccountPages'
-import { HomePage } from './pages/HomePage'
-import { FriendsPage, PlanDetailPage, PlansPage, TravelNewPage, UnderstandingPage, VotePage } from './pages/TravelPages'
-import { TripReplayPage, TripsPage } from './pages/TripPages'
-import { DiscoverDetailPage, DiscoverPage, DiscoverPublishPage, DiscoverReplayPage } from './pages/DiscoverPages'
-import { PeopleListPage, ProfileEditPage, ProfilePage } from './pages/ProfilePages'
-import { NotificationsPage, QuickPlannerPage, SettingsPage } from './pages/UtilityPages'
-import { DemoPage } from './pages/DemoPage'
-import { BotLabPage, PresentationPage } from './pages/SystemPages'
+
+const SplashPage = lazy(() => import('./pages/AccountPages').then((module) => ({ default: module.SplashPage })))
+const LoginPage = lazy(() => import('./pages/AccountPages').then((module) => ({ default: module.LoginPage })))
+const OnboardingPage = lazy(() => import('./pages/AccountPages').then((module) => ({ default: module.OnboardingPage })))
+const HomePage = lazy(() => import('./pages/HomePage').then((module) => ({ default: module.HomePage })))
+const TravelNewPage = lazy(() => import('./pages/TravelPages').then((module) => ({ default: module.TravelNewPage })))
+const UnderstandingPage = lazy(() => import('./pages/TravelPages').then((module) => ({ default: module.UnderstandingPage })))
+const PlansPage = lazy(() => import('./pages/TravelPages').then((module) => ({ default: module.PlansPage })))
+const PlanDetailPage = lazy(() => import('./pages/TravelPages').then((module) => ({ default: module.PlanDetailPage })))
+const FriendsPage = lazy(() => import('./pages/TravelPages').then((module) => ({ default: module.FriendsPage })))
+const VotePage = lazy(() => import('./pages/TravelPages').then((module) => ({ default: module.VotePage })))
+const TripsPage = lazy(() => import('./pages/TripPages').then((module) => ({ default: module.TripsPage })))
+const TripReplayPage = lazy(() => import('./pages/TripPages').then((module) => ({ default: module.TripReplayPage })))
+const DiscoverPage = lazy(() => import('./pages/DiscoverPages').then((module) => ({ default: module.DiscoverPage })))
+const DiscoverDetailPage = lazy(() => import('./pages/DiscoverPages').then((module) => ({ default: module.DiscoverDetailPage })))
+const DiscoverPublishPage = lazy(() => import('./pages/DiscoverPages').then((module) => ({ default: module.DiscoverPublishPage })))
+const DiscoverReplayPage = lazy(() => import('./pages/DiscoverPages').then((module) => ({ default: module.DiscoverReplayPage })))
+const PeopleListPage = lazy(() => import('./pages/ProfilePages').then((module) => ({ default: module.PeopleListPage })))
+const ProfileEditPage = lazy(() => import('./pages/ProfilePages').then((module) => ({ default: module.ProfileEditPage })))
+const ProfilePage = lazy(() => import('./pages/ProfilePages').then((module) => ({ default: module.ProfilePage })))
+const NotificationsPage = lazy(() => import('./pages/UtilityPages').then((module) => ({ default: module.NotificationsPage })))
+const QuickPlannerPage = lazy(() => import('./pages/UtilityPages').then((module) => ({ default: module.QuickPlannerPage })))
+const SettingsPage = lazy(() => import('./pages/UtilityPages').then((module) => ({ default: module.SettingsPage })))
+const DemoPage = lazy(() => import('./pages/DemoPage').then((module) => ({ default: module.DemoPage })))
+const BotLabPage = lazy(() => import('./pages/SystemPages').then((module) => ({ default: module.BotLabPage })))
+const PresentationPage = lazy(() => import('./pages/SystemPages').then((module) => ({ default: module.PresentationPage })))
 
 export default function App() {
-  return <Routes>
+  return <Suspense fallback={<div className="route-loading" role="status">正在打开页面…</div>}><Routes>
     <Route path="/" element={<PresentationPage />} />
     <Route path="/splash" element={<SplashPage />} />
     <Route path="/app" element={<Navigate to="/home" replace />} />
@@ -53,5 +71,5 @@ export default function App() {
     <Route path="/dining" element={<QuickPlannerPage kind="dining" />} />
     <Route path="/__demo" element={<DemoPage />} />
     <Route path="*" element={<Navigate to="/home" replace />} />
-  </Routes>
+  </Routes></Suspense>
 }

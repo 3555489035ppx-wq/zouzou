@@ -11,6 +11,8 @@ export type Place = {
   z: number
   lng: number
   lat: number
+  coordinateSource?: string
+  verified?: boolean
 }
 
 export type Plan = {

@@ -8,6 +8,8 @@ import {
   type TripUnderstanding,
 } from './trip/planner'
 import { getLocalGuideContext } from './trip/localGuides'
+import { ServiceError } from './asyncState'
+import { trackPerformance } from './analytics'
 
 export type AIStage = 'listening' | 'reading' | 'thinking' | 'planning' | 'updating' | 'done' | 'success' | 'error'
 export type StageListener = (stage: AIStage, label: string) => void
@@ -27,7 +29,7 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs: number, onTimeout?: () =
   return new Promise<T>((resolve, reject) => {
     const timeout = globalThis.setTimeout(() => {
       onTimeout?.()
-      reject(new Error(`远程服务超过 ${timeoutMs}ms 未响应`))
+      reject(new ServiceError(`远程服务超过 ${timeoutMs}ms 未响应`, 'TIMEOUT'))
     }, timeoutMs)
     promise.then(
       (value) => { globalThis.clearTimeout(timeout); resolve(value) },
@@ -61,7 +63,7 @@ function readBlobAsDataUrl(blob: Blob) {
 async function mediaSourceToDataUrl(source: string) {
   if (source.startsWith('data:image/')) return source
   const response = await fetch(source)
-  if (!response.ok) throw new Error(`图片读取失败（${response.status}）`)
+  if (!response.ok) throw new ServiceError(`图片读取失败（${response.status}）`, response.status === 401 || response.status === 403 ? 'UNAUTHORIZED' : 'UNKNOWN')
   const blob = await response.blob()
   if (!blob.type.startsWith('image/')) return null
   if (blob.size <= MAX_VISION_IMAGE_BYTES || typeof createImageBitmap !== 'function' || typeof document === 'undefined') {
@@ -230,9 +232,9 @@ export class PlanningAIAdapter implements AIService {
             const message = payload && typeof payload === 'object' && 'message' in payload && typeof payload.message === 'string'
               ? payload.message
               : `截图理解服务返回 ${response.status}`
-            throw new Error(message)
+            throw new ServiceError(message, response.status === 401 || response.status === 403 ? 'UNAUTHORIZED' : response.status === 429 ? 'RATE_LIMITED' : 'UNKNOWN')
           }
-          if (!isMediaAnalysisResponse(payload)) throw new Error('截图理解服务没有返回结构化事实。')
+          if (!isMediaAnalysisResponse(payload)) throw new ServiceError('截图理解服务没有返回结构化事实。', 'INVALID_RESPONSE')
           return payload
         })(), REMOTE_VISION_TIMEOUT_MS, () => controller.abort())
       } finally {
@@ -272,10 +274,10 @@ export class PlanningAIAdapter implements AIService {
             const message = payload && typeof payload === 'object' && 'message' in payload && typeof payload.message === 'string'
               ? payload.message
               : `文本理解服务返回 ${response.status}`
-            throw new Error(message)
+            throw new ServiceError(message, response.status === 401 || response.status === 403 ? 'UNAUTHORIZED' : response.status === 429 ? 'RATE_LIMITED' : 'UNKNOWN')
           }
           if (!isTripUnderstanding(payload) || !isUsableRemoteUnderstanding(payload)) {
-            throw new Error('文本理解服务没有返回可用于排程的旅行意图。')
+            throw new ServiceError('文本理解服务没有返回可用于排程的旅行意图。', 'INVALID_RESPONSE')
           }
           return payload
         })(), REMOTE_AI_TIMEOUT_MS, () => controller.abort())
@@ -325,11 +327,20 @@ export class PlanningAIAdapter implements AIService {
   }
 
   async understandTrip(request: TripRequest, onStage: StageListener) {
-    if (!this.remoteAIEnabled) return this.local.understandTrip(request, onStage)
+    const startedAt = typeof performance === 'undefined' ? Date.now() : performance.now()
+    if (!this.remoteAIEnabled) {
+      try {
+        return await this.local.understandTrip(request, onStage)
+      } finally {
+        trackPerformance('trip_understanding', (typeof performance === 'undefined' ? Date.now() : performance.now()) - startedAt)
+      }
+    }
     const key = remoteRequestKey(request)
     const existing = this.understandingInFlight.get(key)
     if (existing) return existing
-    const requestPromise = this.runRemoteUnderstanding(request, onStage)
+    const requestPromise = this.runRemoteUnderstanding(request, onStage).finally(() => {
+      trackPerformance('trip_understanding', (typeof performance === 'undefined' ? Date.now() : performance.now()) - startedAt)
+    })
     this.understandingInFlight.set(key, requestPromise)
     void requestPromise.then(
       () => { if (this.understandingInFlight.get(key) === requestPromise) this.understandingInFlight.delete(key) },

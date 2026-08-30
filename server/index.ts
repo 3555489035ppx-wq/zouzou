@@ -17,11 +17,22 @@ class HttpError extends Error {
 }
 
 function setCorsHeaders(response: ServerResponse, request: IncomingMessage) {
-  const configuredOrigin = process.env.CORS_ORIGIN?.trim()
-  response.setHeader('Access-Control-Allow-Origin', configuredOrigin || request.headers.origin || '*')
+  const configuredOrigins = (process.env.CORS_ORIGIN ?? '').split(',').map((origin) => origin.trim()).filter(Boolean)
+  const requestOrigin = request.headers.origin
+  if (configuredOrigins.length === 0) response.setHeader('Access-Control-Allow-Origin', '*')
+  else if (requestOrigin && configuredOrigins.includes(requestOrigin)) response.setHeader('Access-Control-Allow-Origin', requestOrigin)
   response.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
   response.setHeader('Access-Control-Allow-Headers', 'Content-Type')
   response.setHeader('Vary', 'Origin')
+}
+
+function setSecurityHeaders(response: ServerResponse) {
+  response.setHeader('X-Content-Type-Options', 'nosniff')
+  response.setHeader('X-Frame-Options', 'SAMEORIGIN')
+  response.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin')
+  response.setHeader('Permissions-Policy', 'geolocation=(self), camera=(), microphone=()')
+  response.setHeader('Content-Security-Policy', "default-src 'none'; frame-ancestors 'self'; base-uri 'none'")
+  response.setHeader('Cache-Control', 'no-store')
 }
 
 function sendJson(response: ServerResponse, statusCode: number, payload: unknown) {
@@ -48,6 +59,7 @@ async function readJson(request: IncomingMessage, maxBytes = MAX_BODY_BYTES): Pr
 }
 
 export async function handleRequest(request: IncomingMessage, response: ServerResponse) {
+  setSecurityHeaders(response)
   setCorsHeaders(response, request)
 
   if (request.method === 'OPTIONS') {

@@ -7,6 +7,8 @@ import {
 } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useAppStore } from '../stores/appStore'
+import { track } from '../services/analytics'
+import { requestCurrentLocation, type LocationStatus } from '../services/location'
 import type { BotState } from '../character/engine/motionEngine'
 import type { Look } from '../private-assets/bloub/bot/engine'
 import type { Place, Plan } from '../demo-data/trips'
@@ -14,7 +16,7 @@ import { cityNames } from '../demo-data/cities'
 import { BloubBotSvg } from './BloubBotSvg'
 
 export const ZouButton = ({ children, variant = 'primary', loading = false, className = '', ...props }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'primary' | 'secondary' | 'plain'; loading?: boolean }) => (
-  <button className={`zou-button zou-button--${variant} ${className}`} data-loading={loading || undefined} disabled={loading || props.disabled} {...props}>
+  <button type="button" className={`zou-button zou-button--${variant} ${className}`} data-loading={loading || undefined} aria-busy={loading || undefined} disabled={loading || props.disabled} {...props}>
     {loading ? <><span className="spinner" aria-hidden="true" />处理中</> : children}
   </button>
 )
@@ -106,7 +108,7 @@ export const ZouDaySelector = ({ day, onChange }: { day: string; onChange: (day:
 )
 
 export const ZouSearchBar = ({ value, onChange, placeholder = '搜索地点、路线或描述' }: { value: string; onChange: (value: string) => void; placeholder?: string }) => (
-  <label className="zou-search"><Search aria-hidden="true" /><span className="sr-only">搜索</span><input type="search" value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} />{value ? <button aria-label="清空搜索" onClick={() => onChange('')}><X /></button> : null}</label>
+  <label className="zou-search"><Search aria-hidden="true" /><span className="sr-only">搜索</span><input name="search" autoComplete="off" type="search" value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} />{value ? <button type="button" aria-label="清空搜索" onClick={() => onChange('')}><X /></button> : null}</label>
 )
 
 export const ZouMotionBot = ({ state = 'idle', label, size = 'lg', gaze = null }: { state?: BotState; label?: string; size?: 'sm' | 'lg'; gaze?: Look | null }) => {
@@ -144,6 +146,7 @@ export const ZouMotionBot = ({ state = 'idle', label, size = 'lg', gaze = null }
     <div
       ref={botRef}
       className={`motion-bot motion-bot--${size}`}
+      role="img"
       aria-label={label ?? `Bloub / Grok Bot 状态：${state}`}
     >
       <BloubBotSvg state={state} reducedMotion={reducedMotion} gaze={pointerGaze ?? gaze} />
@@ -194,8 +197,32 @@ export const CityPicker = ({ open, onClose }: { open: boolean; onClose: () => vo
   const city = useAppStore((s) => s.city)
   const setCity = useAppStore((s) => s.setCity)
   const [query, setQuery] = useState('')
+  const [locationStatus, setLocationStatus] = useState<LocationStatus>('idle')
   const cities = cityNames.filter((item) => item.includes(query))
-  return <ZouBottomSheet open={open} onClose={onClose} title="选择城市"><ZouSearchBar value={query} onChange={setQuery} placeholder="搜索城市" /><button className="sheet-row"><MapPin />当前位置<span>未开启定位</span></button><h3>热门城市</h3><div className="city-grid">{cities.map((item) => <button key={item} aria-pressed={city === item} onClick={() => { setCity(item); onClose() }}>{item}</button>)}</div></ZouBottomSheet>
+  const locate = async () => {
+    setLocationStatus('requesting')
+    try {
+      await requestCurrentLocation()
+      setLocationStatus('granted')
+      track('location_permission', { result: 'granted' })
+    } catch (error) {
+      const status = error && typeof error === 'object' && 'status' in error ? (error as { status?: LocationStatus }).status : 'error'
+      const next = status === 'denied' || status === 'unavailable' ? status : 'error'
+      setLocationStatus(next)
+      track('location_permission', { result: next })
+    }
+  }
+  const locationCopy: Record<LocationStatus, string> = { idle: '点击后请求', requesting: '正在获取…', granted: '已授权', denied: '已拒绝', unavailable: '设备不支持', error: '获取失败' }
+  const locationMessage = locationStatus === 'granted'
+    ? '已获得当前位置；本地预览不会自动反查城市，请从下方确认城市。'
+    : locationStatus === 'denied'
+      ? '你仍可手动选择城市，之后可在系统设置中重新授权。'
+      : locationStatus === 'unavailable'
+        ? '当前设备不支持定位，请手动选择城市。'
+        : locationStatus === 'error'
+          ? '暂时无法获取位置，请检查系统设置后重试。'
+          : '只有点击当前位置后才会请求定位权限。'
+  return <ZouBottomSheet open={open} onClose={onClose} title="选择城市"><ZouSearchBar value={query} onChange={setQuery} placeholder="搜索城市" /><button type="button" className="sheet-row" onClick={locate} disabled={locationStatus === 'requesting'} aria-describedby="city-picker-location-status"><MapPin /><span>当前位置</span><span>{locationCopy[locationStatus]}</span></button><p id="city-picker-location-status" className="location-status" aria-live="polite">{locationMessage}</p><h3>热门城市</h3><div className="city-grid">{cities.map((item) => <button type="button" key={item} aria-pressed={city === item} onClick={() => { setCity(item); onClose() }}>{item}</button>)}</div></ZouBottomSheet>
 }
 
 export const FriendStatus = ({ accepted }: { accepted: boolean }) => <span className={accepted ? 'status accepted' : 'status pending'}>{accepted ? <><Check />已接受</> : '等待接受'}</span>

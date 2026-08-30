@@ -13,6 +13,7 @@ export type Weather = {
 
 export interface WeatherService {
   getWeather(city: string, day?: string): Promise<Weather>
+  refreshWeather(city: string, day?: string): Promise<Weather>
 }
 
 type WeatherResponse = {
@@ -122,6 +123,11 @@ class OpenMeteoWeatherAdapter implements WeatherService {
 
     pendingRequests.set(city, request)
     return request
+  }
+
+  async refreshWeather(city: string, day?: string) {
+    weatherCache.delete(city)
+    return this.getWeather(city, day)
   }
 }
 

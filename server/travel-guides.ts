@@ -1,6 +1,7 @@
 import { readFileSync, statSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { cityNames } from '../src/demo-data/cities'
+import { extractDietaryProfile, foodCompatibilityIssues } from '../src/services/trip/dietary'
 import { emptyGuideContext, type GuideCandidate, type GuideContext, type GuideKnowledgeBase } from '../src/services/trip/guides'
 import type { TripRequest } from '../src/services/trip/planner'
 
@@ -79,6 +80,7 @@ function candidateScore(candidate: GuideCandidate, city: string, query: string) 
     candidate.placeHints.join(' '),
     (candidate.foodHints ?? []).join(' '),
     (candidate.localExperienceHints ?? []).join(' '),
+    (candidate.dietaryTags ?? []).join(' '),
     candidate.claims.map((claim) => claim.text).join(' '),
   ].join(' '))
   const terms = queryTerms(query)
@@ -104,8 +106,20 @@ export function inferGuideCity(text: string) {
 export function searchTravelGuides(city: string, query = '', limit = GUIDE_LIMIT): GuideContext {
   const root = readKnowledgeBase()
   const normalizedCity = cityNames.find((item) => item === city) ?? (city.trim() || '上海')
+  const dietary = extractDietaryProfile(query)
   const candidates = root.guides
     .filter((candidate) => candidate.city === normalizedCity)
+    .filter((candidate) => {
+      const foodText = [
+        candidate.title,
+        candidate.summary,
+        ...(candidate.foodHints ?? []),
+        ...(candidate.dietaryTags ?? []),
+        ...candidate.claims.filter((claim) => claim.type === 'food').map((claim) => claim.text),
+      ].join(' ')
+      const hasFoodSignal = (candidate.foodHints?.length ?? 0) > 0 || candidate.claims.some((claim) => claim.type === 'food') || /美食|小吃|吃|餐|火锅|海鲜/.test(foodText)
+      return !hasFoodSignal || foodCompatibilityIssues(foodText, dietary, candidate.dietaryTags).length === 0
+    })
     .map((candidate) => ({ candidate, score: candidateScore(candidate, normalizedCity, query) }))
     .sort((left, right) => right.score - left.score)
     .slice(0, Math.max(1, Math.min(GUIDE_LIMIT, Math.round(limit))))
@@ -141,6 +155,7 @@ export function guideContextForPrompt(context: GuideContext) {
     placeHints: candidate.placeHints,
     foodHints: candidate.foodHints ?? [],
     localExperienceHints: candidate.localExperienceHints ?? [],
+    dietaryTags: candidate.dietaryTags ?? [],
     claims: candidate.claims,
     sourceUrl: candidate.sourceUrl,
   }))

@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "source": "Wikimedia Commons",
   "images": {
     "上海": {
@@ -202,5 +202,59 @@
       "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
       "downloadedAt": "2026-08-29T16:10:36.983Z"
     }
+  },
+  "locations": {
+    "上海": [
+      {
+        "file": "/assets/locations/shanghai-wukang-mansion.jpg",
+        "landmark": "武康大楼",
+        "alt": "上海武康大楼街角实景",
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Wukang_Mansion,_Shanghai,_May_2016_01.JPG",
+        "credit": "SSYoung",
+        "license": "CC BY-SA 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "downloadedAt": "2026-08-30"
+      },
+      {
+        "file": "/assets/locations/shanghai-wukang-road.jpg",
+        "landmark": "武康路",
+        "alt": "上海武康路林荫街景",
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Wukang_Road,_Shanghai,_May_2016.JPG",
+        "credit": "SSYoung",
+        "license": "CC BY-SA 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "downloadedAt": "2026-08-30"
+      },
+      {
+        "file": "/assets/locations/shanghai-anfu-road.jpg",
+        "landmark": "安福路",
+        "alt": "上海安福路店铺实景",
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:A_brunch_spot_at_Anfu_Rd.jpg",
+        "credit": "RunningTurtle8964",
+        "license": "CC0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+        "downloadedAt": "2026-08-30"
+      },
+      {
+        "file": "/assets/locations/shanghai-library.jpg",
+        "landmark": "上海图书馆",
+        "alt": "上海图书馆东馆外立面实景",
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Shanghai_Library_East_Hall.jpg",
+        "credit": "NMaia",
+        "license": "CC BY-SA 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "downloadedAt": "2026-08-30"
+      },
+      {
+        "file": "/assets/locations/shanghai-drama-center.jpg",
+        "landmark": "上海话剧艺术中心",
+        "alt": "上海话剧艺术中心花园建筑实景",
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Shanghai_Dramatic_Arts_Center.JPG",
+        "credit": "Fayhoo",
+        "license": "CC BY-SA 3.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+        "downloadedAt": "2026-08-30"
+      }
+    ]
   }
 }
