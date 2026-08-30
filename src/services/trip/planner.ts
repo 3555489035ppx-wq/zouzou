@@ -604,6 +604,30 @@ function guideLocalExperienceHintItem(city: string, name: string, index: number,
   }
 }
 
+function applyLegacyGuideHints(days: Record<string, PlannedStop[]>, intent: TripIntent, guideContext: GuideContext | undefined) {
+  const candidates = guideContext?.candidates ?? []
+  const profile = getCityProfile(intent.destination)
+  const foodHints = unique(candidates.flatMap((candidate) => candidate.foodHints ?? [])).slice(0, 2)
+  const localHints = unique(candidates.flatMap((candidate) => candidate.localExperienceHints ?? [])).slice(0, 1)
+  const replaceStop = (day: string, stopId: string, item: CityKnowledgeItem) => {
+    const stops = days[day]
+    const current = stops?.find((stop) => stop.id === stopId)
+    if (!current) return
+    const replacement = knowledgeItemToStop(item, intent.destination, profile, current.time, current.travelFromPreviousMinutes, current.mode)
+    days[day] = stops.map((stop) => stop.id === stopId
+      ? { ...replacement, id: current.id, transport: current.transport, note: `${replacement.note} ${current.note}` }
+      : stop)
+  }
+
+  foodHints.forEach((hint, index) => {
+    replaceStop(index === 0 ? 'Day 1' : 'Day 3', index === 0 ? 'jingan-lunch' : 'oldtown-lunch', guideFoodHintItem(intent.destination, hint, index, profile, candidates))
+  })
+  localHints.forEach((hint, index) => {
+    replaceStop('Day 3', 'sinan-bookstore', guideLocalExperienceHintItem(intent.destination, hint, index, profile, candidates))
+  })
+  return days
+}
+
 function buildCityKnowledgeItems(intent: TripIntent, knowledge: CityKnowledge, guideContext: GuideContext | undefined) {
   const profile = getCityProfile(intent.destination)
   const matched = knowledge.items.filter((item) => knowledgeMatches(item, [...intent.mustVisit, ...intent.preferences]))
@@ -887,7 +911,7 @@ export function generatePlans(intent: TripIntent, guideContext?: GuideContext): 
       return createPlan(variant.id, variant.label, days, intent, variant.walking, variant.difference, budgetValues, knowledge, guideContext)
     })
   }
-  const base = adaptDaysForCity(realShanghaiDays(), intent)
+  const base = applyLegacyGuideHints(adaptDaysForCity(realShanghaiDays(), intent), intent, guideContext)
   const city = intent.destination
   const profile = getCityProfile(city)
   const easy = cloneDays(base)

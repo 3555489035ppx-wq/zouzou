@@ -69,6 +69,8 @@ export function searchGuideCandidates(
 ): GuideContext {
   const normalized = query.trim().toLowerCase()
   const terms = normalized.split(/[\s,，、。；;]+/).filter((term) => term.length >= 2)
+  const wantsFood = /本地美食|小吃|逛吃|吃|餐|早市|夜市/.test(normalized)
+  const wantsLocal = /本地人|土著|当地人|市井|烟火|早市|夜市|菜市场|洗浴|茶馆|采耳|骑行|赶海/.test(normalized)
   const cityGuides = knowledgeBase.guides.filter((guide) => guide.city === city)
   const scored = cityGuides.map((guide) => {
     const haystack = [
@@ -82,7 +84,9 @@ export function searchGuideCandidates(
     ].join(' ').toLowerCase()
     const termScore = terms.reduce((score, term) => score + (haystack.includes(term) ? 2 : 0), 0)
     const communityScore = guide.likes !== null && guide.likes >= 500 ? 1 : 0
-    return { guide, score: termScore + communityScore }
+    const hintScore = (wantsFood && (guide.foodHints?.length ?? 0) > 0 ? 4 : 0)
+      + (wantsLocal && (guide.localExperienceHints?.length ?? 0) > 0 ? 4 : 0)
+    return { guide, score: termScore + communityScore + hintScore }
   }).sort((left, right) => right.score - left.score || (right.guide.likes ?? 0) - (left.guide.likes ?? 0))
 
   return {

@@ -68,3 +68,31 @@ export async function getAmapWalkingRoute(AMap: AMapNamespace, stops: AMapPoint[
   })))
   return legs.reduce<AMapPoint[]>((route, leg) => route.concat(route.length ? leg.slice(1) : leg), [])
 }
+
+type PublicWalkingRouteResponse = {
+  code?: string
+  routes?: Array<{ geometry?: { coordinates?: unknown[] } }>
+}
+
+const publicWalkingRouteBase = (import.meta.env.VITE_WALKING_ROUTE_URL ?? 'https://routing.openstreetmap.de/routed-foot/route/v1/driving').replace(/\/+$/, '')
+
+/**
+ * A keyless walking fallback for local and preview environments. The service
+ * returns an OSM road geometry; it is intentionally never replaced with a
+ * straight line when it fails.
+ */
+export async function getPublicWalkingRoute(stops: AMapPoint[], signal?: AbortSignal): Promise<AMapPoint[]> {
+  if (stops.length < 2) return stops
+  const coordinates = stops.map(([lng, lat]) => `${lng},${lat}`).join(';')
+  const params = new URLSearchParams({ overview: 'full', geometries: 'geojson', steps: 'false' })
+  const response = await fetch(`${publicWalkingRouteBase}/${coordinates}?${params.toString()}`, {
+    signal,
+    headers: { Accept: 'application/json' },
+  })
+  if (!response.ok) throw new Error(`公开步行路线服务 HTTP ${response.status}`)
+  const result = await response.json() as PublicWalkingRouteResponse
+  const path = result.routes?.[0]?.geometry?.coordinates
+    ?.filter((point): point is AMapPoint => Array.isArray(point) && typeof point[0] === 'number' && typeof point[1] === 'number') ?? []
+  if (result.code !== 'Ok' || path.length < 2) throw new Error('公开步行路线服务未返回可用道路几何')
+  return path
+}

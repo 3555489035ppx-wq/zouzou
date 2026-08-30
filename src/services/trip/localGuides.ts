@@ -4,5 +4,5 @@ import { searchGuideCandidates, type GuideContext, type GuideKnowledgeBase } fro
 const knowledgeBase = guideData as GuideKnowledgeBase
 
 export function getLocalGuideContext(city: string, query: string): GuideContext {
-  return searchGuideCandidates(knowledgeBase, city, query)
+  return searchGuideCandidates(knowledgeBase, city, query, 8)
 }

@@ -122,6 +122,40 @@ describe('Shanghai itinerary planner', () => {
     expect(Object.values(generated[0].days).flat().some((stop) => stop.name.includes('夜市'))).toBe(true)
   })
 
+  it('keeps community food and local-life hints in the detailed Shanghai route', () => {
+    const understanding = understandTrip({ text: DEFAULT_SHANGHAI_PROMPT, media: [] })
+    const guideContext: GuideContext = {
+      city: '上海',
+      candidates: [{
+        id: 'guide-shanghai-1',
+        city: '上海',
+        platform: 'bilibili',
+        sourceUrl: 'https://www.bilibili.com/video/BV1example',
+        title: '上海本地人逛吃攻略',
+        author: '测试作者',
+        publishedAt: null,
+        fetchedAt: '2026-08-30T00:00:00.000Z',
+        likes: null,
+        summary: '上海旅行攻略线索；吃法：生煎；本地项目：早市。',
+        tags: ['本地人推荐'],
+        placeHints: [],
+        foodHints: ['生煎'],
+        localExperienceHints: ['早市'],
+        claims: [],
+        permission: 'unknown',
+      }],
+      matchedTerms: ['本地美食', '早市'],
+      generatedAt: '2026-08-30T00:00:00.000Z',
+      disclaimer: '仅作社区体验参考。',
+    }
+    const plan = generatePlans(understanding.intent, guideContext)[0]
+    const stops = Object.values(plan.days).flat()
+
+    expect(stops.some((stop) => stop.name === '生煎（社区线索）')).toBe(true)
+    expect(stops.some((stop) => stop.name === '早市（社区线索）')).toBe(true)
+    expect(plan.validation.passed).toBe(true)
+  })
+
   it('generates a complete three-day timeline for every supported city', () => {
     for (const city of cityNames) {
       const firstPlace = getCityProfile(city).demoLabels[0]
