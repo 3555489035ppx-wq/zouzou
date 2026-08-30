@@ -237,10 +237,6 @@ input:focus-visible, textarea:focus-visible, select:focus-visible { outline-colo
 .place-card__actions button[aria-pressed="true"] { background: var(--color-ink); color: var(--color-paper); }
 .place-card__actions svg { width: 16px; height: 16px; }
 .mini-map { height: 390px; background: var(--color-paper-soft); border-radius: var(--radius-card); overflow: hidden; }
-.mini-map svg { width: 100%; height: 100%; }
-.mini-map path { fill: none; stroke: var(--color-ink); stroke-width: 2; stroke-dasharray: 6 5; }
-.mini-map circle { fill: var(--color-paper); stroke: var(--color-ink); stroke-width: 2; }
-.mini-map text { font-size: 9px; font-family: var(--font-body); }
 .budget-card { border-top: var(--rule-thin) solid var(--color-rule); padding-top: var(--space-md); display: grid; gap: var(--space-md); }
 .budget-card > div { display: flex; justify-content: space-between; align-items: baseline; }
 .budget-card > div strong { font-size: var(--text-title-1); font-variant-numeric: tabular-nums; }
