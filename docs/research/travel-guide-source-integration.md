@@ -26,6 +26,13 @@
 
 结论：小红书可以作为“用户主动导入的攻略来源”，或者在取得官方合作/明确授权后接入；当前不应实现无授权的后台爬虫。
 
+### B 站
+
+- 本轮通过 OpenCLI 的公开搜索能力补充路线、美食和本地生活候选，只保存视频标题、作者、可用的发布时间/热度、来源链接和短线索，不复制视频、字幕或完整描述。
+- 需要登录的字幕/总结接口不作为知识库依赖；因此 B 站内容只参与候选发现和排序，不能直接证明价格、营业时间、路线或预约状态。
+
+结论：B 站公开搜索元数据可以作为低频社区候选源；若未来需要全文、字幕或后台持续同步，应先取得明确授权并单独评估平台规则。
+
 ### 携程及交易型平台
 
 - 携程曾公开介绍旅游开放平台，覆盖内容导入/分销以及门票、玩乐、租车、接送机等交易接口，但这是供应商/分销商合作模式，不等于任何应用都可以读取携程社区攻略。见：[携程旅游开放平台公告](https://ttdopen.ctrip.com/apiplatform/help-detail.do?no=88)。
@@ -44,15 +51,19 @@
 ```ts
 type GuideCandidate = {
   id: string
-  platform: 'xiaohongshu' | 'ctrip' | 'dianping' | 'user-import' | 'licensed-search'
+  platform: 'xiaohongshu' | 'bilibili' | 'user-import' | 'licensed-search'
   sourceUrl: string
   title: string
-  author?: string
-  publishedAt?: string
+  author: string
+  publishedAt: string | null
   fetchedAt: string
-  excerpt: string
+  summary: string
+  tags: string[]
+  placeHints: string[]
+  foodHints?: string[]
+  localExperienceHints?: string[]
   claims: Array<{
-    type: 'place' | 'activity' | 'tip' | 'price' | 'opening' | 'route'
+    type: 'place' | 'activity' | 'tip' | 'route' | 'food'
     text: string
     placeName?: string
     confidence: number
@@ -76,3 +87,10 @@ type GuideCandidate = {
 - 用户点击“加入行程”后才进入排程，并保留来源链接和撤销操作。
 
 这样既能吸收小红书里的真实体验，也不会让一篇可能过期或带推广性质的笔记直接改变用户的行程。
+
+## 本轮执行记录（2026-08-30）
+
+- 使用用户控制的 Google Chrome 会话确认小红书登录状态；未读取密码、验证码、Cookie 或浏览器本地存储。
+- 通过低频只读采集补充 20 个城市的 B 站公开搜索结果；小红书保留已有来源并接入了少量已成功读取的笔记详情。当前 `data/travel-guides.json` 共 386 条摘要，其中 B 站 278 条、小红书 108 条。
+- 结构化字段新增 `foodHints` 与 `localExperienceHints`，用于把“本地小吃”和“本地人项目”送入候选时间轴；所有社区线索仍标记为待核验。
+- 小红书后续批量搜索出现连续空结果，网页搜索交互也发生超时，因此没有继续高频重试或删除已有小红书数据。再次采集应使用更长间隔、分批执行，并保留失败时的旧数据。

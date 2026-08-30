@@ -1,6 +1,6 @@
-export type GuidePlatform = 'xiaohongshu' | 'user-import' | 'licensed-search'
+export type GuidePlatform = 'xiaohongshu' | 'bilibili' | 'user-import' | 'licensed-search'
 
-export type GuideClaimType = 'place' | 'activity' | 'tip' | 'route'
+export type GuideClaimType = 'place' | 'activity' | 'tip' | 'route' | 'food'
 
 export type GuideClaim = {
   type: GuideClaimType
@@ -28,6 +28,10 @@ export type GuideCandidate = {
   summary: string
   tags: string[]
   placeHints: string[]
+  /** Short food terms extracted from titles or user-visible detail text. */
+  foodHints?: string[]
+  /** Local-life activities surfaced by community content. */
+  localExperienceHints?: string[]
   claims: GuideClaim[]
   permission: 'user-provided' | 'licensed' | 'unknown'
 }
@@ -46,6 +50,17 @@ export type GuideContext = {
   disclaimer: string
 }
 
+export function guidePlatformLabel(platform: GuidePlatform) {
+  if (platform === 'xiaohongshu') return '小红书'
+  if (platform === 'bilibili') return 'B站'
+  if (platform === 'user-import') return '用户导入'
+  return '授权来源'
+}
+
+export function guidePlatformsLabel(candidates: GuideCandidate[]) {
+  return [...new Set(candidates.map((candidate) => guidePlatformLabel(candidate.platform)))].join('、') || '社区'
+}
+
 export function searchGuideCandidates(
   knowledgeBase: GuideKnowledgeBase,
   city: string,
@@ -56,7 +71,15 @@ export function searchGuideCandidates(
   const terms = normalized.split(/[\s,，、。；;]+/).filter((term) => term.length >= 2)
   const cityGuides = knowledgeBase.guides.filter((guide) => guide.city === city)
   const scored = cityGuides.map((guide) => {
-    const haystack = [guide.title, guide.summary, ...guide.tags, ...guide.placeHints, ...guide.claims.map((claim) => claim.text)].join(' ').toLowerCase()
+    const haystack = [
+      guide.title,
+      guide.summary,
+      ...guide.tags,
+      ...guide.placeHints,
+      ...(guide.foodHints ?? []),
+      ...(guide.localExperienceHints ?? []),
+      ...guide.claims.map((claim) => claim.text),
+    ].join(' ').toLowerCase()
     const termScore = terms.reduce((score, term) => score + (haystack.includes(term) ? 2 : 0), 0)
     const communityScore = guide.likes !== null && guide.likes >= 500 ? 1 : 0
     return { guide, score: termScore + communityScore }

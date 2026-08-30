@@ -101,6 +101,8 @@ describe('Shanghai itinerary planner', () => {
           summary: '杭州旅行攻略线索；主题：City Walk；地点：西湖。',
           tags: ['City Walk'],
           placeHints: ['西湖'],
+          foodHints: ['片儿川'],
+          localExperienceHints: ['夜市'],
           claims: [],
           permission: 'unknown',
         },
@@ -116,6 +118,8 @@ describe('Shanghai itinerary planner', () => {
     expect(generated[0].evidence.some((item) => item.includes('小红书社区攻略线索'))).toBe(true)
     expect(Object.values(generated[0].days).flat().some((stop) => stop.name.includes('武康路'))).toBe(false)
     expect(Object.values(generated[0].days).flat().some((stop) => stop.name.includes('西湖'))).toBe(true)
+    expect(Object.values(generated[0].days).flat().some((stop) => stop.name.includes('片儿川'))).toBe(true)
+    expect(Object.values(generated[0].days).flat().some((stop) => stop.name.includes('夜市'))).toBe(true)
   })
 
   it('generates a complete three-day timeline for every supported city', () => {

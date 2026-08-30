@@ -1,7 +1,7 @@
 import { cityNames, getCityProfile } from '../../demo-data/cities'
 import type { Place, Plan } from '../../demo-data/trips'
-import type { GuideContext } from './guides'
-import { getCityKnowledge, knowledgeMatches, selectHotelOption, type CityKnowledge, type CityKnowledgeItem } from './cityKnowledge'
+import { guidePlatformsLabel, type GuideCandidate, type GuideContext } from './guides'
+import { getCityKnowledge, knowledgeMatches, selectHotelOption, type CityKnowledge, type CityKnowledgeItem, type KnowledgeSource } from './cityKnowledge'
 
 export const DEFAULT_SHANGHAI_PROMPT = '我和朋友计划 2026年9月18日到9月20日去上海 3天2晚。9月18日10:30到虹桥火车站，住静安寺附近酒店，9月20日18:30从虹桥返程。两个人，本地总预算4000元（含住宿和市内交通，不含往返车票）。想去武康路、安福路、看展和外滩，不想太赶，喜欢咖啡，最好每天留一段缓冲。'
 
@@ -536,7 +536,23 @@ function generatedAreaItem(city: string, name: string, index: number, profile: R
   }
 }
 
-function guideHintItem(city: string, name: string, index: number, profile: ReturnType<typeof getCityProfile>): CityKnowledgeItem {
+const COMMUNITY_CHECKED_AT = '2026-08-30'
+
+function communitySource(candidates: GuideCandidate[], hint: string, kind: 'place' | 'food' | 'local'): KnowledgeSource {
+  const candidate = candidates.find((item) => kind === 'place'
+    ? item.placeHints.includes(hint)
+    : kind === 'food'
+      ? item.foodHints?.includes(hint)
+      : item.localExperienceHints?.includes(hint))
+  return {
+    label: candidate ? `${guidePlatformsLabel([candidate])}社区攻略线索` : '社区攻略线索',
+    url: candidate?.sourceUrl ?? '#',
+    kind: 'community',
+    checkedAt: COMMUNITY_CHECKED_AT,
+  }
+}
+
+function guideHintItem(city: string, name: string, index: number, profile: ReturnType<typeof getCityProfile>, candidates: GuideCandidate[]): CityKnowledgeItem {
   const [lng, lat] = profile.mapCenter
   return {
     id: `${city}-guide-hint-${index}`,
@@ -548,7 +564,42 @@ function guideHintItem(city: string, name: string, index: number, profile: Retur
     coordinates: [lng + (index - 1) * 0.008, lat + (index % 2 ? 0.004 : -0.004)],
     durationMinutes: 75,
     price: { min: 0, max: 60, unit: 'person', note: '社区线索估算，出行前核验' },
-    source: { label: '社区攻略线索', url: '#', kind: 'community', checkedAt: '2026-08-30' },
+    source: communitySource(candidates, name, 'place'),
+    verified: false,
+  }
+}
+
+function guideFoodHintItem(city: string, name: string, index: number, profile: ReturnType<typeof getCityProfile>, candidates: GuideCandidate[]): CityKnowledgeItem {
+  const [lng, lat] = profile.mapCenter
+  const sourceLabel = guidePlatformsLabel(candidates)
+  return {
+    id: `${city}-guide-food-${index}`,
+    name: `${name}（社区线索）`,
+    category: 'food',
+    area: `${city}本地生活线索`,
+    tags: ['本地小吃', '社区线索', '待核验'],
+    summary: `${sourceLabel}社区内容提到的${name}体验；具体门店、排队和价格需要实时确认。`,
+    coordinates: [lng + (index - 1) * 0.006, lat + (index % 2 ? 0.003 : -0.003)],
+    durationMinutes: 45,
+    price: { min: 15, max: 80, unit: 'person', note: '社区体验估算，出行前核验' },
+    source: communitySource(candidates, name, 'food'),
+    verified: false,
+  }
+}
+
+function guideLocalExperienceHintItem(city: string, name: string, index: number, profile: ReturnType<typeof getCityProfile>, candidates: GuideCandidate[]): CityKnowledgeItem {
+  const [lng, lat] = profile.mapCenter
+  return {
+    id: `${city}-guide-local-${index}`,
+    name: `${name}（社区线索）`,
+    category: 'activity',
+    area: `${city}本地生活线索`,
+    tags: ['本地人项目', '社区线索', '待核验'],
+    summary: `社区内容提到的本地生活项目：${name}；是否适合当天、具体地点和开放状态需要实时确认。`,
+    coordinates: [lng + (index - 1) * 0.007, lat + (index % 2 ? 0.004 : -0.004)],
+    durationMinutes: 75,
+    price: { min: 0, max: 80, unit: 'person', note: '社区体验估算，出行前核验' },
+    source: communitySource(candidates, name, 'local'),
     verified: false,
   }
 }
@@ -556,16 +607,31 @@ function guideHintItem(city: string, name: string, index: number, profile: Retur
 function buildCityKnowledgeItems(intent: TripIntent, knowledge: CityKnowledge, guideContext: GuideContext | undefined) {
   const profile = getCityProfile(intent.destination)
   const matched = knowledge.items.filter((item) => knowledgeMatches(item, [...intent.mustVisit, ...intent.preferences]))
+  const guideCandidates = guideContext?.candidates ?? []
+  const guideFoodHints = unique(guideCandidates.flatMap((candidate) => candidate.foodHints ?? [])).slice(0, 4)
+  const guideLocalHints = unique(guideCandidates.flatMap((candidate) => candidate.localExperienceHints ?? [])).slice(0, 4)
+  const guidePlaceHints = unique(guideCandidates.flatMap((candidate) => candidate.placeHints)).slice(0, 6)
+  const communityItems = [
+    ...guideFoodHints.map((hint, index) => guideFoodHintItem(intent.destination, hint, index, profile, guideCandidates)),
+    ...guideLocalHints.map((hint, index) => guideLocalExperienceHintItem(intent.destination, hint, index, profile, guideCandidates)),
+    ...guidePlaceHints.map((hint, index) => guideHintItem(intent.destination, hint, index, profile, guideCandidates)),
+  ]
   const byName = new Map<string, CityKnowledgeItem>()
-  ;[...matched, ...knowledge.items].forEach((item) => byName.set(item.name, item))
+  const addItem = (item: CityKnowledgeItem) => {
+    if (!byName.has(item.name)) byName.set(item.name, item)
+  }
+  if (knowledge.status === 'curated') {
+    matched.forEach(addItem)
+    communityItems.forEach(addItem)
+    knowledge.items.filter((item) => !matched.includes(item)).forEach(addItem)
+  } else {
+    communityItems.forEach(addItem)
+    matched.forEach(addItem)
+    knowledge.items.filter((item) => !matched.includes(item)).forEach(addItem)
+  }
   profile.demoLabels.forEach((label, index) => {
     if (knowledge.status === 'curated' && /咖啡|午餐|晚餐|本地/.test(label)) return
-    if (![...byName.keys()].some((name) => name.includes(label) || label.includes(name))) {
-      byName.set(label, generatedAreaItem(intent.destination, label, index, profile))
-    }
-  })
-  guideContext?.candidates.flatMap((candidate) => candidate.placeHints).filter(Boolean).forEach((hint, index) => {
-    if (![...byName.keys()].some((name) => name.includes(hint) || hint.includes(name))) byName.set(hint, guideHintItem(intent.destination, hint, index, profile))
+    if (![...byName.keys()].some((name) => name.includes(label) || label.includes(name))) addItem(generatedAreaItem(intent.destination, label, index, profile))
   })
   const items = [...byName.values()]
   let index = 0
@@ -794,7 +860,7 @@ function createPlan(
       `地点为${intent.destination}的城市结构化候选地点或区域。`,
       knowledge.intro,
       ...(guideContext && guideContext.candidates.length > 0
-        ? [`参考了 ${guideContext.candidates.length} 条小红书社区攻略线索；仅用于体验排序，不把笔记中的价格、营业时间或路线当成事实。`]
+        ? [`参考了 ${guideContext.candidates.length} 条${guidePlatformsLabel(guideContext.candidates)}社区攻略线索；仅用于体验排序，不把内容中的价格、营业时间或路线当成事实。`]
         : []),
       '交通耗时、餐饮价格和门票为本地演示估算，不是实时库存或订单。',
       '出行前应重新核对营业时间、预约规则和当天路况。',
@@ -813,7 +879,7 @@ export function generatePlans(intent: TripIntent, guideContext?: GuideContext): 
     const variants: Array<{ id: 'match' | 'easy' | 'rich'; label: string; density: 'easy' | 'match' | 'rich'; walking: string; difference: string }> = [
       { id: 'match', label: '最匹配', density: 'match', walking: '片区优先', difference: '把必去地点、本地小吃、餐厅和住宿档位放进同一条不绕路的时间轴。' },
       { id: 'easy', label: '最轻松', density: 'easy', walking: '少走动', difference: '每天减少一个非必要停留，保留完整用餐和自由探索时间。' },
-      { id: 'rich', label: '体验最丰富', density: 'rich', walking: '体验更多', difference: '增加一段夜景或社区线索，但仍按预算和返程锚点留缓冲。' },
+      { id: 'rich', label: '体验最丰富', density: 'rich', walking: '体验更多', difference: '增加一段夜景或本地体验，但仍按预算和返程锚点留缓冲。' },
     ]
     return variants.map((variant) => {
       const days = buildKnowledgeDays(intent, knowledge, guideContext, variant.density)
@@ -848,9 +914,7 @@ export function generatePlans(intent: TripIntent, guideContext?: GuideContext): 
     factSource: `${city}公共夜景候选；路线和开放状态需出行前复核`,
   }))
 
-  const guideNote = guideContext && guideContext.candidates.length > 0
-    ? `结合${city}攻略中反复出现的${guideContext.candidates.flatMap((candidate) => candidate.placeHints).slice(0, 3).join('、') || '体验线索'}作为候选参考。`
-    : `按${city}的结构化城市候选地点安排。`
+  const guideNote = `按${city}的结构化城市知识库候选地点安排。`
   const lodging = city === '上海' ? 980 : 760
 
   return [

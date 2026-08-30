@@ -76,6 +76,8 @@ function candidateScore(candidate: GuideCandidate, city: string, query: string) 
     candidate.summary,
     candidate.tags.join(' '),
     candidate.placeHints.join(' '),
+    (candidate.foodHints ?? []).join(' '),
+    (candidate.localExperienceHints ?? []).join(' '),
     candidate.claims.map((claim) => claim.text).join(' '),
   ].join(' '))
   const terms = queryTerms(query)
@@ -125,11 +127,14 @@ export function getGuideStats() {
 
 export function guideContextForPrompt(context: GuideContext) {
   return context.candidates.slice(0, GUIDE_LIMIT).map((candidate) => ({
+    platform: candidate.platform,
     title: candidate.title,
     author: candidate.author,
     summary: candidate.summary,
     tags: candidate.tags,
     placeHints: candidate.placeHints,
+    foodHints: candidate.foodHints ?? [],
+    localExperienceHints: candidate.localExperienceHints ?? [],
     claims: candidate.claims,
     sourceUrl: candidate.sourceUrl,
   }))

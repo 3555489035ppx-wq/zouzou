@@ -54,19 +54,19 @@ pnpm dev
 
 ## 接口
 
-### 城市攻略知识库（小红书只读线索）
+### 城市攻略知识库（小红书 + B 站社区线索）
 
-项目通过已登录的 OpenCLI 浏览器会话，以低频只读方式采集热门城市的笔记搜索结果和少量正文，写入 `data/travel-guides.json`。采集器只保存标题、作者、点赞数、去参数化来源链接、主题标签和结构化地点线索，不保存原文、图片或 Cookie：
+项目通过 OpenCLI 以低频只读方式采集热门城市的社区搜索结果，写入 `data/travel-guides.json`。小红书使用用户控制的已登录浏览器会话读取搜索结果和少量正文；B 站当前只使用公开搜索元数据。采集器只保存标题、作者、可用的发布时间/热度、去参数化来源链接、主题标签、地点/小吃/本地生活线索，不保存原文、图片或 Cookie：
 
 ```powershell
 # 默认采集 20 个城市：上海、杭州、苏州、南京、成都、厦门、北京、广州、重庆、西安、深圳、长沙、青岛、武汉、昆明、三亚、桂林、哈尔滨、贵阳、张家界
 pnpm guides:collect
 
-# 先小批量验证；每次笔记读取之间至少 2 秒
-pnpm guides:collect -- --cities 上海,杭州 --limit 5 --details 1 --delay 2500
+# 先小批量验证；每个平台请求间隔至少 2 秒
+pnpm guides:collect -- --cities 上海,杭州 --platforms xiaohongshu,bilibili --topics route,food,local --limit 5 --details 1 --delay 2500
 ```
 
-用户提交旅行描述时，服务端会按城市和输入内容检索知识库，将最多 8 条摘要作为外部经验线索传给模型。攻略线索不能覆盖用户日期、到达、返程、住宿、预算等硬约束；其中的价格、营业时间、路线和预约状态也不会直接变成事实。方案详情会保留来源链接，供用户复核。
+用户提交旅行描述时，服务端会按城市和输入内容检索知识库，将最多 8 条摘要作为外部经验线索传给模型。小吃和本地生活项目会进入候选时间轴，但统一标为社区线索/待核验；攻略线索不能覆盖用户日期、到达、返程、住宿、预算等硬约束，其中的价格、营业时间、路线和预约状态也不会直接变成事实。方案详情会保留来源链接，供用户复核。
 
 知识库查询接口：
 
@@ -74,7 +74,7 @@ pnpm guides:collect -- --cities 上海,杭州 --limit 5 --details 1 --delay 2500
 Invoke-RestMethod -Uri "http://127.0.0.1:8787/api/guides?city=上海&q=citywalk&limit=5"
 ```
 
-小红书登录、浏览器会话和采集边界见 [`travel-guide-source-integration.md`](./research/travel-guide-source-integration.md)。
+小红书登录、浏览器会话、B 站公开检索和采集边界见 [`travel-guide-source-integration.md`](./research/travel-guide-source-integration.md)。
 
 ### 城市真实图片
 
@@ -154,4 +154,4 @@ Invoke-RestMethod -Uri http://127.0.0.1:8787/api/health
 - 模型只提取用户意图，不生成未经核验的景点、路线、价格或营业时间。
 - 模型请求使用 `store: false`；应用仍应根据自己的隐私和日志策略处理输入文本。
 - AI 生成文字必须遵守 [`AI_GENERATION_SPEC.md`](./AI_GENERATION_SPEC.md)；模型输出不能绕过服务端字段校验和行程校验。
-- 旅行攻略来源（包括小红书）只能作为用户主动导入的线索；接入边界和来源字段见 [`travel-guide-source-integration.md`](./research/travel-guide-source-integration.md)。
+- 旅行攻略来源（包括小红书和 B 站）只能作为社区体验候选线索；小红书读取依赖用户控制的浏览器会话，B 站当前只使用公开搜索元数据，接入边界和来源字段见 [`travel-guide-source-integration.md`](./research/travel-guide-source-integration.md)。
