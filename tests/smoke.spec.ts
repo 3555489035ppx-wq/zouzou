@@ -30,6 +30,16 @@ test('旅行输入到三方案再到方案详情', async ({ page }) => {
   await expect(page.getByText('上海博物馆东馆', { exact: true })).toBeVisible()
 })
 
+test('方案分页点同步卡片与选中态', async ({ page }) => {
+  await page.goto('/travel/plans')
+  const dots = page.locator('.plans-dots button')
+  await expect(dots).toHaveCount(3)
+  await dots.nth(1).click()
+  await expect(dots.nth(1)).toHaveAttribute('aria-current', 'true')
+  await expect(dots.nth(0)).not.toHaveAttribute('aria-current', 'true')
+  await expect(page.locator('.plans-carousel__item').nth(1).locator('button[aria-pressed="true"]')).toBeVisible()
+})
+
 test('社区卡片直接进入详情、可互动并可选回放', async ({ page }) => {
   await page.goto('/community')
   const firstPost = page.locator('.community-card__open').first()

@@ -803,6 +803,16 @@ input[role="switch"]:checked::after { transform: translateX(20px); }
 .detail-actions > button[aria-label="喜欢"][aria-pressed="true"] { color: #ff3b30; }
 .detail-action-count { font-size: 11px; font-variant-numeric: tabular-nums; }
 
+/* P0: profile imagery is a full-bleed surface. The presentation chrome sits
+   above it, so the cover can continue behind the status bar and Dynamic Island. */
+.app-shell.is-embedded:has(.profile-page) .app-page {
+  margin-top: 0;
+  height: 874px;
+  min-height: 874px;
+}
+.ios-status--light { color: #fff; text-shadow: 0 1px 3px rgb(0 0 0 / .35); }
+.ios-status--light .ios-signals { color: #fff; }
+
 .detail-replay-button { width: 100%; min-height: 62px; border: 1px solid var(--color-rule-strong); border-radius: 16px; background: var(--color-paper); padding: 10px 14px; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; text-align: start; gap: 1px 10px; }
 .detail-replay-button span:first-child { font-family: var(--font-display); font-weight: 700; }
 .detail-replay-button small { color: var(--color-neutral); font-size: 12px; grid-column: 1; }
