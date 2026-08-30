@@ -1,8 +1,0 @@
-{
-  "date": "2026-08-28",
-  "framework": "React 19 + Vite 7 + TypeScript",
-  "fontStack": "rounded Chinese display + iOS-compatible system body",
-  "palette": "pure white, near-black, neutral gray, natural-color photography",
-  "motion": "Framer Motion + deterministic Zou Bot engine + MapLibre route progress",
-  "spacing": "4pt base scale"
-}

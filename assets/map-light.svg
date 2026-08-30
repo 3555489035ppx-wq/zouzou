@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 402 360" role="img" aria-label="浅色城市地图">
+  <rect width="402" height="360" fill="#eef2f1"/>
+  <path d="M-36 300 C45 250 84 264 137 226 C189 189 206 142 242 116 C283 86 322 89 439 24 L439 88 C352 139 307 130 276 157 C229 197 218 242 155 279 C105 309 50 321 -36 348 Z" fill="#dce9ec"/>
+  <g fill="none" stroke="#d2d9d5" stroke-width="7" stroke-linecap="round" opacity=".9">
+    <path d="M-24 46 L124 94 L263 68 L424 112"/>
+    <path d="M-18 122 L103 144 L214 120 L430 169"/>
+    <path d="M-20 198 L84 184 L190 205 L430 242"/>
+    <path d="M-18 278 L97 250 L200 277 L432 316"/>
+    <path d="M52 -18 L91 380"/>
+    <path d="M143 -18 L171 380"/>
+    <path d="M244 -18 L251 380"/>
+    <path d="M342 -18 L319 380"/>
+  </g>
+  <g fill="none" stroke="#fafcfa" stroke-width="2" opacity=".95">
+    <path d="M-24 46 L124 94 L263 68 L424 112"/>
+    <path d="M-18 122 L103 144 L214 120 L430 169"/>
+    <path d="M-20 198 L84 184 L190 205 L430 242"/>
+    <path d="M-18 278 L97 250 L200 277 L432 316"/>
+    <path d="M52 -18 L91 380"/>
+    <path d="M143 -18 L171 380"/>
+    <path d="M244 -18 L251 380"/>
+    <path d="M342 -18 L319 380"/>
+  </g>
+  <g fill="#a8b2ae" font-family="system-ui,-apple-system,sans-serif" font-size="11" letter-spacing=".04em">
+    <text x="28" y="62">静安</text><text x="117" y="166">徐汇</text><text x="267" y="95">黄浦</text><text x="326" y="202">浦东</text><text x="208" y="318">滨江</text>
+  </g>
+</svg>
