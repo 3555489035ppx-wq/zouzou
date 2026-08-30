@@ -25,6 +25,7 @@ test('旅行输入到三方案再到方案详情', async ({ page }) => {
   await expect(page.getByText(/结构化时间与预算检查通过|完整时间轴已生成/)).toBeVisible()
   await expect(page.getByText('虹桥火车站', { exact: true })).toBeVisible()
   await expect(page.getByText('武康路', { exact: true })).toBeVisible()
+  await expect(page.getByText('参考的社区攻略', { exact: true })).toHaveCount(0)
   await page.getByRole('tab', { name: 'Day 2' }).click()
   await expect(page.getByText('上海博物馆东馆', { exact: true })).toBeVisible()
 })
