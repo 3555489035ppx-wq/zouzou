@@ -100,7 +100,7 @@ const migratePersistedState = (value: unknown): Partial<AppState> => {
   return {
     nickname: typeof state.nickname === 'string' ? state.nickname.slice(0, 40) : '小鹏',
     avatar: typeof state.avatar === 'string' ? state.avatar : '/assets/date.jpg',
-    cover: typeof state.cover === 'string' ? state.cover : '/assets/shanghai-skyline.jpg',
+    cover: typeof state.cover === 'string' && state.cover.trim() ? state.cover : '/assets/shanghai-skyline.jpg',
     bio: typeof state.bio === 'string' ? state.bio.slice(0, 120) : '喜欢慢慢走，也喜欢把走过的路整理清楚。',
     city: typeof state.city === 'string' ? state.city : '上海',
     tripCity: typeof state.tripCity === 'string' ? state.tripCity : null,

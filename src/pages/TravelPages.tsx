@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
-import { ArrowDown, ArrowUp, Building2, ImagePlus, Link2, Lock, Plus, QrCode, Share2, X } from 'lucide-react'
+import { ArrowDown, ArrowUp, Building2, Copy, ImagePlus, Link2, Lock, Plus, Share2, X } from 'lucide-react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { AppShell } from '../components/AppShell'
 import { RealRouteMap } from '../components/RealRouteMap'
@@ -440,10 +440,22 @@ export const FriendsPage = () => {
   const navigate = useNavigate()
   const advanceTripFlow = useAppStore((state) => state.transitionTripFlow)
   const [invite, setInvite] = useState(false)
+  const [inviteMessage, setInviteMessage] = useState('')
   const accepted = useAppStore((state) => state.friendInviteAccepted)
   const setAccepted = useAppStore((state) => state.setFriendInviteAccepted)
+  const inviteUrl = `${window.location.origin}/travel/friends?invite=1`
+  const copyInvite = async () => {
+    try { await navigator.clipboard.writeText(inviteUrl); setInvite(false); setInviteMessage('邀请链接已复制，发给朋友即可打开。') }
+    catch { window.prompt('复制邀请链接', inviteUrl) }
+  }
+  const shareInvite = async () => {
+    try {
+      if (navigator.share) { await navigator.share({ title: '和我一起决定这趟行程', text: '打开走走，一起选出最合适的安排。', url: inviteUrl }); setInvite(false); setInviteMessage('邀请已发送。') }
+      else await copyInvite()
+    } catch (error) { if (!(error instanceof DOMException && error.name === 'AbortError')) await copyInvite() }
+  }
   useEffect(() => { advanceTripFlow('OPEN_DECISION') }, [advanceTripFlow])
-  return <AppShell><ZouNavigationBar title="朋友" right={<button className="text-button" onClick={() => setInvite(true)}>邀请</button>} /><div className="page-content friends-page"><header><h1>和朋友一起决定</h1><p>意见表控制在 30 秒内，AI 只总结共识和冲突。</p></header><section className="friend-list">{friends.map((friend, index) => { const isAccepted = friend.status === 'accepted' || (friend.status === 'pending' && accepted); return <article key={friend.id}><ZouAvatar src={friend.image} name={friend.name} muted={!isAccepted} /><div><strong>{friend.name}</strong><small>{index === 0 ? '发起人' : '已填写意见'}</small></div><FriendStatus accepted={isAccepted} /></article> })}</section>{!accepted ? <ZouButton variant="secondary" onClick={() => setAccepted(true)}>确认安安已接受</ZouButton> : null}<section className="opinion-summary"><span>AI 总结</span><h2>4 位朋友已提交</h2><ul><li>3 人希望行程松弛</li><li>1 人不吃海鲜</li><li>3 人希望去外滩</li></ul><div className="conflict"><strong>有 1 项需要协调</strong><p>安安希望加入夜景，但周周希望第二天更早结束。</p></div></section><div className="floating-cta"><ZouButton onClick={() => navigate('/travel/vote')}>进入方案投票</ZouButton></div></div><ZouBottomSheet open={invite} onClose={() => setInvite(false)} title="邀请朋友"><button className="sheet-action"><Link2 /><span><strong>分享链接</strong><small>复制邀请链接</small></span></button><button className="sheet-action"><QrCode /><span><strong>二维码</strong><small>面对面扫描加入</small></span></button></ZouBottomSheet></AppShell>
+  return <AppShell><ZouNavigationBar title="朋友" right={<button className="text-button" onClick={() => setInvite(true)}>邀请</button>} /><div className="page-content friends-page"><header><h1>和朋友一起决定</h1><p>意见表控制在 30 秒内，AI 只总结共识和冲突。</p></header><section className="friend-list">{friends.map((friend, index) => { const isAccepted = friend.status === 'accepted' || (friend.status === 'pending' && accepted); return <article key={friend.id}><ZouAvatar src={friend.image} name={friend.name} muted={!isAccepted} /><div><strong>{friend.name}</strong><small>{index === 0 ? '发起人' : '已填写意见'}</small></div><FriendStatus accepted={isAccepted} /></article> })}</section>{!accepted ? <ZouButton variant="secondary" onClick={() => setAccepted(true)}>确认安安已接受</ZouButton> : null}<section className="opinion-summary"><span>AI 总结</span><h2>4 位朋友已提交</h2><ul><li>3 人希望行程松弛</li><li>1 人不吃海鲜</li><li>3 人希望去外滩</li></ul><div className="conflict"><strong>有 1 项需要协调</strong><p>安安希望加入夜景，但周周希望第二天更早结束。</p></div></section><div className="floating-cta"><ZouButton onClick={() => navigate('/travel/vote')}>进入方案投票</ZouButton></div></div><ZouBottomSheet open={invite} onClose={() => setInvite(false)} title="邀请朋友"><button className="sheet-action" onClick={() => void shareInvite()}><Link2 /><span><strong>分享链接</strong><small>用系统分享发给朋友</small></span></button><button className="sheet-action" onClick={() => void copyInvite()}><Copy /><span><strong>复制链接</strong><small>朋友在浏览器打开即可加入</small></span></button></ZouBottomSheet>{inviteMessage ? <ZouToast message={inviteMessage} onClose={() => setInviteMessage('')} /> : null}</AppShell>
 }
 
 export const VotePage = () => {
