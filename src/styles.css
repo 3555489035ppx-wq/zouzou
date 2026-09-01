@@ -1350,3 +1350,61 @@ input[role="switch"]:checked::after { transform: translateX(20px); }
     min-height: 100dvh !important;
   }
 }
+
+/* Current product polish: sheets are dismissed with a compact X, not a heavy
+   control; planning fields read as one calm form rather than stacked cards. */
+.zou-sheet > header .icon-button {
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+  min-height: 34px;
+  padding: 7px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--color-ink);
+  box-shadow: none;
+}
+.zou-sheet > header .icon-button svg { width: 20px; height: 20px; stroke-width: 2.2; }
+
+.group-create { gap: 22px; padding-top: 14px; }
+.group-create > header { gap: 5px; }
+.group-create > header > span { font-size: 12px; }
+.group-form-section {
+  gap: 14px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.group-form-section + .group-form-section { padding-top: 22px; border-top: 1px solid var(--color-rule); }
+.group-form-section > strong { font-size: 20px; letter-spacing: -.03em; }
+.group-toggle-list { gap: 8px; }
+.group-toggle-list button { min-height: 36px; border-radius: 9px; background: #f5f5f3; }
+.group-form-section--details > label,
+.group-form-section--details > div > label { gap: 7px; color: var(--color-ink); font-size: 13px; }
+.group-form-section--details > div { gap: 12px; }
+.group-form-section input,
+.group-form-section select {
+  min-width: 0;
+  min-height: 48px;
+  border-color: #dedfdd;
+  border-radius: 10px;
+  background: #f7f7f5;
+  padding: 9px 12px;
+  font-size: 15px;
+}
+
+/* The profile cover owns the top safe area, so its image is visible behind
+   the system time in standalone mobile mode instead of leaving a white strip. */
+html:has(.profile-page), body:has(.profile-page), #root:has(.profile-page) { background: #2f5362; }
+.profile-page { margin-top: calc(-1 * env(safe-area-inset-top, 0px)); padding-top: env(safe-area-inset-top, 0px); }
+.profile-cover--immersive { height: calc(232px + env(safe-area-inset-top, 0px)); }
+.profile-menu-button { top: calc(12px + env(safe-area-inset-top, 0px)); }
+.profile-cover__caption { display: none; }
+
+/* Footprints use the real nationwide map rather than a decorative outline. */
+.footprint-map { min-height: 218px; background: #eef2f1; }
+.footprint-map .real-route-map { height: 218px; }
+.footprint-map .real-route-map__canvas { border-radius: inherit; }
+.footprint-map .map-route-status { display: none; }

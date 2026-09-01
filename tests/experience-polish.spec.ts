@@ -7,11 +7,18 @@ test('个人页会恢复为空的封面，并展示完整的封面画面', async
   await page.goto('/profile')
   await expect(page.locator('.profile-cover img')).toHaveAttribute('src', '/assets/shanghai-skyline.jpg')
   await expect(page.locator('.profile-cover')).toHaveClass(/profile-cover--immersive/)
+  await expect(page.getByText('把走过的路，留在这一页')).toHaveCount(0)
 })
 
-test('我的足迹使用中国地图承载城市标记', async ({ page }) => {
+test('发现页只呈现走走整理的路线', async ({ page }) => {
+  await page.goto('/discover')
+  await expect(page.getByText('用户分享', { exact: true })).toHaveCount(0)
+  await expect(page.getByText('武康路慢慢走', { exact: true })).toHaveCount(0)
+})
+
+test('我的足迹使用真实地图承载城市标记', async ({ page }) => {
   await page.goto('/journey/footprint')
-  await expect(page.getByLabel('中国地图')).toBeVisible()
+  await expect(page.getByLabel('我的足迹城市概览')).toBeVisible()
 })
 
 test('邀请朋友会调用系统分享并带上可打开的邀请链接', async ({ page }) => {

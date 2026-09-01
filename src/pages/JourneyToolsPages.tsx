@@ -2,6 +2,7 @@ import { Backpack, CalendarDays, Check, ChevronRight, CircleDollarSign, Footprin
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { AppShell } from '../components/AppShell'
+import { RealRouteMap } from '../components/RealRouteMap'
 import { ZouBottomSheet, ZouButton, ZouNavigationBar, ZouToast } from '../components/ui'
 import { getRoute } from '../demo-data/discover'
 import { cityProfiles, getDemoTripPlaces } from '../demo-data/cities'
@@ -232,12 +233,12 @@ export const FootprintPage = () => {
   const [message, setMessage] = useState('')
   const cities = useMemo(() => [...new Set(footprints.map((item) => item.city).filter(Boolean))], [footprints])
   const cityCounts = useMemo(() => footprints.reduce<Record<string, number>>((counts, item) => { counts[item.city] = (counts[item.city] ?? 0) + 1; return counts }, {}), [footprints])
-  const cityMarkers = useMemo(() => Object.entries(cityCounts).flatMap(([name, count]) => {
+  const footprintPlaces = useMemo(() => Object.entries(cityCounts).flatMap(([name]) => {
     const footprint = footprints.find((item) => item.city === name)
     const coordinates = footprint?.coordinates ?? cityProfiles[name]?.mapCenter
     if (!coordinates) return []
     const [lng, lat] = coordinates
-    return [{ name, count, x: Math.max(7, Math.min(93, 6 + (lng - 73) / 62 * 88)), y: Math.max(8, Math.min(91, 5 + (54 - lat) / 36 * 88)) }]
+    return [{ id: `footprint-city-${name}`, time: '', name, type: '城市足迹', stay: '', budget: 0, transport: '', note: '已记录足迹', x: 0, z: 0, lng, lat, coordinateSource: '已保存城市坐标', verified: true } satisfies Place]
   }), [cityCounts, footprints])
   const reset = () => { setCity(context.city); setPlace(''); setVisitedAt(dateValue()); setNote(''); setEditingId(null) }
   const submit = (event: FormEvent<HTMLFormElement>) => {
@@ -252,7 +253,7 @@ export const FootprintPage = () => {
   const edit = (item: Footprint) => { setEditingId(item.id); setCity(item.city); setPlace(item.placeId ?? ''); setVisitedAt(dateValue(new Date(item.visitedAt))); setNote(item.note ?? '') }
   return <AppShell showTabBar><ZouNavigationBar title="我的足迹" right={<button className="text-button" onClick={() => navigate('/journey/tools')}>行程工具</button>} /><main className="journey-form-page page-content">
     <section className="journey-page-intro"><span>我的地图 · {footprints.length} 个记录</span><h1>走过的地方，都会留下来</h1><p>从进行中的行程标记地点，也可以手动补一座已经去过的城市。</p></section>
-    <section className="footprint-map" aria-label="我的足迹城市概览"><svg className="footprint-map__china" viewBox="0 0 720 460" role="img" aria-label="中国地图"><path d="M102 103 150 70 212 80 254 45 320 64 366 45 430 75 487 65 542 96 602 73 654 110 646 142 686 166 663 205 684 245 638 271 650 309 598 336 554 373 504 354 463 384 418 347 370 371 321 350 275 382 224 359 202 333 151 335 118 300 72 278 50 238 80 202 57 166 88 138Z" /><path className="footprint-map__island" d="M618 394c15-11 38-13 52 0-4 18-19 29-38 28-12-4-17-14-14-28Z" /></svg>{cityMarkers.map(({ name, count, x, y }) => <button key={name} style={{ left: `${x}%`, top: `${y}%` }} onClick={() => setCity(name)}><span>{count}</span><strong>{name}</strong></button>)}{!cityMarkers.length ? <p>标记第一个地点，地图就会亮起来</p> : null}</section>
+    <section className="footprint-map" aria-label="我的足迹城市概览"><RealRouteMap places={footprintPlaces} center={[104.1954, 35.8617]} overview compact onNodeSelect={(index) => setCity(footprintPlaces[index]?.name ?? context.city)} /></section>
     <section className="journey-summary-card journey-summary-card--metrics"><span>足迹统计</span><div><strong>{new Set(footprints.map((item) => item.city)).size}<small>座城市</small></strong><strong>{footprints.length}<small>个地点</small></strong><strong>{new Set(footprints.map((item) => item.journeyId).filter(Boolean)).size}<small>次行程</small></strong></div></section>
     <form className="journey-form" onSubmit={submit}><header><div><span>{editingId ? '编辑足迹' : '手动添加'}</span><h2>{editingId ? '把这段记忆补完整' : '还记得哪座城市？'}</h2></div>{editingId ? <button type="button" className="text-button" onClick={reset}>取消编辑</button> : null}</header><label>城市<input value={city} onChange={(event) => setCity(event.target.value)} placeholder="例如：苏州" required /></label><div className="journey-form__row"><label>地点（可选）<input value={place} onChange={(event) => setPlace(event.target.value)} placeholder="例如：平江路" /></label><label>去过的日期<input type="date" value={visitedAt} onChange={(event) => setVisitedAt(event.target.value)} /></label></div><label>一句话记录（可选）<input value={note} onChange={(event) => setNote(event.target.value)} placeholder="那天的风很舒服" maxLength={80} /></label><ZouButton type="submit"><Plus />{editingId ? '保存足迹' : '留下足迹'}</ZouButton></form>
     <section className="journey-section"><header className="journey-section__header"><div><span>最近记录</span><h2>{footprints.length ? '你走过的路' : '还没有足迹'}</h2></div><small>{cities.length} 座城市</small></header>{footprints.length ? <div className="journey-record-list">{footprints.map((item) => <article className="journey-record footprint-record" key={item.id}><div><strong>{item.city}{item.placeId ? ` · ${context.places.find((place) => place.id === item.placeId)?.name ?? item.placeId}` : ''}</strong><span>{item.source === 'journey' ? '来自行程' : '手动添加'} · {formatDate(item.visitedAt)}</span>{item.note ? <small>{item.note}</small> : null}</div><div><button type="button" aria-label="编辑足迹" onClick={() => edit(item)}>编辑</button><button type="button" aria-label="删除足迹" onClick={() => deleteFootprint(item.id)}><Trash2 /></button></div></article>)}</div> : <p className="journey-empty-copy">下一次在行程里点一下“标记去过”，这里就会出现第一枚足迹。</p>}</section>{message ? <ZouToast message={message} onClose={() => setMessage('')} /> : null}
