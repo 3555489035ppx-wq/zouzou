@@ -610,6 +610,20 @@ input[role="switch"]:checked::after { transform: translateX(20px); }
   .community-card__open:hover h3 { text-decoration: underline; text-underline-offset: 3px; }
 }
 
+/* A provider failure must be actionable without pretending a route exists. */
+.map-route-status--provider-error { max-width: calc(100% - 24px); display: grid; justify-items: start; gap: 5px; }
+.map-route-status--provider-error strong { color: var(--color-ink); }
+
+/* A geographic overview for footprints: city pins are placed from stored
+   longitude/latitude, never from their list index. */
+.footprint-map { min-height: 212px; background: linear-gradient(135deg, #f5f7f6, #e5ece9); }
+.footprint-map__china { position: absolute; inset: 10px 14px; width: calc(100% - 28px); height: calc(100% - 20px); fill: #d7e1dd; stroke: #b9c7c1; stroke-width: 7; stroke-linejoin: round; filter: drop-shadow(0 8px 12px rgb(61 85 73 / .08)); }
+.footprint-map__island { fill: #d7e1dd; }
+
+/* Bottom-sheet controls stay thumb friendly without dominating the title. */
+.zou-sheet > header .icon-button { width: 38px; min-width: 38px; height: 38px; min-height: 38px; padding: 8px; border: 1px solid var(--color-rule-strong); border-radius: 50%; }
+.zou-sheet > header .icon-button svg { width: 18px; height: 18px; }
+
 @media (min-width: 48rem) {
   body { background: var(--color-paper-soft); }
   .app-shell { box-shadow: 0 0 0 1px var(--color-rule); }
@@ -977,6 +991,9 @@ input[role="switch"]:checked::after { transform: translateX(20px); }
 /* Personal travel assets: trips, posts and saved routes have distinct layouts. */
 .profile-cover { height: 196px; position: relative; background: var(--color-paper-soft); }
 .profile-cover > img { width: 100%; height: 100%; object-fit: cover; }
+.profile-cover--immersive { height: 232px; background: #2f5362; }
+.profile-cover--immersive::after { background: linear-gradient(180deg, rgb(0 0 0 / .08) 8%, transparent 46%, rgb(0 0 0 / .52)); }
+.profile-cover__caption { position: absolute; z-index: 2; left: var(--page-horizontal-padding); top: max(54px, calc(env(safe-area-inset-top, 0px) + 18px)); color: rgb(255 255 255 / .92); font-size: 13px; letter-spacing: .02em; text-shadow: 0 1px 8px rgb(0 0 0 / .35); }
 .profile-menu-button { position: absolute; top: max(12px, env(safe-area-inset-top, 0px)); right: 12px; width: 44px; height: 44px; border: 0; border-radius: 50%; background: rgb(0 0 0 / .24); color: white; display: grid; place-items: center; }
 .profile-menu-button svg { width: 22px; }
 .profile-intro { padding: 0 var(--page-horizontal-padding) 22px; gap: 8px; }

@@ -408,6 +408,16 @@ function AmapRouteMap({ places, city = '', center = defaultCenter, progress = 0,
     loadAmap().then(async (AMap) => {
       if (cancelled || !host.current) return
       amap.current = AMap
+      const amapCenter = wgs84ToGcj02(center)
+      const instance = new AMap.Map(host.current, { zoom: 11.6, center: amapCenter, mapStyle: 'amap://styles/whitesmoke', viewMode: '2D', resizeEnable: true, animateEnable: true, jogEnable: true, zoomEnable: true, dragEnable: true, doubleClickZoom: true, scrollWheel: true, keyboardEnable: true })
+      mapInstance = instance
+      map.current = instance
+      instance.on?.('dragstart', handleMapInteraction)
+      instance.on?.('zoomstart', handleMapInteraction)
+      resizeObserver = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(() => (instance as AMapMapLike & { resize?: () => void }).resize?.())
+      if (resizeObserver && host.current) resizeObserver.observe(host.current)
+      setMapReady(true)
+      onReady?.()
       const queries: AmapPlaceQuery[] = places.map((place) => ({
         id: place.id,
         city,
@@ -479,12 +489,7 @@ function AmapRouteMap({ places, city = '', center = defaultCenter, progress = 0,
       const nextUnresolvedCount = resolvedPlaces.filter((place) => place.mapStatus === 'unresolved').length
       setUnresolvedCount(nextUnresolvedCount)
       onPlacesResolved?.(resolvedPlaces)
-      const amapCenter = wgs84ToGcj02(center)
       const amapPlaces = resolvedPlaces.map(placeMapPosition)
-      const instance = new AMap.Map(host.current, { zoom: 11.6, center: amapCenter, mapStyle: 'amap://styles/whitesmoke', viewMode: '2D', resizeEnable: true, animateEnable: true, jogEnable: true, zoomEnable: true, dragEnable: true, doubleClickZoom: true, scrollWheel: true, keyboardEnable: true })
-      mapInstance = instance
-      instance.on?.('dragstart', handleMapInteraction)
-      instance.on?.('zoomstart', handleMapInteraction)
       const overlays: AMapOverlay[] = []
       resolvedPlaces.forEach((place, index) => {
         if (place.mapStatus !== 'resolved') return
@@ -510,13 +515,8 @@ function AmapRouteMap({ places, city = '', center = defaultCenter, progress = 0,
       const botMarker = new AMap.Marker({ position: firstResolvedIndex >= 0 ? amapPlaces[firstResolvedIndex] : amapCenter, content: botElement, offset: [-21, -21], zIndex: 18 })
       instance.add(botMarker)
       overlays.push(botMarker)
-      map.current = instance
       bot.current = botMarker
       if (overlays.length > 0) instance.setFitView(overlays, true, compact ? [34, 34, 34, 34] : [52, 52, 52, 52])
-      resizeObserver = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(() => (instance as AMapMapLike & { resize?: () => void }).resize?.())
-      if (resizeObserver && host.current) resizeObserver.observe(host.current)
-      setMapReady(true)
-      onReady?.()
       const walkingGroups = buildWalkingGroups(resolvedPlaces)
       if (walkingGroups.length === 0) return
       const settled = await Promise.allSettled(walkingGroups.map((group) => getAmapWalkingRouteSnapshot(AMap, group.places.map((place) => ({ position: [place.lng, place.lat] as AMapPoint, poiId: place.amapPoiId ?? place.poiId })), controller.signal)))
@@ -628,7 +628,7 @@ function AmapRouteMap({ places, city = '', center = defaultCenter, progress = 0,
       element.classList.toggle('is-current', index === active)
     })
   }, [center, places, placesKey, progress])
-  if (loadFailed) return <div className="real-route-map real-route-map--amap" data-map-provider="amap" role="region" aria-label="高德真实地图暂不可用"><div className="real-route-map__canvas" ref={host} /><span className="map-route-status" role="status">高德地图暂不可用，未绘制替代路线</span></div>
+  if (loadFailed) return <div className="real-route-map real-route-map--amap" data-map-provider="amap" role="region" aria-label="高德真实地图暂未响应"><div className="real-route-map__canvas" ref={host} /><div className="map-route-status map-route-status--provider-error" role="status"><strong>高德地图暂时没有响应</strong><span>不会绘制虚假路线；请重新连接高德。</span><button type="button" className="map-route-retry" onClick={() => { setLoadFailed(false); setResolutionRevision((value) => value + 1) }}>重新连接高德</button></div></div>
   const unresolvedResults = resolutionResults.filter((result) => !result.poi)
   const rememberCandidate = (resolution: AmapPlaceResolution, candidate: AmapPoi) => {
     rememberAmapPlace(resolution.query, candidate)
