@@ -1,0 +1,940 @@
+{
+  "generatedAt": "2026-08-31T23:27:41.869Z",
+  "source": "Baidu public image JSON endpoint",
+  "batch": [
+    {
+      "journeyId": "knowledge-route-上海-8",
+      "journeyTitle": "上海早市与菜场 · 味香斋｜葱油饼",
+      "category": "dining",
+      "city": "上海",
+      "queries": [
+        "上海 味香斋 葱油饼 菜品实物横图 无人物",
+        "上海 味香斋 葱油饼 食物特写 无人物",
+        "上海 葱油饼 菜品实物横图 无人物",
+        "上海 葱油饼 美食实拍 无人物",
+        "上海 老城厢菜市场早走 菜品实物横图 无人物",
+        "上海 老城厢菜市场早走 美食实拍 无人物",
+        "上海 蟹粉小笼 菜品实物横图 无人物",
+        "上海 蟹粉小笼 美食实拍 无人物",
+        "上海 味香斋 葱油饼 店内空景实拍",
+        "上海 老城厢菜市场早走 食物特写 无人物"
+      ],
+      "source": "Baidu public image JSON endpoint (BaiduImageProvider)",
+      "foundCandidateCount": 40,
+      "downloadedCount": 20,
+      "rejectedCount": 3,
+      "rejectedByReason": {
+        "watermark": 3
+      },
+      "top5": [
+        {
+          "id": "baidu-bf9e8640",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-bf9e8640-15.webp",
+          "qualityScore": 74,
+          "width": 1024,
+          "height": 683,
+          "searchQuery": "上海 老城厢菜市场早走 菜品实物横图 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E4%B8%8A%E6%B5%B7%20%E8%80%81%E5%9F%8E%E5%8E%A2%E8%8F%9C%E5%B8%82%E5%9C%BA%E6%97%A9%E8%B5%B0%20%E8%8F%9C%E5%93%81%E5%AE%9E%E7%89%A9%E6%A8%AA%E5%9B%BE%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        },
+        {
+          "id": "baidu-bf9a2643",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-bf9a2643-14.webp",
+          "qualityScore": 73,
+          "width": 1024,
+          "height": 683,
+          "searchQuery": "上海 老城厢菜市场早走 菜品实物横图 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E4%B8%8A%E6%B5%B7%20%E8%80%81%E5%9F%8E%E5%8E%A2%E8%8F%9C%E5%B8%82%E5%9C%BA%E6%97%A9%E8%B5%B0%20%E8%8F%9C%E5%93%81%E5%AE%9E%E7%89%A9%E6%A8%AA%E5%9B%BE%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        },
+        {
+          "id": "baidu-b8f3a7e5",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-b8f3a7e5-17.jpg",
+          "qualityScore": 73,
+          "width": 6493,
+          "height": 4329,
+          "searchQuery": "上海 老城厢菜市场早走 菜品实物横图 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E4%B8%8A%E6%B5%B7%20%E8%80%81%E5%9F%8E%E5%8E%A2%E8%8F%9C%E5%B8%82%E5%9C%BA%E6%97%A9%E8%B5%B0%20%E8%8F%9C%E5%93%81%E5%AE%9E%E7%89%A9%E6%A8%AA%E5%9B%BE%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        },
+        {
+          "id": "baidu-8e1be8bd",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-8e1be8bd-8.jpg",
+          "qualityScore": 72,
+          "width": 1080,
+          "height": 810,
+          "searchQuery": "上海 老城厢菜市场早走 菜品实物横图 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E4%B8%8A%E6%B5%B7%20%E8%80%81%E5%9F%8E%E5%8E%A2%E8%8F%9C%E5%B8%82%E5%9C%BA%E6%97%A9%E8%B5%B0%20%E8%8F%9C%E5%93%81%E5%AE%9E%E7%89%A9%E6%A8%AA%E5%9B%BE%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        },
+        {
+          "id": "baidu-f1d7e4ab",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-f1d7e4ab-9.webp",
+          "qualityScore": 72,
+          "width": 1024,
+          "height": 683,
+          "searchQuery": "上海 老城厢菜市场早走 菜品实物横图 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E4%B8%8A%E6%B5%B7%20%E8%80%81%E5%9F%8E%E5%8E%A2%E8%8F%9C%E5%B8%82%E5%9C%BA%E6%97%A9%E8%B5%B0%20%E8%8F%9C%E5%93%81%E5%AE%9E%E7%89%A9%E6%A8%AA%E5%9B%BE%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        }
+      ],
+      "finalCover": "/assets/journey-images/baidu/baidu-bf9e8640-15.webp",
+      "status": "ready",
+      "note": "At least 8 files downloaded; Top 5 selected by the shared ImageCandidate pipeline."
+    },
+    {
+      "journeyId": "knowledge-route-长沙-8",
+      "journeyTitle": "长沙早市与菜场 · 秦娭毑皮蛋肉丸｜糖油粑粑",
+      "category": "dining",
+      "city": "长沙",
+      "queries": [
+        "长沙 秦娭毑皮蛋肉丸 糖油粑粑 菜品实物横图 无人物",
+        "长沙 秦娭毑皮蛋肉丸 糖油粑粑 食物特写 无人物",
+        "长沙 糖油粑粑 菜品实物横图 无人物",
+        "长沙 糖油粑粑 美食实拍 无人物",
+        "长沙 开福寺 菜品实物横图 无人物",
+        "长沙 开福寺 美食实拍 无人物",
+        "长沙 长沙世界之窗 菜品实物横图 无人物",
+        "长沙 长沙世界之窗 美食实拍 无人物",
+        "长沙 秦娭毑皮蛋肉丸 糖油粑粑 店内空景实拍",
+        "长沙 开福寺 食物特写 无人物"
+      ],
+      "source": "Baidu public image JSON endpoint (BaiduImageProvider)",
+      "foundCandidateCount": 30,
+      "downloadedCount": 20,
+      "rejectedCount": 12,
+      "rejectedByReason": {
+        "collage": 3,
+        "overlay_text": 3,
+        "watermark": 5,
+        "qr_code": 1,
+        "too_small": 1,
+        "blur": 1
+      },
+      "top5": [
+        {
+          "id": "baidu-e493cf91",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-e493cf91-19.jpg",
+          "qualityScore": 94,
+          "width": 4011,
+          "height": 2507,
+          "searchQuery": "长沙 糖油粑粑 美食实拍 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E9%95%BF%E6%B2%99%20%E7%B3%96%E6%B2%B9%E7%B2%91%E7%B2%91%20%E7%BE%8E%E9%A3%9F%E5%AE%9E%E6%8B%8D%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        },
+        {
+          "id": "baidu-168291de",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-168291de-4.jpg",
+          "qualityScore": 92,
+          "width": 2731,
+          "height": 2048,
+          "searchQuery": "长沙 秦娭毑皮蛋肉丸 糖油粑粑 菜品实物横图 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E9%95%BF%E6%B2%99%20%E7%A7%A6%E5%A8%AD%E6%AF%91%E7%9A%AE%E8%9B%8B%E8%82%89%E4%B8%B8%20%E7%B3%96%E6%B2%B9%E7%B2%91%E7%B2%91%20%E8%8F%9C%E5%93%81%E5%AE%9E%E7%89%A9%E6%A8%AA%E5%9B%BE%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        },
+        {
+          "id": "baidu-dceef8a0",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-dceef8a0-12.jpg",
+          "qualityScore": 91,
+          "width": 1200,
+          "height": 800,
+          "searchQuery": "长沙 糖油粑粑 菜品实物横图 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E9%95%BF%E6%B2%99%20%E7%B3%96%E6%B2%B9%E7%B2%91%E7%B2%91%20%E8%8F%9C%E5%93%81%E5%AE%9E%E7%89%A9%E6%A8%AA%E5%9B%BE%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        },
+        {
+          "id": "baidu-fc13889e",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-fc13889e-13.jpg",
+          "qualityScore": 91,
+          "width": 2147,
+          "height": 1280,
+          "searchQuery": "长沙 糖油粑粑 菜品实物横图 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E9%95%BF%E6%B2%99%20%E7%B3%96%E6%B2%B9%E7%B2%91%E7%B2%91%20%E8%8F%9C%E5%93%81%E5%AE%9E%E7%89%A9%E6%A8%AA%E5%9B%BE%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        },
+        {
+          "id": "baidu-66956f9a",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-66956f9a-14.png",
+          "qualityScore": 91,
+          "width": 1080,
+          "height": 865,
+          "searchQuery": "长沙 糖油粑粑 菜品实物横图 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E9%95%BF%E6%B2%99%20%E7%B3%96%E6%B2%B9%E7%B2%91%E7%B2%91%20%E8%8F%9C%E5%93%81%E5%AE%9E%E7%89%A9%E6%A8%AA%E5%9B%BE%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        }
+      ],
+      "finalCover": "/assets/journey-images/baidu/baidu-e493cf91-19.jpg",
+      "status": "ready",
+      "note": "At least 8 files downloaded; Top 5 selected by the shared ImageCandidate pipeline."
+    },
+    {
+      "journeyId": "knowledge-route-重庆-7",
+      "journeyTitle": "重庆本地逛吃 · 梯坎面｜重庆抄手",
+      "category": "dining",
+      "city": "重庆",
+      "queries": [
+        "重庆 梯坎面 重庆抄手 菜品实物横图 无人物",
+        "重庆 梯坎面 重庆抄手 食物特写 无人物",
+        "重庆 重庆抄手 菜品实物横图 无人物",
+        "重庆 重庆抄手 美食实拍 无人物",
+        "重庆 野水沟菜市场逛吃 菜品实物横图 无人物",
+        "重庆 野水沟菜市场逛吃 美食实拍 无人物",
+        "重庆 毛血旺 菜品实物横图 无人物",
+        "重庆 毛血旺 美食实拍 无人物",
+        "重庆 梯坎面 重庆抄手 店内空景实拍",
+        "重庆 野水沟菜市场逛吃 食物特写 无人物"
+      ],
+      "source": "Baidu public image JSON endpoint (BaiduImageProvider)",
+      "foundCandidateCount": 36,
+      "downloadedCount": 20,
+      "rejectedCount": 6,
+      "rejectedByReason": {
+        "collage": 1,
+        "watermark": 2,
+        "too_small": 1,
+        "qr_code": 1,
+        "overlay_text": 1,
+        "screenshot": 1,
+        "black_border": 1
+      },
+      "top5": [
+        {
+          "id": "baidu-a5aa6471",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-a5aa6471-9.jpg",
+          "qualityScore": 94,
+          "width": 1024,
+          "height": 718,
+          "searchQuery": "重庆 重庆抄手 美食实拍 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E9%87%8D%E5%BA%86%20%E9%87%8D%E5%BA%86%E6%8A%84%E6%89%8B%20%E7%BE%8E%E9%A3%9F%E5%AE%9E%E6%8B%8D%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        },
+        {
+          "id": "baidu-421bf39c",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-421bf39c-8.jpg",
+          "qualityScore": 92,
+          "width": 1919,
+          "height": 1280,
+          "searchQuery": "重庆 重庆抄手 菜品实物横图 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E9%87%8D%E5%BA%86%20%E9%87%8D%E5%BA%86%E6%8A%84%E6%89%8B%20%E8%8F%9C%E5%93%81%E5%AE%9E%E7%89%A9%E6%A8%AA%E5%9B%BE%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        },
+        {
+          "id": "baidu-299451df",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-299451df-1.jpg",
+          "qualityScore": 90,
+          "width": 2730,
+          "height": 2048,
+          "searchQuery": "重庆 梯坎面 重庆抄手 菜品实物横图 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E9%87%8D%E5%BA%86%20%E6%A2%AF%E5%9D%8E%E9%9D%A2%20%E9%87%8D%E5%BA%86%E6%8A%84%E6%89%8B%20%E8%8F%9C%E5%93%81%E5%AE%9E%E7%89%A9%E6%A8%AA%E5%9B%BE%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        },
+        {
+          "id": "baidu-7b641943",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-7b641943-5.jpg",
+          "qualityScore": 90,
+          "width": 1280,
+          "height": 897,
+          "searchQuery": "重庆 重庆抄手 菜品实物横图 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E9%87%8D%E5%BA%86%20%E9%87%8D%E5%BA%86%E6%8A%84%E6%89%8B%20%E8%8F%9C%E5%93%81%E5%AE%9E%E7%89%A9%E6%A8%AA%E5%9B%BE%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        },
+        {
+          "id": "baidu-2bfcdaaa",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-2bfcdaaa-23.webp",
+          "qualityScore": 90,
+          "width": 1044,
+          "height": 683,
+          "searchQuery": "重庆 毛血旺 菜品实物横图 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E9%87%8D%E5%BA%86%20%E6%AF%9B%E8%A1%80%E6%97%BA%20%E8%8F%9C%E5%93%81%E5%AE%9E%E7%89%A9%E6%A8%AA%E5%9B%BE%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        }
+      ],
+      "finalCover": "/assets/journey-images/baidu/baidu-a5aa6471-9.jpg",
+      "status": "ready",
+      "note": "At least 8 files downloaded; Top 5 selected by the shared ImageCandidate pipeline."
+    },
+    {
+      "journeyId": "knowledge-route-重庆-8",
+      "journeyTitle": "重庆早市与菜场 · 梯坎面｜重庆小面",
+      "category": "dining",
+      "city": "重庆",
+      "queries": [
+        "重庆 梯坎面 重庆小面 菜品实物横图 无人物",
+        "重庆 梯坎面 重庆小面 食物特写 无人物",
+        "重庆 重庆小面 菜品实物横图 无人物",
+        "重庆 重庆小面 美食实拍 无人物",
+        "重庆 野水沟菜市场逛吃 菜品实物横图 无人物",
+        "重庆 野水沟菜市场逛吃 美食实拍 无人物",
+        "重庆 鹅岭二厂 菜品实物横图 无人物",
+        "重庆 鹅岭二厂 美食实拍 无人物",
+        "重庆 梯坎面 重庆小面 店内空景实拍",
+        "重庆 野水沟菜市场逛吃 食物特写 无人物"
+      ],
+      "source": "Baidu public image JSON endpoint (BaiduImageProvider)",
+      "foundCandidateCount": 40,
+      "downloadedCount": 20,
+      "rejectedCount": 5,
+      "rejectedByReason": {
+        "watermark": 4,
+        "too_small": 2
+      },
+      "top5": [
+        {
+          "id": "baidu-e3a42e93",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-e3a42e93-9.webp",
+          "qualityScore": 91,
+          "width": 1063,
+          "height": 800,
+          "searchQuery": "重庆 重庆小面 菜品实物横图 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E9%87%8D%E5%BA%86%20%E9%87%8D%E5%BA%86%E5%B0%8F%E9%9D%A2%20%E8%8F%9C%E5%93%81%E5%AE%9E%E7%89%A9%E6%A8%AA%E5%9B%BE%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        },
+        {
+          "id": "baidu-273da4d8",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-273da4d8-15.jpg",
+          "qualityScore": 91,
+          "width": 2730,
+          "height": 1884,
+          "searchQuery": "重庆 重庆小面 菜品实物横图 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E9%87%8D%E5%BA%86%20%E9%87%8D%E5%BA%86%E5%B0%8F%E9%9D%A2%20%E8%8F%9C%E5%93%81%E5%AE%9E%E7%89%A9%E6%A8%AA%E5%9B%BE%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        },
+        {
+          "id": "baidu-470127c2",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-299451df-1.jpg",
+          "qualityScore": 90,
+          "width": 2730,
+          "height": 2048,
+          "searchQuery": "重庆 梯坎面 重庆小面 菜品实物横图 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E9%87%8D%E5%BA%86%20%E6%A2%AF%E5%9D%8E%E9%9D%A2%20%E9%87%8D%E5%BA%86%E5%B0%8F%E9%9D%A2%20%E8%8F%9C%E5%93%81%E5%AE%9E%E7%89%A9%E6%A8%AA%E5%9B%BE%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        },
+        {
+          "id": "baidu-1d78b432",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-1d78b432-11.png",
+          "qualityScore": 90,
+          "width": 1080,
+          "height": 720,
+          "searchQuery": "重庆 重庆小面 菜品实物横图 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E9%87%8D%E5%BA%86%20%E9%87%8D%E5%BA%86%E5%B0%8F%E9%9D%A2%20%E8%8F%9C%E5%93%81%E5%AE%9E%E7%89%A9%E6%A8%AA%E5%9B%BE%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        },
+        {
+          "id": "baidu-8e103075",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-8e103075-16.jpg",
+          "qualityScore": 90,
+          "width": 1440,
+          "height": 1080,
+          "searchQuery": "重庆 重庆小面 菜品实物横图 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E9%87%8D%E5%BA%86%20%E9%87%8D%E5%BA%86%E5%B0%8F%E9%9D%A2%20%E8%8F%9C%E5%93%81%E5%AE%9E%E7%89%A9%E6%A8%AA%E5%9B%BE%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        }
+      ],
+      "finalCover": "/assets/journey-images/baidu/baidu-e3a42e93-9.webp",
+      "status": "ready",
+      "note": "At least 8 files downloaded; Top 5 selected by the shared ImageCandidate pipeline."
+    },
+    {
+      "journeyId": "knowledge-route-深圳-7",
+      "journeyTitle": "深圳本地逛吃 · 八合里海记牛肉店｜潮汕牛肉火锅",
+      "category": "dining",
+      "city": "深圳",
+      "queries": [
+        "深圳 八合里海记牛肉店 潮汕牛肉火锅 菜品实物横图 无人物",
+        "深圳 八合里海记牛肉店 潮汕牛肉火锅 食物特写 无人物",
+        "深圳 潮汕牛肉火锅 菜品实物横图 无人物",
+        "深圳 潮汕牛肉火锅 美食实拍 无人物",
+        "深圳 东门老街 菜品实物横图 无人物",
+        "深圳 东门老街 美食实拍 无人物",
+        "深圳 猪脚饭 菜品实物横图 无人物",
+        "深圳 猪脚饭 美食实拍 无人物",
+        "深圳 八合里海记牛肉店 潮汕牛肉火锅 店内空景实拍",
+        "深圳 东门老街 食物特写 无人物"
+      ],
+      "source": "Baidu public image JSON endpoint (BaiduImageProvider)",
+      "foundCandidateCount": 35,
+      "downloadedCount": 20,
+      "rejectedCount": 3,
+      "rejectedByReason": {
+        "qr_code": 2,
+        "collage": 1
+      },
+      "top5": [
+        {
+          "id": "baidu-14010b04",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-14010b04-15.webp",
+          "qualityScore": 90,
+          "width": 1200,
+          "height": 831,
+          "searchQuery": "深圳 潮汕牛肉火锅 菜品实物横图 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E6%B7%B1%E5%9C%B3%20%E6%BD%AE%E6%B1%95%E7%89%9B%E8%82%89%E7%81%AB%E9%94%85%20%E8%8F%9C%E5%93%81%E5%AE%9E%E7%89%A9%E6%A8%AA%E5%9B%BE%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        },
+        {
+          "id": "baidu-f1977037",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-f1977037-4.jpg",
+          "qualityScore": 89,
+          "width": 3640,
+          "height": 2048,
+          "searchQuery": "深圳 八合里海记牛肉店 潮汕牛肉火锅 菜品实物横图 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E6%B7%B1%E5%9C%B3%20%E5%85%AB%E5%90%88%E9%87%8C%E6%B5%B7%E8%AE%B0%E7%89%9B%E8%82%89%E5%BA%97%20%E6%BD%AE%E6%B1%95%E7%89%9B%E8%82%89%E7%81%AB%E9%94%85%20%E8%8F%9C%E5%93%81%E5%AE%9E%E7%89%A9%E6%A8%AA%E5%9B%BE%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        },
+        {
+          "id": "baidu-715b0dd1",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-715b0dd1-10.jpg",
+          "qualityScore": 89,
+          "width": 2730,
+          "height": 2048,
+          "searchQuery": "深圳 八合里海记牛肉店 潮汕牛肉火锅 食物特写 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E6%B7%B1%E5%9C%B3%20%E5%85%AB%E5%90%88%E9%87%8C%E6%B5%B7%E8%AE%B0%E7%89%9B%E8%82%89%E5%BA%97%20%E6%BD%AE%E6%B1%95%E7%89%9B%E8%82%89%E7%81%AB%E9%94%85%20%E9%A3%9F%E7%89%A9%E7%89%B9%E5%86%99%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        },
+        {
+          "id": "baidu-2fd9e0ce",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-2fd9e0ce-1.jpg",
+          "qualityScore": 88,
+          "width": 2730,
+          "height": 2048,
+          "searchQuery": "深圳 八合里海记牛肉店 潮汕牛肉火锅 菜品实物横图 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E6%B7%B1%E5%9C%B3%20%E5%85%AB%E5%90%88%E9%87%8C%E6%B5%B7%E8%AE%B0%E7%89%9B%E8%82%89%E5%BA%97%20%E6%BD%AE%E6%B1%95%E7%89%9B%E8%82%89%E7%81%AB%E9%94%85%20%E8%8F%9C%E5%93%81%E5%AE%9E%E7%89%A9%E6%A8%AA%E5%9B%BE%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        },
+        {
+          "id": "baidu-2c083f25",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-2c083f25-3.jpg",
+          "qualityScore": 88,
+          "width": 3500,
+          "height": 2322,
+          "searchQuery": "深圳 八合里海记牛肉店 潮汕牛肉火锅 菜品实物横图 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E6%B7%B1%E5%9C%B3%20%E5%85%AB%E5%90%88%E9%87%8C%E6%B5%B7%E8%AE%B0%E7%89%9B%E8%82%89%E5%BA%97%20%E6%BD%AE%E6%B1%95%E7%89%9B%E8%82%89%E7%81%AB%E9%94%85%20%E8%8F%9C%E5%93%81%E5%AE%9E%E7%89%A9%E6%A8%AA%E5%9B%BE%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        }
+      ],
+      "finalCover": "/assets/journey-images/baidu/baidu-14010b04-15.webp",
+      "status": "ready",
+      "note": "At least 8 files downloaded; Top 5 selected by the shared ImageCandidate pipeline."
+    },
+    {
+      "journeyId": "knowledge-route-青岛-8",
+      "journeyTitle": "青岛早市与菜场 · 万和春排骨米饭｜甜沫",
+      "category": "dining",
+      "city": "青岛",
+      "queries": [
+        "青岛 万和春排骨米饭 甜沫 菜品实物横图 无人物",
+        "青岛 万和春排骨米饭 甜沫 食物特写 无人物",
+        "青岛 甜沫 菜品实物横图 无人物",
+        "青岛 甜沫 美食实拍 无人物",
+        "青岛 海边骑行与早市 菜品实物横图 无人物",
+        "青岛 海边骑行与早市 美食实拍 无人物",
+        "青岛 青岛海底世界 菜品实物横图 无人物",
+        "青岛 青岛海底世界 美食实拍 无人物",
+        "青岛 万和春排骨米饭 甜沫 店内空景实拍",
+        "青岛 海边骑行与早市 食物特写 无人物"
+      ],
+      "source": "Baidu public image JSON endpoint (BaiduImageProvider)",
+      "foundCandidateCount": 34,
+      "downloadedCount": 20,
+      "rejectedCount": 5,
+      "rejectedByReason": {
+        "watermark": 3,
+        "blur": 1,
+        "overlay_text": 1
+      },
+      "top5": [
+        {
+          "id": "baidu-9959111",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-9959111-6.jpg",
+          "qualityScore": 93,
+          "width": 1280,
+          "height": 722,
+          "searchQuery": "青岛 万和春排骨米饭 甜沫 菜品实物横图 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E9%9D%92%E5%B2%9B%20%E4%B8%87%E5%92%8C%E6%98%A5%E6%8E%92%E9%AA%A8%E7%B1%B3%E9%A5%AD%20%E7%94%9C%E6%B2%AB%20%E8%8F%9C%E5%93%81%E5%AE%9E%E7%89%A9%E6%A8%AA%E5%9B%BE%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        },
+        {
+          "id": "baidu-cf4b17e2",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-cf4b17e2-19.jpg",
+          "qualityScore": 93,
+          "width": 1280,
+          "height": 860,
+          "searchQuery": "青岛 甜沫 美食实拍 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E9%9D%92%E5%B2%9B%20%E7%94%9C%E6%B2%AB%20%E7%BE%8E%E9%A3%9F%E5%AE%9E%E6%8B%8D%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        },
+        {
+          "id": "baidu-9f5189b9",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-9f5189b9-0.jpg",
+          "qualityScore": 91,
+          "width": 2560,
+          "height": 1789,
+          "searchQuery": "青岛 万和春排骨米饭 甜沫 菜品实物横图 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E9%9D%92%E5%B2%9B%20%E4%B8%87%E5%92%8C%E6%98%A5%E6%8E%92%E9%AA%A8%E7%B1%B3%E9%A5%AD%20%E7%94%9C%E6%B2%AB%20%E8%8F%9C%E5%93%81%E5%AE%9E%E7%89%A9%E6%A8%AA%E5%9B%BE%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        },
+        {
+          "id": "baidu-d875367f",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-d875367f-7.png",
+          "qualityScore": 90,
+          "width": 1440,
+          "height": 1050,
+          "searchQuery": "青岛 万和春排骨米饭 甜沫 食物特写 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E9%9D%92%E5%B2%9B%20%E4%B8%87%E5%92%8C%E6%98%A5%E6%8E%92%E9%AA%A8%E7%B1%B3%E9%A5%AD%20%E7%94%9C%E6%B2%AB%20%E9%A3%9F%E7%89%A9%E7%89%B9%E5%86%99%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        },
+        {
+          "id": "baidu-404dbeef",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-404dbeef-8.webp",
+          "qualityScore": 90,
+          "width": 1280,
+          "height": 960,
+          "searchQuery": "青岛 甜沫 菜品实物横图 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E9%9D%92%E5%B2%9B%20%E7%94%9C%E6%B2%AB%20%E8%8F%9C%E5%93%81%E5%AE%9E%E7%89%A9%E6%A8%AA%E5%9B%BE%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        }
+      ],
+      "finalCover": "/assets/journey-images/baidu/baidu-9959111-6.jpg",
+      "status": "ready",
+      "note": "At least 8 files downloaded; Top 5 selected by the shared ImageCandidate pipeline."
+    },
+    {
+      "journeyId": "knowledge-route-大连-7",
+      "journeyTitle": "大连本地逛吃 · 日丰园海肠水饺｜锅贴",
+      "category": "dining",
+      "city": "大连",
+      "queries": [
+        "大连 日丰园海肠水饺 锅贴 菜品实物横图 无人物",
+        "大连 日丰园海肠水饺 锅贴 食物特写 无人物",
+        "大连 锅贴 菜品实物横图 无人物",
+        "大连 锅贴 美食实拍 无人物",
+        "大连 樱桃 菜品实物横图 无人物",
+        "大连 樱桃 美食实拍 无人物",
+        "大连 大连老菜 菜品实物横图 无人物",
+        "大连 大连老菜 美食实拍 无人物",
+        "大连 日丰园海肠水饺 锅贴 店内空景实拍",
+        "大连 日丰园海肠水饺 樱桃 菜品实物横图 无人物"
+      ],
+      "source": "Baidu public image JSON endpoint (BaiduImageProvider)",
+      "foundCandidateCount": 32,
+      "downloadedCount": 20,
+      "rejectedCount": 8,
+      "rejectedByReason": {
+        "too_small": 1,
+        "watermark": 3,
+        "black_border": 1,
+        "collage": 2,
+        "overlay_text": 2
+      },
+      "top5": [
+        {
+          "id": "baidu-a7ebdba6",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-a7ebdba6-7.jpg",
+          "qualityScore": 96,
+          "width": 1200,
+          "height": 797,
+          "searchQuery": "大连 锅贴 菜品实物横图 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E5%A4%A7%E8%BF%9E%20%E9%94%85%E8%B4%B4%20%E8%8F%9C%E5%93%81%E5%AE%9E%E7%89%A9%E6%A8%AA%E5%9B%BE%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        },
+        {
+          "id": "baidu-493637",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-493637-4.jpg",
+          "qualityScore": 95,
+          "width": 1000,
+          "height": 800,
+          "searchQuery": "大连 日丰园海肠水饺 锅贴 菜品实物横图 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E5%A4%A7%E8%BF%9E%20%E6%97%A5%E4%B8%B0%E5%9B%AD%E6%B5%B7%E8%82%A0%E6%B0%B4%E9%A5%BA%20%E9%94%85%E8%B4%B4%20%E8%8F%9C%E5%93%81%E5%AE%9E%E7%89%A9%E6%A8%AA%E5%9B%BE%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        },
+        {
+          "id": "baidu-dcd7a88b",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-dcd7a88b-0.png",
+          "qualityScore": 93,
+          "width": 1920,
+          "height": 1410,
+          "searchQuery": "大连 日丰园海肠水饺 锅贴 菜品实物横图 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E5%A4%A7%E8%BF%9E%20%E6%97%A5%E4%B8%B0%E5%9B%AD%E6%B5%B7%E8%82%A0%E6%B0%B4%E9%A5%BA%20%E9%94%85%E8%B4%B4%20%E8%8F%9C%E5%93%81%E5%AE%9E%E7%89%A9%E6%A8%AA%E5%9B%BE%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        },
+        {
+          "id": "baidu-1aa1141e",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-1aa1141e-8.webp",
+          "qualityScore": 92,
+          "width": 1280,
+          "height": 971,
+          "searchQuery": "大连 锅贴 菜品实物横图 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E5%A4%A7%E8%BF%9E%20%E9%94%85%E8%B4%B4%20%E8%8F%9C%E5%93%81%E5%AE%9E%E7%89%A9%E6%A8%AA%E5%9B%BE%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        },
+        {
+          "id": "baidu-95478369",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-95478369-13.webp",
+          "qualityScore": 92,
+          "width": 1280,
+          "height": 971,
+          "searchQuery": "大连 锅贴 美食实拍 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E5%A4%A7%E8%BF%9E%20%E9%94%85%E8%B4%B4%20%E7%BE%8E%E9%A3%9F%E5%AE%9E%E6%8B%8D%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        }
+      ],
+      "finalCover": "/assets/journey-images/baidu/baidu-a7ebdba6-7.jpg",
+      "status": "ready",
+      "note": "At least 8 files downloaded; Top 5 selected by the shared ImageCandidate pipeline."
+    },
+    {
+      "journeyId": "knowledge-route-大连-14",
+      "journeyTitle": "大连特色美食 · 日丰园海肠水饺｜鲅鱼饺子",
+      "category": "dining",
+      "city": "大连",
+      "queries": [
+        "大连 日丰园海肠水饺 鲅鱼饺子 菜品实物横图 无人物",
+        "大连 日丰园海肠水饺 鲅鱼饺子 食物特写 无人物",
+        "大连 鲅鱼饺子 菜品实物横图 无人物",
+        "大连 鲅鱼饺子 美食实拍 无人物",
+        "大连 海鲜烧烤 菜品实物横图 无人物",
+        "大连 海鲜烧烤 美食实拍 无人物",
+        "大连 咸鱼饼子 菜品实物横图 无人物",
+        "大连 咸鱼饼子 美食实拍 无人物",
+        "大连 日丰园海肠水饺 鲅鱼饺子 店内空景实拍",
+        "大连 喜鼎海胆水饺 海鲜烧烤 菜品实物横图 无人物"
+      ],
+      "source": "Baidu public image JSON endpoint (BaiduImageProvider)",
+      "foundCandidateCount": 31,
+      "downloadedCount": 20,
+      "rejectedCount": 11,
+      "rejectedByReason": {
+        "too_small": 1,
+        "watermark": 7,
+        "qr_code": 1,
+        "screenshot": 1,
+        "black_border": 1,
+        "blur": 1
+      },
+      "top5": [
+        {
+          "id": "baidu-435fa8d7",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-493637-4.jpg",
+          "qualityScore": 95,
+          "width": 1000,
+          "height": 800,
+          "searchQuery": "大连 日丰园海肠水饺 鲅鱼饺子 菜品实物横图 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E5%A4%A7%E8%BF%9E%20%E6%97%A5%E4%B8%B0%E5%9B%AD%E6%B5%B7%E8%82%A0%E6%B0%B4%E9%A5%BA%20%E9%B2%85%E9%B1%BC%E9%A5%BA%E5%AD%90%20%E8%8F%9C%E5%93%81%E5%AE%9E%E7%89%A9%E6%A8%AA%E5%9B%BE%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        },
+        {
+          "id": "baidu-41cdb628",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-41cdb628-12.jpg",
+          "qualityScore": 92,
+          "width": 1724,
+          "height": 1078,
+          "searchQuery": "大连 鲅鱼饺子 美食实拍 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E5%A4%A7%E8%BF%9E%20%E9%B2%85%E9%B1%BC%E9%A5%BA%E5%AD%90%20%E7%BE%8E%E9%A3%9F%E5%AE%9E%E6%8B%8D%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        },
+        {
+          "id": "baidu-cbbe2d3c",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-cbbe2d3c-10.jpg",
+          "qualityScore": 91,
+          "width": 1332,
+          "height": 1006,
+          "searchQuery": "大连 鲅鱼饺子 美食实拍 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E5%A4%A7%E8%BF%9E%20%E9%B2%85%E9%B1%BC%E9%A5%BA%E5%AD%90%20%E7%BE%8E%E9%A3%9F%E5%AE%9E%E6%8B%8D%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        },
+        {
+          "id": "baidu-59f791af",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-59f791af-19.jpg",
+          "qualityScore": 90,
+          "width": 1100,
+          "height": 720,
+          "searchQuery": "大连 咸鱼饼子 菜品实物横图 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E5%A4%A7%E8%BF%9E%20%E5%92%B8%E9%B1%BC%E9%A5%BC%E5%AD%90%20%E8%8F%9C%E5%93%81%E5%AE%9E%E7%89%A9%E6%A8%AA%E5%9B%BE%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        },
+        {
+          "id": "baidu-9b055200",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-9b055200-8.webp",
+          "qualityScore": 89,
+          "width": 2160,
+          "height": 1215,
+          "searchQuery": "大连 鲅鱼饺子 菜品实物横图 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E5%A4%A7%E8%BF%9E%20%E9%B2%85%E9%B1%BC%E9%A5%BA%E5%AD%90%20%E8%8F%9C%E5%93%81%E5%AE%9E%E7%89%A9%E6%A8%AA%E5%9B%BE%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        }
+      ],
+      "finalCover": "/assets/journey-images/baidu/baidu-493637-4.jpg",
+      "status": "ready",
+      "note": "At least 8 files downloaded; Top 5 selected by the shared ImageCandidate pipeline."
+    },
+    {
+      "journeyId": "knowledge-route-漠河-7",
+      "journeyTitle": "漠河本地逛吃 · 北极村农家菜｜杀猪菜",
+      "category": "dining",
+      "city": "漠河",
+      "queries": [
+        "漠河 北极村农家菜 杀猪菜 菜品实物横图 无人物",
+        "漠河 北极村农家菜 杀猪菜 食物特写 无人物",
+        "漠河 杀猪菜 菜品实物横图 无人物",
+        "漠河 杀猪菜 美食实拍 无人物",
+        "漠河 锅包肉 菜品实物横图 无人物",
+        "漠河 锅包肉 美食实拍 无人物",
+        "漠河 鱼宴 菜品实物横图 无人物",
+        "漠河 鱼宴 美食实拍 无人物",
+        "漠河 北极村农家菜 杀猪菜 店内空景实拍",
+        "漠河 北极村农家菜 锅包肉 菜品实物横图 无人物"
+      ],
+      "source": "Baidu public image JSON endpoint (BaiduImageProvider)",
+      "foundCandidateCount": 39,
+      "downloadedCount": 20,
+      "rejectedCount": 4,
+      "rejectedByReason": {
+        "overlay_text": 1,
+        "collage": 1,
+        "too_small": 1,
+        "watermark": 1,
+        "qr_code": 1
+      },
+      "top5": [
+        {
+          "id": "baidu-24a839ba",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-24a839ba-4.jpg",
+          "qualityScore": 91,
+          "width": 1080,
+          "height": 721,
+          "searchQuery": "漠河 北极村农家菜 杀猪菜 菜品实物横图 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E6%BC%A0%E6%B2%B3%20%E5%8C%97%E6%9E%81%E6%9D%91%E5%86%9C%E5%AE%B6%E8%8F%9C%20%E6%9D%80%E7%8C%AA%E8%8F%9C%20%E8%8F%9C%E5%93%81%E5%AE%9E%E7%89%A9%E6%A8%AA%E5%9B%BE%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        },
+        {
+          "id": "baidu-fccd75ab",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-fccd75ab-18.png",
+          "qualityScore": 91,
+          "width": 1278,
+          "height": 841,
+          "searchQuery": "漠河 锅包肉 菜品实物横图 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E6%BC%A0%E6%B2%B3%20%E9%94%85%E5%8C%85%E8%82%89%20%E8%8F%9C%E5%93%81%E5%AE%9E%E7%89%A9%E6%A8%AA%E5%9B%BE%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        },
+        {
+          "id": "baidu-3ba15960",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-3ba15960-19.webp",
+          "qualityScore": 91,
+          "width": 4240,
+          "height": 2650,
+          "searchQuery": "漠河 锅包肉 菜品实物横图 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E6%BC%A0%E6%B2%B3%20%E9%94%85%E5%8C%85%E8%82%89%20%E8%8F%9C%E5%93%81%E5%AE%9E%E7%89%A9%E6%A8%AA%E5%9B%BE%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        },
+        {
+          "id": "baidu-ae93748d",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-ae93748d-7.jpg",
+          "qualityScore": 90,
+          "width": 1200,
+          "height": 960,
+          "searchQuery": "漠河 北极村农家菜 杀猪菜 食物特写 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E6%BC%A0%E6%B2%B3%20%E5%8C%97%E6%9E%81%E6%9D%91%E5%86%9C%E5%AE%B6%E8%8F%9C%20%E6%9D%80%E7%8C%AA%E8%8F%9C%20%E9%A3%9F%E7%89%A9%E7%89%B9%E5%86%99%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        },
+        {
+          "id": "baidu-adaccf9d",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-adaccf9d-0.jpg",
+          "qualityScore": 88,
+          "width": 1242,
+          "height": 909,
+          "searchQuery": "漠河 北极村农家菜 杀猪菜 菜品实物横图 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E6%BC%A0%E6%B2%B3%20%E5%8C%97%E6%9E%81%E6%9D%91%E5%86%9C%E5%AE%B6%E8%8F%9C%20%E6%9D%80%E7%8C%AA%E8%8F%9C%20%E8%8F%9C%E5%93%81%E5%AE%9E%E7%89%A9%E6%A8%AA%E5%9B%BE%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        }
+      ],
+      "finalCover": "/assets/journey-images/baidu/baidu-24a839ba-4.jpg",
+      "status": "ready",
+      "note": "At least 8 files downloaded; Top 5 selected by the shared ImageCandidate pipeline."
+    },
+    {
+      "journeyId": "knowledge-route-丽水-7",
+      "journeyTitle": "丽水本地逛吃 · 云禾小吃店｜遂昌烤薯",
+      "category": "dining",
+      "city": "丽水",
+      "queries": [
+        "丽水 云禾小吃店 遂昌烤薯 菜品实物横图 无人物",
+        "丽水 云禾小吃店 遂昌烤薯 食物特写 无人物",
+        "丽水 遂昌烤薯 菜品实物横图 无人物",
+        "丽水 遂昌烤薯 美食实拍 无人物",
+        "丽水 麦豆饭 菜品实物横图 无人物",
+        "丽水 麦豆饭 美食实拍 无人物",
+        "丽水 竹筒饭 菜品实物横图 无人物",
+        "丽水 竹筒饭 美食实拍 无人物",
+        "丽水 云禾小吃店 遂昌烤薯 店内空景实拍",
+        "丽水 云禾小吃店 麦豆饭 菜品实物横图 无人物"
+      ],
+      "source": "Baidu public image JSON endpoint (BaiduImageProvider)",
+      "foundCandidateCount": 41,
+      "downloadedCount": 20,
+      "rejectedCount": 8,
+      "rejectedByReason": {
+        "qr_code": 3,
+        "watermark": 2,
+        "too_small": 1,
+        "overlay_text": 2
+      },
+      "top5": [
+        {
+          "id": "baidu-5fed95a3",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-5fed95a3-11.webp",
+          "qualityScore": 93,
+          "width": 1242,
+          "height": 932,
+          "searchQuery": "丽水 遂昌烤薯 菜品实物横图 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E4%B8%BD%E6%B0%B4%20%E9%81%82%E6%98%8C%E7%83%A4%E8%96%AF%20%E8%8F%9C%E5%93%81%E5%AE%9E%E7%89%A9%E6%A8%AA%E5%9B%BE%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        },
+        {
+          "id": "baidu-ad196eb9",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-ad196eb9-13.jpg",
+          "qualityScore": 93,
+          "width": 1000,
+          "height": 600,
+          "searchQuery": "丽水 遂昌烤薯 菜品实物横图 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E4%B8%BD%E6%B0%B4%20%E9%81%82%E6%98%8C%E7%83%A4%E8%96%AF%20%E8%8F%9C%E5%93%81%E5%AE%9E%E7%89%A9%E6%A8%AA%E5%9B%BE%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        },
+        {
+          "id": "baidu-2060d42d",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-2060d42d-4.jpg",
+          "qualityScore": 90,
+          "width": 2730,
+          "height": 2048,
+          "searchQuery": "丽水 云禾小吃店 遂昌烤薯 食物特写 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E4%B8%BD%E6%B0%B4%20%E4%BA%91%E7%A6%BE%E5%B0%8F%E5%90%83%E5%BA%97%20%E9%81%82%E6%98%8C%E7%83%A4%E8%96%AF%20%E9%A3%9F%E7%89%A9%E7%89%B9%E5%86%99%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        },
+        {
+          "id": "baidu-9b271d7b",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-9b271d7b-6.jpg",
+          "qualityScore": 89,
+          "width": 2731,
+          "height": 2048,
+          "searchQuery": "丽水 云禾小吃店 遂昌烤薯 食物特写 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E4%B8%BD%E6%B0%B4%20%E4%BA%91%E7%A6%BE%E5%B0%8F%E5%90%83%E5%BA%97%20%E9%81%82%E6%98%8C%E7%83%A4%E8%96%AF%20%E9%A3%9F%E7%89%A9%E7%89%B9%E5%86%99%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        },
+        {
+          "id": "baidu-4727d428",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-4727d428-7.jpg",
+          "qualityScore": 88,
+          "width": 3072,
+          "height": 2048,
+          "searchQuery": "丽水 云禾小吃店 遂昌烤薯 食物特写 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E4%B8%BD%E6%B0%B4%20%E4%BA%91%E7%A6%BE%E5%B0%8F%E5%90%83%E5%BA%97%20%E9%81%82%E6%98%8C%E7%83%A4%E8%96%AF%20%E9%A3%9F%E7%89%A9%E7%89%B9%E5%86%99%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        }
+      ],
+      "finalCover": "/assets/journey-images/baidu/baidu-5fed95a3-11.webp",
+      "status": "ready",
+      "note": "At least 8 files downloaded; Top 5 selected by the shared ImageCandidate pipeline."
+    },
+    {
+      "journeyId": "knowledge-route-林芝-7",
+      "journeyTitle": "林芝本地逛吃 · 鲁朗石锅鸡｜酥油茶",
+      "category": "dining",
+      "city": "林芝",
+      "queries": [
+        "林芝 鲁朗石锅鸡 酥油茶 菜品实物横图 无人物",
+        "林芝 鲁朗石锅鸡 酥油茶 食物特写 无人物",
+        "林芝 酥油茶 菜品实物横图 无人物",
+        "林芝 酥油茶 美食实拍 无人物",
+        "林芝 林芝烤鱼 菜品实物横图 无人物",
+        "林芝 林芝烤鱼 美食实拍 无人物",
+        "林芝 蕨麻 菜品实物横图 无人物",
+        "林芝 蕨麻 美食实拍 无人物",
+        "林芝 鲁朗石锅鸡 酥油茶 店内空景实拍",
+        "林芝 鲁朗石锅鸡 林芝烤鱼 菜品实物横图 无人物"
+      ],
+      "source": "Baidu public image JSON endpoint (BaiduImageProvider)",
+      "foundCandidateCount": 43,
+      "downloadedCount": 20,
+      "rejectedCount": 9,
+      "rejectedByReason": {
+        "qr_code": 4,
+        "watermark": 5
+      },
+      "top5": [
+        {
+          "id": "baidu-7185256c",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-7185256c-12.webp",
+          "qualityScore": 92,
+          "width": 1242,
+          "height": 745,
+          "searchQuery": "林芝 酥油茶 菜品实物横图 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E6%9E%97%E8%8A%9D%20%E9%85%A5%E6%B2%B9%E8%8C%B6%20%E8%8F%9C%E5%93%81%E5%AE%9E%E7%89%A9%E6%A8%AA%E5%9B%BE%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        },
+        {
+          "id": "baidu-ef92b3db",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-ef92b3db-0.png",
+          "qualityScore": 89,
+          "width": 1920,
+          "height": 1050,
+          "searchQuery": "林芝 鲁朗石锅鸡 酥油茶 菜品实物横图 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E6%9E%97%E8%8A%9D%20%E9%B2%81%E6%9C%97%E7%9F%B3%E9%94%85%E9%B8%A1%20%E9%85%A5%E6%B2%B9%E8%8C%B6%20%E8%8F%9C%E5%93%81%E5%AE%9E%E7%89%A9%E6%A8%AA%E5%9B%BE%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        },
+        {
+          "id": "baidu-c39189f0",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-c39189f0-4.png",
+          "qualityScore": 89,
+          "width": 1205,
+          "height": 914,
+          "searchQuery": "林芝 鲁朗石锅鸡 酥油茶 菜品实物横图 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E6%9E%97%E8%8A%9D%20%E9%B2%81%E6%9C%97%E7%9F%B3%E9%94%85%E9%B8%A1%20%E9%85%A5%E6%B2%B9%E8%8C%B6%20%E8%8F%9C%E5%93%81%E5%AE%9E%E7%89%A9%E6%A8%AA%E5%9B%BE%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        },
+        {
+          "id": "baidu-9fb08b3",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-9fb08b3-5.webp",
+          "qualityScore": 89,
+          "width": 1080,
+          "height": 734,
+          "searchQuery": "林芝 鲁朗石锅鸡 酥油茶 菜品实物横图 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E6%9E%97%E8%8A%9D%20%E9%B2%81%E6%9C%97%E7%9F%B3%E9%94%85%E9%B8%A1%20%E9%85%A5%E6%B2%B9%E8%8C%B6%20%E8%8F%9C%E5%93%81%E5%AE%9E%E7%89%A9%E6%A8%AA%E5%9B%BE%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        },
+        {
+          "id": "baidu-8ec667c",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-8ec667c-6.png",
+          "qualityScore": 89,
+          "width": 1920,
+          "height": 1250,
+          "searchQuery": "林芝 鲁朗石锅鸡 酥油茶 菜品实物横图 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E6%9E%97%E8%8A%9D%20%E9%B2%81%E6%9C%97%E7%9F%B3%E9%94%85%E9%B8%A1%20%E9%85%A5%E6%B2%B9%E8%8C%B6%20%E8%8F%9C%E5%93%81%E5%AE%9E%E7%89%A9%E6%A8%AA%E5%9B%BE%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        }
+      ],
+      "finalCover": "/assets/journey-images/baidu/baidu-7185256c-12.webp",
+      "status": "ready",
+      "note": "At least 8 files downloaded; Top 5 selected by the shared ImageCandidate pipeline."
+    },
+    {
+      "journeyId": "knowledge-route-林芝-8",
+      "journeyTitle": "林芝早市与菜场 · 鲁朗石锅王｜牦牛肉",
+      "category": "dining",
+      "city": "林芝",
+      "queries": [
+        "林芝 鲁朗石锅王 牦牛肉 菜品实物横图 无人物",
+        "林芝 鲁朗石锅王 牦牛肉 食物特写 无人物",
+        "林芝 牦牛肉 菜品实物横图 无人物",
+        "林芝 牦牛肉 美食实拍 无人物",
+        "林芝 糌粑 菜品实物横图 无人物",
+        "林芝 糌粑 美食实拍 无人物",
+        "林芝 野生菌汤 菜品实物横图 无人物",
+        "林芝 野生菌汤 美食实拍 无人物",
+        "林芝 鲁朗石锅王 牦牛肉 店内空景实拍",
+        "林芝 鲁朗石锅王 糌粑 菜品实物横图 无人物"
+      ],
+      "source": "Baidu public image JSON endpoint (BaiduImageProvider)",
+      "foundCandidateCount": 56,
+      "downloadedCount": 20,
+      "rejectedCount": 8,
+      "rejectedByReason": {
+        "watermark": 3,
+        "qr_code": 2,
+        "overlay_text": 3
+      },
+      "top5": [
+        {
+          "id": "baidu-617ca21",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-617ca21-6.jpg",
+          "qualityScore": 92,
+          "width": 1440,
+          "height": 1080,
+          "searchQuery": "林芝 鲁朗石锅王 牦牛肉 菜品实物横图 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E6%9E%97%E8%8A%9D%20%E9%B2%81%E6%9C%97%E7%9F%B3%E9%94%85%E7%8E%8B%20%E7%89%A6%E7%89%9B%E8%82%89%20%E8%8F%9C%E5%93%81%E5%AE%9E%E7%89%A9%E6%A8%AA%E5%9B%BE%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        },
+        {
+          "id": "baidu-376e3e19",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-376e3e19-8.jpg",
+          "qualityScore": 91,
+          "width": 1442,
+          "height": 1050,
+          "searchQuery": "林芝 鲁朗石锅王 牦牛肉 菜品实物横图 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E6%9E%97%E8%8A%9D%20%E9%B2%81%E6%9C%97%E7%9F%B3%E9%94%85%E7%8E%8B%20%E7%89%A6%E7%89%9B%E8%82%89%20%E8%8F%9C%E5%93%81%E5%AE%9E%E7%89%A9%E6%A8%AA%E5%9B%BE%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        },
+        {
+          "id": "baidu-1aefa1fb",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-1aefa1fb-10.webp",
+          "qualityScore": 91,
+          "width": 1200,
+          "height": 800,
+          "searchQuery": "林芝 鲁朗石锅王 牦牛肉 食物特写 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E6%9E%97%E8%8A%9D%20%E9%B2%81%E6%9C%97%E7%9F%B3%E9%94%85%E7%8E%8B%20%E7%89%A6%E7%89%9B%E8%82%89%20%E9%A3%9F%E7%89%A9%E7%89%B9%E5%86%99%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        },
+        {
+          "id": "baidu-5a033b22",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-5a033b22-15.jpg",
+          "qualityScore": 90,
+          "width": 1080,
+          "height": 721,
+          "searchQuery": "林芝 鲁朗石锅王 牦牛肉 食物特写 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E6%9E%97%E8%8A%9D%20%E9%B2%81%E6%9C%97%E7%9F%B3%E9%94%85%E7%8E%8B%20%E7%89%A6%E7%89%9B%E8%82%89%20%E9%A3%9F%E7%89%A9%E7%89%B9%E5%86%99%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        },
+        {
+          "id": "baidu-ef7e6f57",
+          "cachedUrl": "/assets/journey-images/baidu/baidu-ef92b3db-0.png",
+          "qualityScore": 89,
+          "width": 1920,
+          "height": 1050,
+          "searchQuery": "林芝 鲁朗石锅王 牦牛肉 菜品实物横图 无人物",
+          "sourceUrl": "https://image.baidu.com/search/index?word=%E6%9E%97%E8%8A%9D%20%E9%B2%81%E6%9C%97%E7%9F%B3%E9%94%85%E7%8E%8B%20%E7%89%A6%E7%89%9B%E8%82%89%20%E8%8F%9C%E5%93%81%E5%AE%9E%E7%89%A9%E6%A8%AA%E5%9B%BE%20%E6%97%A0%E4%BA%BA%E7%89%A9"
+        }
+      ],
+      "finalCover": "/assets/journey-images/baidu/baidu-617ca21-6.jpg",
+      "status": "ready",
+      "note": "At least 8 files downloaded; Top 5 selected by the shared ImageCandidate pipeline."
+    }
+  ]
+}

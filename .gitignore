@@ -4,6 +4,7 @@ dist/
 .env.*
 !.env.example
 test-results/
+data/group-plans.local.sqlite*
 
 # Local-only checkpoints and generated QA output.
 _backup_before_v4/

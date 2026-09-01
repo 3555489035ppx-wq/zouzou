@@ -25,7 +25,7 @@ importers:
         version: 6.6.0
       openai:
         specifier: ^7.8.0
-        version: 7.8.0
+        version: 7.8.0(zod@4.5.4)
       react:
         specifier: ^19.1.1
         version: 19.2.8
@@ -41,6 +41,12 @@ importers:
       three:
         specifier: ^0.179.1
         version: 0.179.1
+      xstate:
+        specifier: ^5.32.6
+        version: 5.32.6
+      zod:
+        specifier: ^4.5.4
+        version: 4.5.4
       zustand:
         specifier: ^5.0.8
         version: 5.0.15(@types/react@19.2.18)(react@19.2.8)(use-sync-external-store@1.6.0(react@19.2.8))
@@ -1123,8 +1129,14 @@ packages:
     engines: {node: '>=8'}
     hasBin: true
 
+  xstate@5.32.6:
+    resolution: {integrity: sha512-WfA8WNrh6r9osuGwVm+aIPM4jmMW2LKHV1Yv9thYpOtL4HVF/kobh95K/O8v2jDCpDmP2EoY+6uvuqHXCZ6ZLw==}
+
   yallist@3.1.1:
     resolution: {integrity: sha512-a4UGQaWPH59mOXUYnAG2ewncQS4i4F43Tv3JoAM+s2VDAmS9NsK8GpDMLrCHPksFT7h3K6TOoUNn2pb7RoXx4g==}
+
+  zod@4.5.4:
+    resolution: {integrity: sha512-sC95tT5iHHH9gtpj6A81kh+NEaRAUFN+qlUPDUbRfOMvNf5QCBqsb3WgvnpVtK5Y+4UfA6KqufotuTvMGiTlsA==}
 
   zustand@5.0.15:
     resolution: {integrity: sha512-MpSEjRiBkA9crSYeOUH32rJC7SVqAbm0Fqcqge/bUi2PPoLcBWKOsG+C8mevmpr8TwXHBVkChbbJiyvkE+i/3A==}
@@ -1808,7 +1820,9 @@ snapshots:
 
   node-releases@2.0.53: {}
 
-  openai@7.8.0: {}
+  openai@7.8.0(zod@4.5.4):
+    optionalDependencies:
+      zod: 4.5.4
 
   pathe@2.0.3: {}
 
@@ -2054,7 +2068,11 @@ snapshots:
       siginfo: 2.0.0
       stackback: 0.0.2
 
+  xstate@5.32.6: {}
+
   yallist@3.1.1: {}
+
+  zod@4.5.4: {}
 
   zustand@5.0.15(@types/react@19.2.18)(react@19.2.8)(use-sync-external-store@1.6.0(react@19.2.8)):
     optionalDependencies:

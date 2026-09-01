@@ -4,6 +4,7 @@ import { cityNames } from '../src/demo-data/cities'
 import { extractDietaryProfile, foodCompatibilityIssues } from '../src/services/trip/dietary'
 import { emptyGuideContext, type GuideCandidate, type GuideContext, type GuideKnowledgeBase } from '../src/services/trip/guides'
 import type { TripRequest } from '../src/services/trip/planner'
+import { socialResearchGuides } from '../src/services/trip/socialResearch'
 
 const DEFAULT_KNOWLEDGE_BASE_PATH = resolve(process.cwd(), 'data/travel-guides.json')
 const GUIDE_LIMIT = 8
@@ -39,7 +40,7 @@ function readKnowledgeBase(): GuideKnowledgeBase {
     cachedKnowledgeBase = {
       version: 1,
       generatedAt: typeof root.generatedAt === 'string' ? root.generatedAt : new Date(0).toISOString(),
-      guides,
+      guides: [...guides, ...socialResearchGuides],
     }
     cachedMtime = mtime
     return cachedKnowledgeBase
@@ -130,7 +131,7 @@ export function searchTravelGuides(city: string, query = '', limit = GUIDE_LIMIT
     candidates,
     matchedTerms: queryTerms(query),
     generatedAt: root.generatedAt,
-    disclaimer: '社区攻略只用于发现体验线索；价格、营业时间、路线和预约状态需要出行前复核。',
+    disclaimer: '社区攻略只用于发现体验线索；路线和预约规则会随日期变化，请在详情页确认。',
   }
 }
 

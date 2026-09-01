@@ -11,6 +11,22 @@ export type Place = {
   z: number
   lng: number
   lat: number
+  area?: string
+  inputName?: string
+  canonicalName?: string
+  address?: string
+  poiId?: string
+  amapPoiId?: string
+  district?: string
+  adcode?: string
+  citycode?: string
+  poiType?: string
+  tel?: string
+  verifiedAt?: number
+  resolutionStatus?: 'verified' | 'ambiguous' | 'not_found' | 'error'
+  coordinateSystem?: 'wgs84' | 'gcj02'
+  mapStatus?: 'resolved' | 'unresolved'
+  searchKeyword?: string
   coordinateSource?: string
   verified?: boolean
 }

@@ -10,6 +10,7 @@ import {
 import { getLocalGuideContext } from './trip/localGuides'
 import { ServiceError } from './asyncState'
 import { trackPerformance } from './analytics'
+import { parseTripUnderstanding } from './trip/schemas'
 
 export type AIStage = 'listening' | 'reading' | 'thinking' | 'planning' | 'updating' | 'done' | 'success' | 'error'
 export type StageListener = (stage: AIStage, label: string) => void
@@ -97,12 +98,6 @@ function remoteRequestKey(request: TripRequest) {
     media: request.media.map(({ id, name, category }) => ({ id, name, category })),
     mediaFacts: request.mediaFacts ?? [],
   })
-}
-
-function isTripUnderstanding(value: unknown): value is TripUnderstanding {
-  if (!value || typeof value !== 'object') return false
-  const candidate = value as Partial<TripUnderstanding>
-  return Boolean(candidate.intent && Array.isArray(candidate.evidence) && typeof candidate.summary === 'string')
 }
 
 function isUsableRemoteUnderstanding(value: TripUnderstanding) {
@@ -276,10 +271,11 @@ export class PlanningAIAdapter implements AIService {
               : `文本理解服务返回 ${response.status}`
             throw new ServiceError(message, response.status === 401 || response.status === 403 ? 'UNAUTHORIZED' : response.status === 429 ? 'RATE_LIMITED' : 'UNKNOWN')
           }
-          if (!isTripUnderstanding(payload) || !isUsableRemoteUnderstanding(payload)) {
+          const understanding = parseTripUnderstanding(payload)
+          if (!understanding || !isUsableRemoteUnderstanding(understanding)) {
             throw new ServiceError('文本理解服务没有返回可用于排程的旅行意图。', 'INVALID_RESPONSE')
           }
-          return payload
+          return understanding
         })(), REMOTE_AI_TIMEOUT_MS, () => controller.abort())
       } finally {
         controller.abort()

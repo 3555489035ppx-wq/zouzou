@@ -1,5 +1,6 @@
 import { tripDays, type Place } from './trips'
 import { getCityKnowledge, type KnowledgeCategory } from '../services/trip/cityKnowledge'
+import { regionalCityProfiles } from './regional-city-profiles'
 
 export type CityProfile = {
   mapCenter: [number, number]
@@ -245,6 +246,7 @@ export const cityProfiles: Record<string, CityProfile> = {
     },
     routeScale: 0.58,
   },
+  ...regionalCityProfiles,
 }
 
 export const cityNames = Object.keys(cityProfiles)
@@ -282,10 +284,10 @@ export function getDemoTripPlaces(city: string, day: string): Place[] {
         id: `${city}-${day}-${place.id}`,
         name: item.name,
         type: item.category === 'restaurant' ? '晚餐候选' : item.category === 'food' ? '本地美食候选' : place.type,
-        note: `${item.summary} 来源：${item.source.label}。出行前仍需核对。`,
+        note: `${item.summary} 来源：${item.source.label}。`,
         lng: item.coordinates[0],
         lat: item.coordinates[1],
-        coordinateSource: `${item.source.label} · ${item.source.checkedAt}`,
+        coordinateSource: `高德 POI：${item.name} · ${item.source.checkedAt}`,
         verified: item.verified,
         x: index,
         z: index,
@@ -317,7 +319,7 @@ export function getDemoHotel(city: string): Place {
     // itinerary never presents an implausible ¥0 lodging line item.
     budget: city === '上海' ? 980 : 760,
     transport: '步行 18 分钟',
-    note: '两晚住宿参考价已计入，实际以预订平台为准。',
+    note: '两晚住宿参考价已计入，实际以酒店当天公开信息为准。',
     x: -3.4,
     z: 2.1,
     lng: profile.mapCenter[0],

@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 1,
   "source": "Wikimedia Commons",
   "images": {
     "上海": {
@@ -10,7 +10,7 @@
       "credit": "Jinbo Bu 布锦波",
       "license": "Public domain",
       "licenseUrl": null,
-      "downloadedAt": "2026-08-29T16:08:38.816Z"
+      "downloadedAt": "2026-08-30T13:17:48.263Z"
     },
     "杭州": {
       "file": "/assets/cities/hangzhou-west-lake.jpg",
@@ -20,7 +20,7 @@
       "credit": "Evan Hemingway",
       "license": "CC BY-SA 4.0",
       "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
-      "downloadedAt": "2026-08-29T16:08:41.828Z"
+      "downloadedAt": "2026-08-30T13:17:51.268Z"
     },
     "苏州": {
       "file": "/assets/cities/suzhou-garden.jpg",
@@ -30,7 +30,7 @@
       "credit": "Jason Zhang",
       "license": "CC0",
       "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
-      "downloadedAt": "2026-08-29T16:08:44.844Z"
+      "downloadedAt": "2026-08-30T13:17:54.281Z"
     },
     "南京": {
       "file": "/assets/cities/nanjing-city-wall.jpg",
@@ -40,7 +40,7 @@
       "credit": "Chainwit.",
       "license": "CC BY 4.0",
       "licenseUrl": "https://creativecommons.org/licenses/by/4.0",
-      "downloadedAt": "2026-08-29T16:08:50.251Z"
+      "downloadedAt": "2026-08-30T13:17:57.294Z"
     },
     "成都": {
       "file": "/assets/cities/chengdu-anshun-bridge.jpg",
@@ -50,7 +50,7 @@
       "credit": "Limesave",
       "license": "CC BY-SA 4.0",
       "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
-      "downloadedAt": "2026-08-29T16:08:56.140Z"
+      "downloadedAt": "2026-08-30T13:18:00.296Z"
     },
     "厦门": {
       "file": "/assets/cities/xiamen-gulangyu.jpg",
@@ -60,7 +60,7 @@
       "credit": "Slyronit",
       "license": "CC BY-SA 4.0",
       "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
-      "downloadedAt": "2026-08-29T16:09:02.683Z"
+      "downloadedAt": "2026-08-30T13:18:03.311Z"
     },
     "北京": {
       "file": "/assets/cities/beijing-skyline.jpg",
@@ -70,7 +70,7 @@
       "credit": "Picrazy2",
       "license": "CC BY-SA 4.0",
       "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
-      "downloadedAt": "2026-08-29T16:09:07.701Z"
+      "downloadedAt": "2026-08-30T13:18:06.314Z"
     },
     "广州": {
       "file": "/assets/cities/guangzhou-canton-tower.jpg",
@@ -80,7 +80,7 @@
       "credit": "Tim Wu",
       "license": "CC BY-SA 4.0",
       "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
-      "downloadedAt": "2026-08-29T16:09:12.906Z"
+      "downloadedAt": "2026-08-30T13:18:09.329Z"
     },
     "重庆": {
       "file": "/assets/cities/chongqing-hongyadong.jpg",
@@ -90,7 +90,7 @@
       "credit": "xiquinhosilva",
       "license": "CC BY 2.0",
       "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
-      "downloadedAt": "2026-08-29T16:09:18.078Z"
+      "downloadedAt": "2026-08-30T13:18:12.330Z"
     },
     "西安": {
       "file": "/assets/cities/xian-city-wall.jpg",
@@ -100,7 +100,7 @@
       "credit": "Felix Andrews (Floybix)",
       "license": "CC BY-SA 3.0",
       "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/",
-      "downloadedAt": "2026-08-29T16:09:23.311Z"
+      "downloadedAt": "2026-08-30T13:18:15.339Z"
     },
     "深圳": {
       "file": "/assets/cities/shenzhen-skyline.jpg",
@@ -110,7 +110,7 @@
       "credit": "Simbaxu",
       "license": "CC BY-SA 4.0",
       "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
-      "downloadedAt": "2026-08-29T16:09:28.764Z"
+      "downloadedAt": "2026-08-30T13:18:18.341Z"
     },
     "长沙": {
       "file": "/assets/cities/changsha-orange-island.jpg",
@@ -120,7 +120,7 @@
       "credit": "Huangdan2060",
       "license": "CC BY 3.0",
       "licenseUrl": "https://creativecommons.org/licenses/by/3.0",
-      "downloadedAt": "2026-08-29T16:09:36.623Z"
+      "downloadedAt": "2026-08-30T13:18:21.341Z"
     },
     "青岛": {
       "file": "/assets/cities/qingdao-zhanqiao.jpg",
@@ -130,7 +130,7 @@
       "credit": "Windmemories",
       "license": "CC BY-SA 4.0",
       "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
-      "downloadedAt": "2026-08-29T16:09:41.681Z"
+      "downloadedAt": "2026-08-30T13:18:24.354Z"
     },
     "武汉": {
       "file": "/assets/cities/wuhan-yellow-crane-tower.jpg",
@@ -140,7 +140,7 @@
       "credit": "Harald Groven",
       "license": "CC BY-SA 2.0",
       "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
-      "downloadedAt": "2026-08-29T16:09:46.534Z"
+      "downloadedAt": "2026-08-30T13:18:27.365Z"
     },
     "昆明": {
       "file": "/assets/cities/kunming-dianchi.jpg",
@@ -150,17 +150,17 @@
       "credit": "Ngguls",
       "license": "CC BY-SA 4.0",
       "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
-      "downloadedAt": "2026-08-29T16:09:52.129Z"
+      "downloadedAt": "2026-08-30T13:18:30.368Z"
     },
     "三亚": {
-      "file": "/assets/cities/sanya-beach.jpg",
-      "landmark": "三亚海岸",
-      "alt": "三亚海滩与热带海岸",
-      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Beaches_in_Sanya,_Hainan,_China2.jpg",
-      "credit": "Huangdan2060",
+      "file": "/assets/locations/sanya-bay-sunrise.jpg",
+      "landmark": "三亚湾",
+      "alt": "三亚湾沙滩与城市海湾天际线",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Sanya_Bay_-_01.jpg",
+      "credit": "Anna Frodesiak",
       "license": "CC0",
       "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
-      "downloadedAt": "2026-08-29T16:09:58.081Z"
+      "downloadedAt": "2026-08-30T13:18:35.821Z"
     },
     "桂林": {
       "file": "/assets/cities/guilin-scenery.jpg",
@@ -170,7 +170,7 @@
       "credit": "Katie Crutchley",
       "license": "Public domain",
       "licenseUrl": null,
-      "downloadedAt": "2026-08-29T16:10:03.397Z"
+      "downloadedAt": "2026-08-30T13:18:38.828Z"
     },
     "哈尔滨": {
       "file": "/assets/cities/harbin-saint-sophia.jpg",
@@ -180,7 +180,7 @@
       "credit": "闫恩铭 / Enming Yan",
       "license": "CC BY-SA 4.0",
       "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
-      "downloadedAt": "2026-08-29T16:10:25.802Z"
+      "downloadedAt": "2026-08-30T13:18:41.832Z"
     },
     "贵阳": {
       "file": "/assets/cities/guiyang-jiaxiu-pavilion.jpg",
@@ -190,7 +190,7 @@
       "credit": "xiquinhosilva",
       "license": "CC BY 2.0",
       "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
-      "downloadedAt": "2026-08-29T16:10:31.935Z"
+      "downloadedAt": "2026-08-30T13:18:44.833Z"
     },
     "张家界": {
       "file": "/assets/cities/zhangjiajie-tianzishan.jpg",
@@ -200,61 +200,207 @@
       "credit": "chensiyuan",
       "license": "CC BY-SA 4.0",
       "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
-      "downloadedAt": "2026-08-29T16:10:36.983Z"
+      "downloadedAt": "2026-08-30T13:18:47.837Z"
+    },
+    "康定": {
+      "file": "/assets/cities/kangding-city.jpg",
+      "landmark": "康定",
+      "alt": "康定山城与高原景色",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Kangding_from_above.jpg",
+      "credit": "NoGhost",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "downloadedAt": "2026-08-30T13:18:54.369Z"
+    },
+    "稻城亚丁": {
+      "file": "/assets/cities/daocheng-yading.jpg",
+      "landmark": "稻城亚丁",
+      "alt": "稻城地区高原景色",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Daocheng,_Garze,_Sichuan,_China_-_panoramio_(3).jpg",
+      "credit": "西風",
+      "license": "CC BY 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/3.0/",
+      "downloadedAt": "2026-08-30T13:19:18.195Z"
+    },
+    "九寨沟": {
+      "file": "/assets/cities/jiuzhaigou-valley.jpg",
+      "landmark": "九寨沟风景名胜区",
+      "alt": "九寨沟高山湖泊与森林",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Jiuzhaigou_Sichuan_China_Jiuzhaigou-Valley-02.jpg",
+      "credit": "CEphoto, Uwe Aranas",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/",
+      "downloadedAt": "2026-08-30T13:19:43.399Z"
+    },
+    "大理": {
+      "file": "/assets/cities/dali-yunnan.jpg",
+      "landmark": "大理古城",
+      "alt": "大理古城与苍山一带景色",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Dali_Yunnan_China_Temple-01.jpg",
+      "credit": "CEphoto, Uwe Aranas",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/",
+      "downloadedAt": "2026-08-30T13:20:06.929Z"
+    },
+    "丽江": {
+      "file": "/assets/cities/lijiang-old-town.jpg",
+      "landmark": "丽江古城",
+      "alt": "丽江古城夜间街巷",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Lijiang_Yunnan_China-Evening-atmosphere-in-old-town-Lijiang-01.jpg",
+      "credit": "CEphoto, Uwe Aranas",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/",
+      "downloadedAt": "2026-08-30T13:20:13.999Z"
+    },
+    "香格里拉": {
+      "file": "/assets/cities/shangri-la.jpg",
+      "landmark": "香格里拉",
+      "alt": "香格里拉高原城镇景色",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Shangri-La,_Deqen,_Yunnan,_China_-_panoramio_(9).jpg",
+      "credit": "christiali",
+      "license": "CC BY 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/3.0/",
+      "downloadedAt": "2026-08-30T13:20:45.895Z"
+    },
+    "西双版纳": {
+      "file": "/assets/cities/jinghong-city.jpg",
+      "landmark": "景洪",
+      "alt": "西双版纳景洪城市景色",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:City_of_Jinghong,_Yunnan,_China_in_2015.JPG",
+      "credit": "Ericmetro",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "downloadedAt": "2026-08-30T13:20:54.348Z"
+    },
+    "腾冲": {
+      "file": "/assets/cities/tengchong-volcano.jpg",
+      "landmark": "腾冲火山地热国家地质公园",
+      "alt": "腾冲火山地貌",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Tengchong_volcanic_rock_03.jpg",
+      "credit": "STW932",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "downloadedAt": "2026-08-30T13:22:09.140Z"
+    },
+    "沈阳": {
+      "file": "/assets/cities/shenyang-expo.jpg",
+      "landmark": "沈阳世博园",
+      "alt": "沈阳世博园景色",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Shenyang-shiboyuan2.jpg",
+      "credit": "Emmanuel Grolleau",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/",
+      "downloadedAt": "2026-08-30T13:22:17.218Z"
+    },
+    "大连": {
+      "file": "/assets/cities/dalian-xinghai-bay.jpg",
+      "landmark": "星海广场",
+      "alt": "大连星海湾海岸景色",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Dalian_Liaoning_China_Two-Chinese-at-Xinghai-Bay-01.jpg",
+      "credit": "CEphoto, Uwe Aranas",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/",
+      "downloadedAt": "2026-08-30T13:22:29.145Z"
+    },
+    "长春": {
+      "file": "/assets/cities/changchun-cbd.jpg",
+      "landmark": "长春城市风貌",
+      "alt": "长春文化广场与城市天际线",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Changchun_CBD_viewed_from_the_Cultural_Square,_2024.jpg",
+      "credit": "Licjar Xeymelloz",
+      "license": "CC0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "downloadedAt": "2026-08-30T13:22:36.607Z"
+    },
+    "延吉": {
+      "file": "/assets/cities/yanji-bridge.jpg",
+      "landmark": "延吉城市夜景",
+      "alt": "延吉桥梁与城市夜景",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Yanji_Bridge_(Nightscape).jpg",
+      "credit": "Theodore Xu",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "downloadedAt": "2026-08-30T13:22:48.394Z"
+    },
+    "漠河": {
+      "file": "/assets/cities/mohe-north.jpg",
+      "landmark": "漠河",
+      "alt": "漠河北境森林与河流景色",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:%E6%BC%A0%E6%B2%B3%E6%99%AF%E8%89%B21_Northernmost_China--Mohe_(1798574024).jpg",
+      "credit": "Zzzxxxrrr",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "downloadedAt": "2026-08-30T13:22:57.897Z"
+    },
+    "温州": {
+      "file": "/assets/cities/wenzhou-city.jpg",
+      "landmark": "温州城市风貌",
+      "alt": "温州城市与山水景色",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Wenzhou-city-in-Zhejiang-China.jpg",
+      "credit": "Benjamii",
+      "license": "CC0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "downloadedAt": "2026-08-30T13:23:13.375Z"
+    },
+    "台州": {
+      "file": "/assets/cities/taizhou-fanfenyuan.jpg",
+      "landmark": "台州本地小吃",
+      "alt": "台州地方小吃粉圆",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Fanfenyuan,_a_kind_of_food_in_Taizhou,_Zhejiang,_China.jpg",
+      "credit": "Rowingbohe",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "downloadedAt": "2026-08-30T13:23:20.197Z"
+    },
+    "丽水": {
+      "file": "/assets/cities/lishui-lingshan.jpg",
+      "landmark": "丽水山水",
+      "alt": "丽水灵山寺与山地景色",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Lingshan_Temple,_Lishui,_Zhejiang,_China.jpg",
+      "credit": "Huangdan2060",
+      "license": "CC0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "downloadedAt": "2026-08-30T13:23:26.547Z"
+    },
+    "乌鲁木齐": {
+      "file": "/assets/cities/urumqi-city.jpg",
+      "landmark": "乌鲁木齐城市风貌",
+      "alt": "乌鲁木齐城市景色",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:%E4%B8%AD%E5%9B%BD%E6%96%B0%E7%96%86%E4%B9%8C%E9%B2%81%E6%9C%A8%E9%BD%90%E5%B8%82China_Xinjiang_Urumqi,_China_Xinjiang_Urumqi_-_panoramio.jpg",
+      "credit": "罗布泊",
+      "license": "CC BY 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/3.0/",
+      "downloadedAt": "2026-08-30T13:23:33.252Z"
+    },
+    "喀什": {
+      "file": "/assets/cities/kashgar-market.jpg",
+      "landmark": "喀什东巴扎",
+      "alt": "喀什周日市场生活场景",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Kashgar_Sunday_Market_(23954726961).jpg",
+      "credit": "Laika ac from UK",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0/",
+      "downloadedAt": "2026-08-30T13:23:39.533Z"
+    },
+    "拉萨": {
+      "file": "/assets/cities/lhasa-barkhor.jpg",
+      "landmark": "八廓街",
+      "alt": "拉萨八廓街转经场景",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:An_elderly_Tibetan_women_holding_a_prayer_wheel_on_Lhasa,_Barkhor.jpg",
+      "credit": "Luca Galuzzi (Lucag)",
+      "license": "CC BY-SA 2.5",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.5/",
+      "downloadedAt": "2026-08-30T13:23:45.072Z"
+    },
+    "林芝": {
+      "file": "/assets/cities/nyingchi-bayi.jpg",
+      "landmark": "林芝八一镇",
+      "alt": "林芝八一镇与山地景色",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Bayi,_Nyingchi,_Tibet,_China_-_panoramio_(26).jpg",
+      "credit": "ping lin",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/",
+      "downloadedAt": "2026-08-30T13:23:52.673Z"
     }
-  },
-  "locations": {
-    "上海": [
-      {
-        "file": "/assets/locations/shanghai-wukang-mansion.jpg",
-        "landmark": "武康大楼",
-        "alt": "上海武康大楼街角实景",
-        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Wukang_Mansion,_Shanghai,_May_2016_01.JPG",
-        "credit": "SSYoung",
-        "license": "CC BY-SA 4.0",
-        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
-        "downloadedAt": "2026-08-30"
-      },
-      {
-        "file": "/assets/locations/shanghai-wukang-road.jpg",
-        "landmark": "武康路",
-        "alt": "上海武康路林荫街景",
-        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Wukang_Road,_Shanghai,_May_2016.JPG",
-        "credit": "SSYoung",
-        "license": "CC BY-SA 4.0",
-        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
-        "downloadedAt": "2026-08-30"
-      },
-      {
-        "file": "/assets/locations/shanghai-anfu-road.jpg",
-        "landmark": "安福路",
-        "alt": "上海安福路店铺实景",
-        "sourceUrl": "https://commons.wikimedia.org/wiki/File:A_brunch_spot_at_Anfu_Rd.jpg",
-        "credit": "RunningTurtle8964",
-        "license": "CC0",
-        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
-        "downloadedAt": "2026-08-30"
-      },
-      {
-        "file": "/assets/locations/shanghai-library.jpg",
-        "landmark": "上海图书馆",
-        "alt": "上海图书馆东馆外立面实景",
-        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Shanghai_Library_East_Hall.jpg",
-        "credit": "NMaia",
-        "license": "CC BY-SA 4.0",
-        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
-        "downloadedAt": "2026-08-30"
-      },
-      {
-        "file": "/assets/locations/shanghai-drama-center.jpg",
-        "landmark": "上海话剧艺术中心",
-        "alt": "上海话剧艺术中心花园建筑实景",
-        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Shanghai_Dramatic_Arts_Center.JPG",
-        "credit": "Fayhoo",
-        "license": "CC BY-SA 3.0",
-        "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
-        "downloadedAt": "2026-08-30"
-      }
-    ]
   }
 }

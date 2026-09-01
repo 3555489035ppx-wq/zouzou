@@ -1,5 +1,17 @@
 export type AnalyticsValue = string | number | boolean
 export type AnalyticsEventName =
+  | 'app_open'
+  | 'onboarding_complete'
+  | 'journey_create_start'
+  | 'journey_generated'
+  | 'journey_saved'
+  | 'place_open'
+  | 'place_added'
+  | 'expense_added'
+  | 'packing_checked'
+  | 'footprint_created'
+  | 'journey_shared'
+  | 'journey_completed'
   | 'route_requested'
   | 'route_succeeded'
   | 'route_failed'
@@ -8,6 +20,18 @@ export type AnalyticsEventName =
   | 'trip_understanding_retried'
   | 'location_permission'
   | 'performance_measure'
+  | 'weekend_create'
+  | 'date_create'
+  | 'dining_create'
+  | 'group_plan_created'
+  | 'invite_sent'
+  | 'participant_joined'
+  | 'poll_created'
+  | 'poll_vote'
+  | 'poll_vote_changed'
+  | 'poll_resolved'
+  | 'journey_generated_from_poll'
+  | 'comment_added'
 
 export type AnalyticsEvent = {
   name: AnalyticsEventName

@@ -1,0 +1,19 @@
+{
+  "generatedAt": "2026-08-31T13:04:15.009Z",
+  "source": "Wikimedia Commons API",
+  "onlyMissing": true,
+  "routes": [
+    {
+      "journeyId": "knowledge-route-上海-8",
+      "title": "上海早市与菜场 · 上海本帮面",
+      "city": "上海",
+      "searchedPlaces": [
+        "上海本帮面",
+        "老城厢菜市场早走",
+        "外滩"
+      ],
+      "downloaded": 8,
+      "accepted": 0
+    }
+  ]
+}

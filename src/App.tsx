@@ -1,5 +1,6 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
+import { track } from './services/analytics'
 
 const SplashPage = lazy(() => import('./pages/AccountPages').then((module) => ({ default: module.SplashPage })))
 const LoginPage = lazy(() => import('./pages/AccountPages').then((module) => ({ default: module.LoginPage })))
@@ -17,7 +18,6 @@ const DiscoverPage = lazy(() => import('./pages/DiscoverPages').then((module) =>
 const DiscoverDetailPage = lazy(() => import('./pages/DiscoverPages').then((module) => ({ default: module.DiscoverDetailPage })))
 const DiscoverPublishPage = lazy(() => import('./pages/DiscoverPages').then((module) => ({ default: module.DiscoverPublishPage })))
 const DiscoverReplayPage = lazy(() => import('./pages/DiscoverPages').then((module) => ({ default: module.DiscoverReplayPage })))
-const PeopleListPage = lazy(() => import('./pages/ProfilePages').then((module) => ({ default: module.PeopleListPage })))
 const ProfileEditPage = lazy(() => import('./pages/ProfilePages').then((module) => ({ default: module.ProfileEditPage })))
 const ProfilePage = lazy(() => import('./pages/ProfilePages').then((module) => ({ default: module.ProfilePage })))
 const NotificationsPage = lazy(() => import('./pages/UtilityPages').then((module) => ({ default: module.NotificationsPage })))
@@ -26,8 +26,19 @@ const SettingsPage = lazy(() => import('./pages/UtilityPages').then((module) => 
 const DemoPage = lazy(() => import('./pages/DemoPage').then((module) => ({ default: module.DemoPage })))
 const BotLabPage = lazy(() => import('./pages/SystemPages').then((module) => ({ default: module.BotLabPage })))
 const PresentationPage = lazy(() => import('./pages/SystemPages').then((module) => ({ default: module.PresentationPage })))
+const JourneyImageReviewPage = lazy(() => import('./pages/JourneyImageReviewPage').then((module) => ({ default: module.JourneyImageReviewPage })))
+const JourneyToolsPage = lazy(() => import('./pages/JourneyToolsPages').then((module) => ({ default: module.JourneyToolsPage })))
+const ExpensePage = lazy(() => import('./pages/JourneyToolsPages').then((module) => ({ default: module.ExpensePage })))
+const PackingPage = lazy(() => import('./pages/JourneyToolsPages').then((module) => ({ default: module.PackingPage })))
+const FootprintPage = lazy(() => import('./pages/JourneyToolsPages').then((module) => ({ default: module.FootprintPage })))
+const PlaceKnowledgePage = lazy(() => import('./pages/JourneyToolsPages').then((module) => ({ default: module.PlaceKnowledgePage })))
+const JourneySharePage = lazy(() => import('./pages/JourneyToolsPages').then((module) => ({ default: module.JourneySharePage })))
+const GroupPlanCreatePage = lazy(() => import('./pages/GroupPlanPages').then((module) => ({ default: module.GroupPlanCreatePage })))
+const GroupPlanDetailPage = lazy(() => import('./pages/GroupPlanPages').then((module) => ({ default: module.GroupPlanDetailPage })))
+const GroupPlanInvitePage = lazy(() => import('./pages/GroupPlanPages').then((module) => ({ default: module.GroupPlanInvitePage })))
 
 export default function App() {
+  useEffect(() => { track('app_open') }, [])
   return <Suspense fallback={<div className="route-loading" role="status">正在打开页面…</div>}><Routes>
     <Route path="/" element={<PresentationPage />} />
     <Route path="/splash" element={<SplashPage />} />
@@ -44,6 +55,12 @@ export default function App() {
     <Route path="/travel/edit" element={<Navigate to="/travel/plan/match" replace />} />
     <Route path="/travel/friends" element={<FriendsPage />} />
     <Route path="/travel/vote" element={<VotePage />} />
+    <Route path="/journey/tools" element={<JourneyToolsPage />} />
+    <Route path="/journey/expense" element={<ExpensePage />} />
+    <Route path="/journey/packing" element={<PackingPage />} />
+    <Route path="/journey/footprint" element={<FootprintPage />} />
+    <Route path="/journey/share" element={<JourneySharePage />} />
+    <Route path="/journey/place/:placeId" element={<PlaceKnowledgePage />} />
     <Route path="/trips" element={<TripsPage />} />
     <Route path="/trips/:id" element={<TripsPage />} />
     <Route path="/trips/:id/replay" element={<TripReplayPage />} />
@@ -53,6 +70,7 @@ export default function App() {
     <Route path="/community/:id" element={<DiscoverDetailPage />} />
     <Route path="/community/publish" element={<DiscoverPublishPage />} />
     <Route path="/discover" element={<DiscoverPage />} />
+    <Route path="/discover/search" element={<DiscoverPage />} />
     <Route path="/discover/publish" element={<DiscoverPublishPage />} />
     <Route path="/discover/:id/replay" element={<DiscoverReplayPage />} />
     <Route path="/discover/:id" element={<DiscoverDetailPage />} />
@@ -60,16 +78,16 @@ export default function App() {
     <Route path="/profile/trips" element={<ProfilePage initialTab="行程" />} />
     <Route path="/profile/posts" element={<ProfilePage initialTab="发布" />} />
     <Route path="/profile/favorites" element={<ProfilePage initialTab="收藏" />} />
-    <Route path="/profile/likes" element={<ProfilePage initialTab="喜欢" />} />
-    <Route path="/profile/following" element={<PeopleListPage title="关注" />} />
-    <Route path="/profile/followers" element={<PeopleListPage title="粉丝" />} />
     <Route path="/profile/edit" element={<ProfileEditPage />} />
     <Route path="/notifications" element={<NotificationsPage />} />
     <Route path="/settings" element={<SettingsPage />} />
-    <Route path="/weekend" element={<QuickPlannerPage kind="weekend" />} />
-    <Route path="/date" element={<QuickPlannerPage kind="date" />} />
-    <Route path="/dining" element={<QuickPlannerPage kind="dining" />} />
+    <Route path="/weekend" element={<GroupPlanCreatePage type="weekend" />} />
+    <Route path="/date" element={<GroupPlanCreatePage type="date" />} />
+    <Route path="/dining" element={<GroupPlanCreatePage type="dining" />} />
+    <Route path="/group-plans/:planId" element={<GroupPlanDetailPage />} />
+    <Route path="/group-plans/invite/:code" element={<GroupPlanInvitePage />} />
     <Route path="/__demo" element={<DemoPage />} />
+    {import.meta.env.DEV ? <Route path="/__journey-images" element={<JourneyImageReviewPage />} /> : null}
     <Route path="*" element={<Navigate to="/home" replace />} />
   </Routes></Suspense>
 }

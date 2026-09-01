@@ -5,6 +5,7 @@ import { resolve } from 'node:path'
 import { getAIProviderConfig, sanitizeTripRequest, understandTripWithProvider } from './trip-intent'
 import { analyzeTripMediaWithProvider, getVisionProviderConfig, sanitizeTripMediaRequest } from './trip-vision'
 import { getGuideStats, inferGuideCity, searchTravelGuides } from './travel-guides'
+import { GroupPlanError, groupPlans } from './group-plans'
 
 const DEFAULT_PORT = 8787
 const MAX_BODY_BYTES = 1_000_000
@@ -40,6 +41,75 @@ function sendJson(response: ServerResponse, statusCode: number, payload: unknown
   response.end(JSON.stringify(payload))
 }
 
+function sendGroupPlanError(response: ServerResponse, error: unknown) {
+  const known = error instanceof GroupPlanError
+  const status = !known ? 500 : error.code === 'NOT_FOUND' ? 404 : error.code === 'FORBIDDEN' ? 403 : error.code === 'POLL_CLOSED' || error.code === 'PLAN_CLOSED' ? 409 : 400
+  sendJson(response, status, { error: known ? error.code : 'GROUP_PLAN_FAILED', message: error instanceof Error ? error.message : '计划服务暂时不可用。' })
+}
+
+async function handleGroupPlanRequest(request: IncomingMessage, response: ServerResponse) {
+  const url = new URL(request.url ?? '/', `http://${request.headers.host ?? '127.0.0.1'}`)
+  const segments = url.pathname.split('/').filter(Boolean)
+  // /api/group-plans/:planId/events
+  if (request.method === 'GET' && segments.length === 4 && segments[3] === 'events') {
+    const planId = segments[2]
+    try {
+      const plan = await groupPlans.get(planId)
+      response.writeHead(200, { 'Content-Type': 'text/event-stream; charset=utf-8', 'Cache-Control': 'no-cache', Connection: 'keep-alive' })
+      response.write(`data: ${JSON.stringify({ type: 'plan.updated', plan })}\n\n`)
+      const unsubscribe = groupPlans.subscribe(planId, (next) => response.write(`data: ${JSON.stringify({ type: 'plan.updated', plan: next })}\n\n`))
+      const keepAlive = setInterval(() => response.write(': keep-alive\n\n'), 25_000)
+      request.on('close', () => { clearInterval(keepAlive); unsubscribe() })
+    } catch (error) { sendGroupPlanError(response, error) }
+    return
+  }
+  if (request.method === 'POST' && url.pathname === '/api/group-plans') {
+    try { sendJson(response, 201, await groupPlans.create(await readJson(request) as never)) } catch (error) { sendGroupPlanError(response, error) }
+    return
+  }
+  if (request.method === 'POST' && segments.length === 5 && segments[2] === 'invite' && segments[4] === 'join') {
+    try { sendJson(response, 200, await groupPlans.join(segments[3], await readJson(request) as never)) } catch (error) { sendGroupPlanError(response, error) }
+    return
+  }
+  if (request.method === 'GET' && segments.length === 4 && segments[2] === 'invite') {
+    try { sendJson(response, 200, await groupPlans.getByInvite(segments[3])) } catch (error) { sendGroupPlanError(response, error) }
+    return
+  }
+  if (request.method === 'GET' && segments.length === 3) {
+    try { sendJson(response, 200, await groupPlans.get(segments[2])) } catch (error) { sendGroupPlanError(response, error) }
+    return
+  }
+  if (request.method === 'POST' && segments.length === 4 && segments[3] === 'polls') {
+    try { const body = await readJson(request) as { actorId?: string; title?: string; type?: 'single' | 'multiple' | 'time'; options?: string[]; maxSelections?: number }; sendJson(response, 201, await groupPlans.createPoll(segments[2], body.actorId ?? '', { title: body.title ?? '', type: body.type ?? 'single', options: Array.isArray(body.options) ? body.options : [], maxSelections: body.maxSelections })) } catch (error) { sendGroupPlanError(response, error) }
+    return
+  }
+  if (request.method === 'POST' && segments.length === 4 && segments[3] === 'join') {
+    try { sendJson(response, 200, await groupPlans.join(segments[2], await readJson(request) as never)) } catch (error) { sendGroupPlanError(response, error) }
+    return
+  }
+  if (request.method === 'PUT' && segments.length === 6 && segments[3] === 'polls' && segments[5] === 'vote') {
+    try { const body = await readJson(request) as { participantId?: string; optionIds?: string[] }; sendJson(response, 200, await groupPlans.vote(segments[4], body.participantId ?? '', Array.isArray(body.optionIds) ? body.optionIds : [])) } catch (error) { sendGroupPlanError(response, error) }
+    return
+  }
+  if (request.method === 'POST' && segments.length === 6 && segments[3] === 'polls' && segments[5] === 'close') {
+    try { const body = await readJson(request) as { actorId?: string }; sendJson(response, 200, await groupPlans.closePoll(segments[2], segments[4], body.actorId ?? '')) } catch (error) { sendGroupPlanError(response, error) }
+    return
+  }
+  if (request.method === 'POST' && segments.length === 6 && segments[3] === 'polls' && segments[5] === 'resolve') {
+    try { const body = await readJson(request) as { actorId?: string; winningOptionId?: string }; sendJson(response, 200, await groupPlans.resolve(segments[2], segments[4], body.actorId ?? '', body.winningOptionId ?? '')) } catch (error) { sendGroupPlanError(response, error) }
+    return
+  }
+  if (request.method === 'POST' && segments.length === 6 && segments[3] === 'polls' && segments[5] === 'reopen') {
+    try { const body = await readJson(request) as { actorId?: string }; sendJson(response, 200, await groupPlans.reopen(segments[2], segments[4], body.actorId ?? '')) } catch (error) { sendGroupPlanError(response, error) }
+    return
+  }
+  if (request.method === 'POST' && segments.length === 4 && segments[3] === 'leave') {
+    try { const body = await readJson(request) as { participantId?: string }; sendJson(response, 200, await groupPlans.leave(segments[2], body.participantId ?? '')) } catch (error) { sendGroupPlanError(response, error) }
+    return
+  }
+  sendJson(response, 404, { error: 'NOT_FOUND', message: '接口不存在。' })
+}
+
 async function readJson(request: IncomingMessage, maxBytes = MAX_BODY_BYTES): Promise<unknown> {
   const chunks: Buffer[] = []
   let totalBytes = 0
@@ -65,6 +135,11 @@ export async function handleRequest(request: IncomingMessage, response: ServerRe
   if (request.method === 'OPTIONS') {
     response.writeHead(204)
     response.end()
+    return
+  }
+
+  if (request.url?.startsWith('/api/group-plans')) {
+    await handleGroupPlanRequest(request, response)
     return
   }
 

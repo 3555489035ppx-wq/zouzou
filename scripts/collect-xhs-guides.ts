@@ -5,7 +5,9 @@ import { fileURLToPath } from 'node:url'
 import { dirname, resolve } from 'node:path'
 import { promisify } from 'node:util'
 import { inferFoodTags } from '../src/services/trip/dietary'
-import type { GuideCandidate, GuideClaim, GuideKnowledgeBase } from '../src/services/trip/guides'
+import { cityKnowledge } from '../src/services/trip/cityKnowledge'
+import { extractHotelExperienceHints, extractHotelNames } from '../src/services/trip/hotelRecommendation'
+import { isNamedFoodVenue, type GuideCandidate, type GuideClaim, type GuideKnowledgeBase } from '../src/services/trip/guides'
 
 const execFileAsync = promisify(execFile)
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -14,12 +16,13 @@ const openCliBin = process.env.OPENCLI_BIN?.trim() || (process.platform === 'win
 const windowsOpenCliEntry = process.env.OPENCLI_ENTRY?.trim()
   || (process.env.APPDATA ? resolve(process.env.APPDATA, 'npm', 'node_modules', '@jackwener', 'opencli', 'dist', 'src', 'main.js') : '')
 
-const DEFAULT_CITIES = ['上海', '杭州', '苏州', '南京', '成都', '厦门', '北京', '广州', '重庆', '西安', '深圳', '长沙', '青岛', '武汉', '昆明', '三亚', '桂林', '哈尔滨', '贵阳', '张家界']
+const DEFAULT_CITIES = ['上海', '杭州', '苏州', '南京', '成都', '厦门', '北京', '广州', '重庆', '西安', '深圳', '长沙', '青岛', '武汉', '昆明', '三亚', '桂林', '哈尔滨', '贵阳', '张家界', '康定', '稻城亚丁', '九寨沟', '大理', '丽江', '香格里拉', '西双版纳', '腾冲', '沈阳', '大连', '长春', '延吉', '漠河', '温州', '台州', '丽水', '乌鲁木齐', '喀什', '拉萨', '林芝']
 const DEFAULT_SEARCH_LIMIT = 5
 const DEFAULT_DETAIL_LIMIT = 1
 const DEFAULT_DELAY_MS = 2_500
-const DEFAULT_TOPICS = ['route', 'food', 'local'] as const
-const DEFAULT_PLATFORMS = ['xiaohongshu', 'bilibili'] as const
+const DEFAULT_TOPICS = ['route', 'food', 'local', 'attraction', 'hotel'] as const
+const DEFAULT_PLATFORMS = ['xiaohongshu', 'bilibili', 'douyin'] as const
+const foodVenueSuffix = /(?:饭店|饭馆|餐馆|面馆|粉店|汤包店|小吃店|小吃部|小吃|烧烤店|火锅店|串串店|菜馆|小馆|食堂|大排档|小食店|老店)$/
 
 const cityPlaceHints: Record<string, string[]> = {
   上海: ['外滩', '武康路', '安福路', '豫园', '南京路步行街', '陆家嘴', '东方明珠', '静安寺', '朱家角', '上海博物馆', '浦东美术馆'],
@@ -43,6 +46,18 @@ const cityPlaceHints: Record<string, string[]> = {
   贵阳: ['青云市集', '黔灵山公园', '甲秀楼', '贵州省博物馆', '花溪', '青岩古镇', '文昌阁', '天河潭'],
   张家界: ['天门山', '武陵源', '张家界国家森林公园', '十里画廊', '宝峰湖', '大庸古城', '溪布街', '黄石寨'],
 }
+
+const knowledgePlaceHints: Record<string, string[]> = Object.fromEntries(Object.entries(cityKnowledge).map(([city, knowledge]) => [
+  city,
+  knowledge.items
+    .filter((item) => item.category === 'attraction' || item.category === 'activity')
+    .map((item) => item.name),
+]))
+
+const knowledgeFoodVenueHints: Record<string, string[]> = Object.fromEntries(Object.entries(cityKnowledge).map(([city, knowledge]) => [
+  city,
+  knowledge.items.filter((item) => item.category === 'restaurant').map((item) => item.name),
+]))
 
 const tagRules: Array<[string, RegExp]> = [
   ['City Walk', /city\s*walk|citywalk|散步|漫步|街区/i],
@@ -180,21 +195,25 @@ function extractDays(text: string) {
 }
 
 function extractPlaces(city: string, text: string) {
-  return (cityPlaceHints[city] ?? []).filter((place) => text.includes(place))
+  const candidates = unique([...(cityPlaceHints[city] ?? []), ...(knowledgePlaceHints[city] ?? [])])
+  return candidates.filter((place) => text.includes(place))
 }
 
 function unique(items: string[]) {
   return [...new Set(items)]
 }
 
-function extractFoodHints(text: string) {
+function extractFoodHints(city: string, text: string) {
   const bulletNames = text
     .split(/▶️/)
     .slice(1)
     .map((segment) => segment.split(/[丨|]/)[0]?.trim() ?? '')
     .filter((name) => name.length >= 2 && name.length <= 24 && !/^(人均|地址|推荐|必吃)/.test(name))
   const namedFoods = foodHintRules.filter(([, pattern]) => pattern.test(text)).map(([hint]) => hint)
-  const hints = unique([...bulletNames, ...namedFoods])
+  const knownFoodVenues = (knowledgeFoodVenueHints[city] ?? []).filter((name) => text.includes(name))
+  const namedFoodVenues = unique((text.match(/[\u4e00-\u9fa5A-Za-z0-9·]{2,18}(?:饭店|饭馆|餐馆|面馆|粉店|汤包店|小吃店|小吃部|小吃|烧烤店|火锅店|串串店|菜馆|小馆|食堂|大排档|小食店|老店)/g) ?? [])
+    .filter(isNamedFoodVenue))
+  const hints = unique([...knownFoodVenues, ...namedFoodVenues, ...bulletNames, ...namedFoods])
   return hints.length > 0 || !/(美食|小吃|逛吃|食堂|餐厅|餐馆|吃)/.test(text)
     ? hints.slice(0, 8)
     : ['本地小吃']
@@ -204,7 +223,7 @@ function extractLocalExperienceHints(text: string) {
   return localExperienceRules.filter(([, pattern]) => pattern.test(text)).map(([hint]) => hint).slice(0, 6)
 }
 
-function createClaims(city: string, text: string, tags: string[], places: string[], foodHints: string[], localExperienceHints: string[]): GuideClaim[] {
+function createClaims(city: string, text: string, tags: string[], places: string[], foodHints: string[], localExperienceHints: string[], hotelHints: string[], hotelNames: string[]): GuideClaim[] {
   const claims: GuideClaim[] = []
   if (places.length > 0) {
     claims.push({
@@ -247,10 +266,18 @@ function createClaims(city: string, text: string, tags: string[], places: string
       verified: false,
     })
   }
+  if (hotelHints.length > 0 || hotelNames.length > 0) {
+    claims.push({
+      type: 'tip',
+      text: `社区攻略提到的住宿体验：${[...hotelHints, ...hotelNames].join('、')}`,
+      confidence: 0.55,
+      verified: false,
+    })
+  }
   return claims
 }
 
-function makeSummary(city: string, title: string, content: string, tags: string[], places: string[], foodHints: string[], localExperienceHints: string[]) {
+function makeSummary(city: string, title: string, content: string, tags: string[], places: string[], foodHints: string[], localExperienceHints: string[], hotelHints: string[], hotelNames: string[]) {
   const days = extractDays(`${title} ${content}`)
   const parts = [`${city}旅行攻略线索`]
   if (days) parts.push(days)
@@ -258,21 +285,28 @@ function makeSummary(city: string, title: string, content: string, tags: string[
   if (places.length > 0) parts.push(`地点：${places.slice(0, 8).join('、')}`)
   if (foodHints.length > 0) parts.push(`吃法：${foodHints.slice(0, 6).join('、')}`)
   if (localExperienceHints.length > 0) parts.push(`本地项目：${localExperienceHints.slice(0, 5).join('、')}`)
+  if (hotelHints.length > 0) parts.push(`住宿体验：${hotelHints.slice(0, 5).join('、')}`)
+  if (hotelNames.length > 0) parts.push(`提及酒店：${hotelNames.slice(0, 4).join('、')}`)
   parts.push('仅作社区体验参考，价格、营业时间和路线需出行前复核。')
   return parts.join('；')
 }
 
-function buildCandidate(city: string, platform: CollectionPlatform, result: SearchResult, detail?: Record<string, string>): GuideCandidate | null {
+function buildCandidate(city: string, platform: CollectionPlatform, result: SearchResult, detail?: Record<string, string>, topic?: CollectionTopic): GuideCandidate | null {
   const sourceUrl = typeof result.url === 'string' ? canonicalUrl(result.url) : ''
-  const title = (detail?.title || result.title || '').trim()
+  const title = (detail?.title || result.title || result.desc || result.description || '').trim()
   if (!sourceUrl || !title) return null
-  const content = detail?.content || ''
+  const content = detail?.content || result.description || result.desc || ''
   const searchable = [title, result.description, result.desc, content].filter(Boolean).join('\n')
+  if (topic === 'hotel' && !searchable.includes(city)) return null
   const tags = extractTags(searchable)
   const placeHints = extractPlaces(city, searchable)
-  const foodHints = extractFoodHints(searchable)
+  if (!searchable.includes(city) && placeHints.length === 0) return null
+  const foodHints = extractFoodHints(city, searchable)
   const localExperienceHints = extractLocalExperienceHints(searchable)
-  const id = `${platform === 'xiaohongshu' ? 'xhs' : 'bili'}-${createHash('sha256').update(sourceUrl).digest('hex').slice(0, 16)}`
+  const hotelHints = extractHotelExperienceHints(searchable)
+  const hotelNames = extractHotelNames(searchable, city)
+  const platformPrefix = platform === 'xiaohongshu' ? 'xhs' : platform === 'bilibili' ? 'bili' : 'douyin'
+  const id = `${platformPrefix}-${createHash('sha256').update(sourceUrl).digest('hex').slice(0, 16)}`
   return {
     id,
     city,
@@ -283,20 +317,25 @@ function buildCandidate(city: string, platform: CollectionPlatform, result: Sear
     publishedAt: parsePublishedAt(detail?.published_at || result.published_at || result.publish_time || result.pubdate),
     fetchedAt: new Date().toISOString(),
     likes: parseLikes(detail?.likes ?? result.likes ?? result.like ?? result.like_count),
-    summary: makeSummary(city, title, content, tags, placeHints, foodHints, localExperienceHints),
+    summary: makeSummary(city, title, content, tags, placeHints, foodHints, localExperienceHints, hotelHints, hotelNames),
     tags,
     placeHints,
     foodHints,
     localExperienceHints,
+    hotelHints,
+    hotelNames,
     dietaryTags: inferFoodTags(`${title} ${content} ${foodHints.join(' ')}`),
-    claims: createClaims(city, searchable, tags, placeHints, foodHints, localExperienceHints),
+    claims: createClaims(city, searchable, tags, placeHints, foodHints, localExperienceHints, hotelHints, hotelNames),
     permission: 'unknown',
   }
 }
 
 function searchQuery(city: string, topic: CollectionTopic) {
-  if (topic === 'food') return `${city} 本地小吃 本地人`
-  if (topic === 'local') return `${city} 本地人 小众 体验`
+  if (city === '丽水' && topic === 'food') return '丽水 老陶大馄饨 云禾小吃店 松阳老街 美食'
+  if (topic === 'food') return `${city} 本地小吃 苍蝇馆子 老字号 本地人`
+  if (topic === 'local') return `${city} 本地人 早市 菜市场 小众体验`
+  if (topic === 'attraction') return `${city} 必去景点 小众景点 攻略`
+  if (topic === 'hotel') return `${city} 酒店 住宿 推荐 住哪里`
   return `${city} 旅行攻略`
 }
 
@@ -338,7 +377,21 @@ async function readExisting(): Promise<GuideKnowledgeBase> {
     return {
       version: 1,
       generatedAt: typeof parsed.generatedAt === 'string' ? parsed.generatedAt : new Date(0).toISOString(),
-      guides: Array.isArray(parsed.guides) ? parsed.guides as GuideCandidate[] : [],
+      guides: Array.isArray(parsed.guides) ? (parsed.guides as GuideCandidate[]).filter((guide) => (
+        typeof guide.city === 'string'
+        && (guide.title.includes(guide.city) || (guide.placeHints?.length ?? 0) > 0)
+      )).map((guide) => {
+        const hasHotelFields = 'hotelHints' in guide || 'hotelNames' in guide
+        const foodHints = guide.foodHints?.filter((hint) => !foodVenueSuffix.test(hint) || isNamedFoodVenue(hint))
+        if (!hasHotelFields) return { ...guide, ...(foodHints ? { foodHints } : {}) }
+        const searchable = [guide.title, guide.summary, ...guide.tags].join('\n')
+        return {
+          ...guide,
+          ...(foodHints ? { foodHints } : {}),
+          hotelHints: guide.title.includes(guide.city) ? extractHotelExperienceHints(searchable) : undefined,
+          hotelNames: guide.title.includes(guide.city) ? extractHotelNames(searchable, guide.city) : undefined,
+        }
+      }) : [],
     }
   } catch {
     return { version: 1, generatedAt: new Date(0).toISOString(), guides: [] }
@@ -349,7 +402,6 @@ async function main() {
   const options = parseArgs()
   const existing = await readExisting()
   const collected = new Map(existing.guides.map((guide) => [guide.id, guide]))
-  const replaced = new Set<string>()
   let searchCount = 0
   let detailCount = 0
   const lastRequestAt = new Map<CollectionPlatform, number>()
@@ -361,37 +413,25 @@ async function main() {
     lastRequestAt.set(platform, Date.now())
   }
 
-  const replaceExistingPlatformCity = (platform: CollectionPlatform, city: string) => {
-    const key = `${platform}:${city}`
-    if (replaced.has(key)) return
-    for (const [id, guide] of collected) {
-      if (guide.platform === platform && guide.city === city) collected.delete(id)
-    }
-    replaced.add(key)
-  }
-
   for (const city of options.cities) {
     for (const topic of options.topics) {
       await Promise.all(options.platforms.map(async (platform) => {
         const query = searchQuery(city, topic)
         let results: SearchResult[] = []
-        let searchSucceeded = false
         try {
           await waitForRateLimit(platform)
-          const command = platform === 'xiaohongshu' ? 'xiaohongshu' : 'bilibili'
+          const command = platform === 'xiaohongshu' ? 'xiaohongshu' : platform === 'bilibili' ? 'bilibili' : 'douyin'
           const searchText = await runOpenCli([command, 'search', query, '--limit', String(options.searchLimit), '-f', 'json'])
           searchCount += 1
           results = parseJson<SearchResult[]>(searchText, `${city} ${platform} 搜索`)
-          searchSucceeded = true
         } catch (error) {
           console.warn(`[${platform}] ${city}/${topic} 搜索失败：${error instanceof Error ? error.message : '未知错误'}`)
         }
         const selected = Array.isArray(results) ? results.filter((item) => item && typeof item.url === 'string') : []
-        if (searchSucceeded && selected.length > 0) replaceExistingPlatformCity(platform, city)
         for (let index = 0; index < selected.length; index += 1) {
           const result = selected[index]
           let detail: Record<string, string> | undefined
-          if (platform === 'xiaohongshu' && topic === 'food' && index < options.detailLimit && result.url) {
+          if (platform === 'xiaohongshu' && (topic === 'food' || topic === 'hotel') && index < options.detailLimit && result.url) {
             const detailId = result.url
             if (detailId) {
               await waitForRateLimit(platform)
@@ -405,7 +445,7 @@ async function main() {
               }
             }
           }
-          const candidate = buildCandidate(city, platform, result, detail)
+          const candidate = buildCandidate(city, platform, result, detail, topic)
           if (candidate) collected.set(candidate.id, candidate)
         }
         console.log(`[${platform}] ${city}/${topic}: ${selected.length} search results, ${Math.min(selected.length, options.detailLimit)} detail slots`)

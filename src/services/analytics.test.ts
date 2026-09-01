@@ -13,4 +13,9 @@ describe('anonymous analytics buffer', () => {
     trackPerformance('walking_route', 12.7)
     expect(getAnalyticsSnapshot()[0]?.properties).toEqual({ metric: 'walking_route', durationMs: 13 })
   })
+
+  it('keeps lifecycle events anonymous', () => {
+    track('journey_shared', { method: 'copy', journeyId: 'route-1', content: '不应进入事件' })
+    expect(getAnalyticsSnapshot()[0]).toMatchObject({ name: 'journey_shared', properties: { method: 'copy', journeyId: 'route-1' } })
+  })
 })

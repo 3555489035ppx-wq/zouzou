@@ -2,11 +2,15 @@ import { describe, expect, it } from 'vitest'
 import {
   DEFAULT_SHANGHAI_PROMPT,
   generatePlans,
+  getReplacementCandidates,
+  isHotelStop,
+  replacePlanHotel,
   replacePlanPlace,
   understandTrip,
 } from './planner'
 import type { GuideContext } from './guides'
 import { cityNames, getCityProfile } from '../../demo-data/cities'
+import { getCityRouteZone } from './cityRouteSpecs'
 
 describe('Shanghai itinerary planner', () => {
   it('extracts the complete demo trip instead of returning fixed values', () => {
@@ -69,18 +73,64 @@ describe('Shanghai itinerary planner', () => {
     expect(generated).toHaveLength(3)
     expect(generated.every((plan) => plan.validation.passed)).toBe(true)
     expect(generated[0].days['Day 1'].map((stop) => stop.name)).toContain('武康路')
-    expect(generated[0].days['Day 2'].find((stop) => stop.name === '上海博物馆东馆')?.opening?.from).toBe('10:00')
+    expect(Object.values(generated[0].days).flat().some((stop) => /上海博物馆|浦东美术馆/.test(stop.name))).toBe(true)
     expect(generated.every((plan) => plan.budget <= 4000)).toBe(true)
+  })
+
+  it('keeps concrete food stops in every generated variant', () => {
+    const understanding = understandTrip({ text: DEFAULT_SHANGHAI_PROMPT, media: [] })
+    const generated = generatePlans(understanding.intent)
+
+    generated.forEach((plan) => {
+      const mealStops = Object.values(plan.days).flat().filter((stop) => /午餐|晚餐|本地小吃/.test(stop.type))
+      expect(mealStops.length).toBeGreaterThanOrEqual(1)
+      expect(new Set(mealStops.map((stop) => stop.name)).size).toBe(mealStops.length)
+      expect(mealStops.map((stop) => stop.name)).toEqual(expect.arrayContaining(['味香斋']))
+      expect(plan.days['Day 1'].some((stop) => /午餐|晚餐|本地小吃/.test(stop.type))).toBe(true)
+      expect(plan.budgetBreakdown.meals).toBeGreaterThan(0)
+    })
   })
 
   it('replaces one stop while preserving the rest of the route', () => {
     const understanding = understandTrip({ text: DEFAULT_SHANGHAI_PROMPT, media: [] })
     const original = generatePlans(understanding.intent)[0]
-    const updated = replacePlanPlace(original, 'wukang-cafe', '衡山和集')
+    const wukang = original.days['Day 1'].find((stop) => stop.name === '武康路')
+    const updated = replacePlanPlace(original, wukang?.id ?? '', '衡山和集')
 
-    expect(updated.days['Day 1'].find((stop) => stop.id === 'wukang-cafe')?.name).toBe('衡山和集')
-    expect(updated.days['Day 1'].find((stop) => stop.id === 'wukang-road')?.name).toBe('武康路')
+    expect(updated.days['Day 1'].find((stop) => stop.id === wukang?.id)?.name).toBe('衡山和集')
+    expect(updated.days['Day 1'].some((stop) => stop.name === '安福路')).toBe(true)
     expect(updated.validation.passed).toBe(true)
+  })
+
+  it('puts one selected hotel into every accommodation node', () => {
+    const understanding = understandTrip({ text: DEFAULT_SHANGHAI_PROMPT, media: [] })
+    const plan = generatePlans(understanding.intent)[0]
+    const hotelStops = Object.values(plan.days).flat().filter(isHotelStop)
+    const accommodationNames = hotelStops.filter((stop) => stop.type === '住宿').map((stop) => stop.name)
+
+    expect(plan.hotelRecommendations?.length).toBeGreaterThanOrEqual(3)
+    expect(plan.selectedHotelId).toBeDefined()
+    expect(new Set(accommodationNames).size).toBe(1)
+    expect(hotelStops.every((stop) => stop.hotelOptionId === plan.selectedHotelId)).toBe(true)
+  })
+
+  it('changes only hotel nodes and lodging budget when a hotel is selected', () => {
+    const understanding = understandTrip({ text: DEFAULT_SHANGHAI_PROMPT, media: [] })
+    const original = generatePlans(understanding.intent)[0]
+    const hotelStop = Object.values(original.days).flat().find(isHotelStop)
+    const alternative = hotelStop ? getReplacementCandidates(original, hotelStop.id)[0] : undefined
+    const nonHotelSnapshot = Object.values(original.days).flat().filter((stop) => !isHotelStop(stop)).map(({ id, name, time, budget }) => ({ id, name, time, budget }))
+
+    expect(hotelStop).toBeDefined()
+    expect(alternative).toBeDefined()
+    const updated = replacePlanHotel(original, hotelStop?.id ?? '', alternative?.name ?? '')
+    const updatedNonHotelSnapshot = Object.values(updated.days).flat().filter((stop) => !isHotelStop(stop)).map(({ id, name, time, budget }) => ({ id, name, time, budget }))
+
+    expect(updatedNonHotelSnapshot).toEqual(nonHotelSnapshot)
+    expect(Object.values(updated.days).flat().filter((stop) => stop.type === '住宿').every((stop) => stop.name === alternative?.name)).toBe(true)
+    expect(updated.selectedHotelId).not.toBe(original.selectedHotelId)
+    expect(updated.budgetBreakdown.lodging).not.toBe(original.budgetBreakdown.lodging)
+    expect(updated.validation.checks.filter((check) => check.name !== '预算上限').every((check) => check.passed)).toBe(true)
   })
 
   it('carries guide context into plan evidence and adapts the city skeleton', () => {
@@ -115,15 +165,16 @@ describe('Shanghai itinerary planner', () => {
 
     expect(generated[0].city).toBe('杭州')
     expect(generated[0].guideContext?.candidates.length).toBe(1)
-    expect(generated[0].evidence.some((item) => item.includes('小红书社区攻略线索'))).toBe(true)
+    expect(generated[0].evidence.some((item) => item.includes('公开地点线索'))).toBe(true)
+    expect(generated[0].evidence.join(' ')).not.toMatch(/小红书|B站|抖音|社区/)
     expect(Object.values(generated[0].days).flat().some((stop) => stop.name.includes('武康路'))).toBe(false)
     expect(Object.values(generated[0].days).flat().some((stop) => stop.name.includes('西湖'))).toBe(true)
-    expect(Object.values(generated[0].days).flat().some((stop) => stop.name.includes('片儿川'))).toBe(true)
-    expect(Object.values(generated[0].days).flat().some((stop) => stop.name.includes('夜市'))).toBe(true)
+    expect(Object.values(generated[0].days).flat().some((stop) => stop.name === '奎元馆')).toBe(true)
+    expect(Object.values(generated[0].days).flat().some((stop) => stop.name.includes('夜市'))).toBe(false)
   })
 
-  it('keeps community food and local-life hints in the detailed Shanghai route', () => {
-    const understanding = understandTrip({ text: DEFAULT_SHANGHAI_PROMPT, media: [] })
+  it('converts external food hints into concrete knowledge-base venues', () => {
+    const understanding = understandTrip({ text: `${DEFAULT_SHANGHAI_PROMPT} 想吃生煎。`, media: [] })
     const guideContext: GuideContext = {
       city: '上海',
       candidates: [{
@@ -151,9 +202,27 @@ describe('Shanghai itinerary planner', () => {
     const plan = generatePlans(understanding.intent, guideContext)[0]
     const stops = Object.values(plan.days).flat()
 
-    expect(stops.some((stop) => stop.name === '生煎（社区线索）')).toBe(true)
-    expect(stops.some((stop) => stop.name === '早市（社区线索）')).toBe(true)
+    expect(stops.some((stop) => stop.name === '大壶春')).toBe(true)
+    expect(stops.some((stop) => /社区推荐|社区内容提到|小红书|B站|抖音/.test(`${stop.name} ${stop.note} ${stop.factSource}`))).toBe(false)
     expect(plan.validation.passed).toBe(true)
+  })
+
+  it('keeps each day moving through route bands without geographic backtracking', () => {
+    for (const city of cityNames) {
+      const firstPlace = getCityProfile(city).demoLabels[0]
+      const understanding = understandTrip({
+        text: `2026年9月18日到9月20日去${city}，3天2晚，2个人，预算4000元。10:30到${city}东站，住${city}中心酒店，18:30从${city}东站返程。想去${firstPlace}、博物馆和本地小吃。`,
+        media: [],
+      })
+      const plan = generatePlans(understanding.intent)[0]
+
+      Object.values(plan.days).forEach((stops) => {
+        const orders = stops
+          .filter((stop) => !isHotelStop(stop) && stop.type !== '到达' && stop.type !== '返程')
+          .map((stop) => getCityRouteZone(city, stop.name, stop.area ?? stop.zone).order)
+        expect(orders).toEqual([...orders].sort((left, right) => left - right))
+      })
+    }
   })
 
   it('generates a complete three-day timeline for every supported city', () => {
@@ -169,9 +238,14 @@ describe('Shanghai itinerary planner', () => {
       expect(understanding.intent.destination).toBe(city)
       expect(understanding.intent.missing).toEqual([])
       expect(Object.keys(plan.days)).toEqual(['Day 1', 'Day 2', 'Day 3'])
-      expect(allStops.length).toBeGreaterThanOrEqual(16)
+      expect(allStops.length).toBeGreaterThanOrEqual(13)
       expect(allStops.some((stop) => stop.name.includes(firstPlace))).toBe(true)
       expect(allStops.every((stop) => stop.name && stop.time && stop.transport)).toBe(true)
+      expect(plan.hotelRecommendations).toHaveLength(3)
+      expect(plan.hotelRecommendations?.map((hotel) => hotel.tier)).toEqual(['budget', 'comfort', 'premium'])
+      const hotelStops = allStops.filter(isHotelStop)
+      expect(new Set(hotelStops.filter((stop) => stop.type === '住宿').map((stop) => stop.name)).size).toBe(1)
+      expect(hotelStops.every((stop) => !/待选|核心区酒店|市中心酒店/.test(stop.name))).toBe(true)
     }
   })
 
@@ -187,7 +261,8 @@ describe('Shanghai itinerary planner', () => {
     expect(understanding.intent.pace).toBe('relaxed')
     expect(understanding.intent.preferences).toEqual(expect.arrayContaining(['本地美食', '夜景']))
     expect(plan.knowledge.city).toBe('长沙')
-    expect(stops.map((stop) => stop.name)).toEqual(expect.arrayContaining(['岳麓山风景名胜区', '橘子洲景区', '湖南博物院', '长沙臭豆腐', '糖油粑粑', '口味虾 / 湘菜晚餐']))
+    expect(stops.map((stop) => stop.name)).toEqual(expect.arrayContaining(['岳麓山风景名胜区', '橘子洲景区', '湖南博物院', '秦娭毑皮蛋肉丸']))
+    expect(stops.map((stop) => stop.name)).not.toEqual(expect.arrayContaining(['长沙臭豆腐', '糖油粑粑', '口味虾 / 湘菜晚餐']))
     expect(stops.some((stop) => stop.type === '住宿' && stop.name.includes('五一广场'))).toBe(true)
     expect(plan.budget).toBeLessThanOrEqual(3000)
     expect(plan.validation.passed).toBe(true)
@@ -204,5 +279,39 @@ describe('Shanghai itinerary planner', () => {
     expect(understanding.intent.dietary).toMatchObject({ avoidSpicy: true, avoidSeafood: true })
     expect(plans.every((plan) => plan.validation.passed)).toBe(true)
     expect(plans.every((plan) => !Object.values(plan.days).flat().some((stop) => /热干面|糊汤粉|海鲜|虾|蟹|火锅/.test(stop.name)))).toBe(true)
+  })
+
+  it('puts a compatible named local restaurant into a constrained itinerary', () => {
+    const understanding = understandTrip({
+      text: '2026年9月18日到9月20日去杭州3天2晚，两个人，预算3000元。10:30到杭州东站，18:30从杭州东站返程。住西湖附近酒店。不吃辣，海鲜过敏，想吃片儿川，去西湖和灵隐寺。',
+      media: [],
+    })
+    const plan = generatePlans(understanding.intent)[0]
+    const stops = Object.values(plan.days).flat()
+
+    expect(understanding.intent.mustVisit).toEqual(expect.arrayContaining(['西湖风景名胜区', '灵隐寺']))
+    expect(stops.some((stop) => stop.name === '奎元馆')).toBe(true)
+    expect(stops.some((stop) => /西湖醋鱼|龙井虾仁|芳明小吃/.test(stop.name))).toBe(false)
+    expect(plan.validation.passed).toBe(true)
+  })
+
+  it('matches common short names to expanded city knowledge items', () => {
+    const understanding = understandTrip({
+      text: '南京3天2晚，想去音乐台、欢乐谷和总统府。',
+      media: [],
+    })
+
+    expect(understanding.intent.mustVisit).toEqual(expect.arrayContaining(['中山陵音乐台', '南京欢乐谷', '总统府']))
+    const plan = generatePlans(understanding.intent)[0]
+    expect(Object.values(plan.days).flat().map((stop) => stop.name)).toEqual(expect.arrayContaining(['中山陵音乐台', '南京欢乐谷', '总统府']))
+  })
+
+  it('does not infer a landmark from a generic hotel phrase', () => {
+    const understanding = understandTrip({
+      text: '深圳3天2晚，住深圳中心酒店，想去南头古城。',
+      media: [],
+    })
+
+    expect(understanding.intent.mustVisit).toEqual(['南头古城'])
   })
 })

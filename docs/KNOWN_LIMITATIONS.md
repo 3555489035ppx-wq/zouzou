@@ -1,5 +1,11 @@
 # 走走｜已知限制
 
+## 2026-08-31 执行记录
+
+- 旅行主流程已由 `src/services/trip/tripMachine.ts` 统一建模，跨边界旅行对象由 `src/services/trip/schemas.ts` 做 Zod 运行时校验；这解决的是数据形状问题，不等于生产鉴权。
+- 高德 POI 和路线已接入显式的坐标系、解析状态和超时降级；没有匹配到真实 POI 时不会绘制伪造路线。
+- Group Plan 已具备本地 SQLite、邀请码、投票和 SSE 边界；当前仍是单机演示仓储，不能替代多实例生产 realtime。
+
 - 当前 Auth、Database、Analytics、Storage 仍为本地 Adapter 或浏览器内状态；旅行理解已支持可选的服务端 DeepSeek/OpenAI 结构化输出，但未配置 Key 时会回退到本地确定性解析器。
 - 截图现在会通过独立的 `/api/trips/media/analyze` 进入可选视觉模型；未配置视觉 Key、模型超时或图片无法读取时，会返回低置信度 `MediaFact` 并继续文字理解，不能把回退结果当作已确认事实。
 - `server/trip-intent.ts` 只负责提取 TripIntent，不负责查询地点、路线、价格或营业时间；这些事实仍需要后续接入高德和其他服务端数据源。
@@ -7,6 +13,6 @@
 - 天气接口失败时会显示演示天气，避免 HR 演示页面空白。
 - Web Demo 只提供按压缩放等视觉反馈，没有伪装成 iOS 原生 Haptic（触感反馈）。
 - 3D 使用低多边形几何体，不包含真实上海城市或精确地理坐标。
-- 社区照片为本地演示素材；发布、关注、喜欢、收藏、评论不会同步到服务器。
+- 社区照片为本地演示素材；评论已写入本地版本化存储，但发布、关注、喜欢、收藏、评论仍不会同步到生产服务器。
 - Apple 设计资源、SF Pro 文件、SF Symbols 导出资源未包含在项目包中。
 - 这是 Local Interactive Product Prototype，不是可上架或可交易的生产服务。

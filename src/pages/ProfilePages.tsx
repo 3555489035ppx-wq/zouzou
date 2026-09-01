@@ -1,46 +1,51 @@
-import { Camera, Check, ChevronRight, Edit3, Heart, Settings } from 'lucide-react'
-import { useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Archive, Bookmark, Camera, ChevronRight, Footprints, Menu, MoreHorizontal, RotateCcw, Trash2, WalletCards } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { AppShell } from '../components/AppShell'
-import { ZouAvatar, ZouButton, ZouNavigationBar, ZouSegmentedControl } from '../components/ui'
-import { discoverItems } from '../demo-data/discover'
-import { useAppStore } from '../stores/appStore'
+import { ZouAvatar, ZouBottomSheet, ZouButton, ZouNavigationBar, ZouToast } from '../components/ui'
+import { createUserDiscoverItem, discoverItems, getRoute } from '../demo-data/discover'
+import { useAppStore, type PersonalTrip } from '../stores/appStore'
 
-const profileTabs = ['行程', '发布', '收藏', '喜欢']
-const routeForTab: Record<string, string> = { 行程: '/profile/trips', 发布: '/profile/posts', 收藏: '/profile/favorites', 喜欢: '/profile/likes' }
+const tabs = ['行程', '发布', '收藏'] as const
+type Tab = typeof tabs[number]
+const statusLabel: Record<PersonalTrip['status'], string> = { upcoming: '即将开始', active: '进行中', completed: '已完成' }
+const readImage = (file: File, update: (value: string) => void) => { const reader = new FileReader(); reader.onload = () => update(String(reader.result)); reader.readAsDataURL(file) }
 
-export const ProfilePage = ({ initialTab = '行程' }: { initialTab?: string }) => {
+export const ProfilePage = ({ initialTab = '行程' }: { initialTab?: Tab }) => {
   const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
-  const nickname = useAppStore((s) => s.nickname)
-  const avatar = useAppStore((s) => s.avatar)
-  const cover = useAppStore((s) => s.cover)
-  const setCover = useAppStore((s) => s.setCover)
-  const followedAuthors = useAppStore((s) => s.followedAuthors)
-  const [tab, setTab] = useState(initialTab)
-  const [tripFilter, setTripFilter] = useState('全部')
-  const [favoriteFilter, setFavoriteFilter] = useState(searchParams.get('folder') ?? '我的收藏夹')
-  const savedPosts = useAppStore((s) => s.savedPosts)
-  const items = tab === '喜欢' ? discoverItems.slice(3, 12) : tab === '收藏' ? discoverItems.filter((item) => savedPosts.includes(item.id)) : tab === '发布' ? discoverItems.filter((item) => item.contentSource === 'user') : discoverItems.slice(0, 9)
-  const folderItems = tab === '收藏' && favoriteFilter === '我的收藏夹' ? [] : items
-  const folders = ['上海', '约会', '咖啡', '毕业旅行']
-  const changeTab = (next: string) => { setTab(next); navigate(routeForTab[next], { replace: true }) }
-  const followingCount = 44 + followedAuthors.length
-  return <AppShell showTabBar><div className="profile-page"><section className="profile-cover"><label className="profile-cover__change"><img src={cover} alt="个人封面，点击更换" width={1200} height={480} onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = '/assets/shanghai-skyline.jpg' }} /><span>更换封面</span><input aria-label="更换个人封面" type="file" accept="image/*" onChange={(event) => { const file = event.target.files?.[0]; if (file) setCover(URL.createObjectURL(file)) }} /></label><div className="profile-cover__actions"><button className="icon-button" aria-label="编辑资料" onClick={() => navigate('/profile/edit')}><Edit3 /></button><button className="icon-button" aria-label="设置" onClick={() => navigate('/settings')}><Settings /></button></div></section><section className="profile-intro"><ZouAvatar src={avatar} name={nickname} size="xl" /><h1>{nickname}</h1><p>喜欢慢慢走，也喜欢把走过的路整理清楚。</p><ZouButton variant="secondary" onClick={() => navigate('/profile/edit')}>编辑资料</ZouButton><dl><button onClick={() => navigate('/profile/likes')}><dt>获赞</dt><dd>1,284</dd></button><button onClick={() => navigate('/profile/following')}><dt>关注</dt><dd>{followingCount}</dd></button><button onClick={() => navigate('/profile/followers')}><dt>粉丝</dt><dd>393</dd></button></dl></section><div className="profile-tabs" role="tablist">{profileTabs.map((item) => <button role="tab" aria-selected={tab === item} key={item} onClick={() => changeTab(item)}>{item}</button>)}</div>{tab === '行程' ? <ZouSegmentedControl options={['全部', '即将开始', '进行中', '已完成']} value={tripFilter} onChange={setTripFilter} /> : null}{tab === '收藏' ? <div className="favorite-filters">{['我的收藏夹', '行程', '地点', '餐厅', '酒店'].map((item) => <button aria-pressed={favoriteFilter === item} key={item} onClick={() => setFavoriteFilter(item)}>{item}</button>)}</div> : null}{tab === '收藏' && favoriteFilter === '我的收藏夹' ? <div className="folder-grid">{folders.map((folder, index) => <button key={folder} onClick={() => setFavoriteFilter(folder)}><img src={discoverItems[index]?.cover ?? cover} alt={`${folder}收藏夹`} /><strong>{folder}</strong><small>{8 + index * 3} 项收藏</small></button>)}</div> : <div className="profile-grid">{folderItems.map((item, index) => <button key={`${tab}-${item.id}`} onClick={() => tab === '行程' ? navigate('/trips') : navigate(`/community/${item.id}`)}><img src={item.cover} alt={item.title} loading="lazy" />{tab === '行程' ? <span className={index === 0 ? 'is-active' : ''}>{index === 0 ? '进行中' : '已完成'}</span> : <span><Heart />{item.likeCount}</span>}</button>)}</div>}</div></AppShell>
+  const nickname = useAppStore((s) => s.nickname); const avatar = useAppStore((s) => s.avatar); const cover = useAppStore((s) => s.cover); const bio = useAppStore((s) => s.bio)
+  const savedPosts = useAppStore((s) => s.savedPosts); const personalTrips = useAppStore((s) => s.personalTrips); const activeRouteId = useAppStore((s) => s.activeRouteId); const tripMode = useAppStore((s) => s.tripMode); const archivedRouteIds = useAppStore((s) => s.archivedRouteIds); const archiveRoute = useAppStore((s) => s.archiveRoute); const restoreRoute = useAppStore((s) => s.restoreRoute)
+  const publishedPosts = useAppStore((s) => s.publishedPosts); const deletePublishedPost = useAppStore((s) => s.deletePublishedPost); const footprintCount = useAppStore((s) => s.footprints.length)
+  const [tab, setTab] = useState<Tab>(initialTab); const [filter, setFilter] = useState('全部'); const [menuOpen, setMenuOpen] = useState(false); const [postMenu, setPostMenu] = useState<string | null>(null); const [confirmDelete, setConfirmDelete] = useState(false); const [toast, setToast] = useState('')
+  const trips = useMemo(() => {
+    const active = activeRouteId && tripMode !== 'none' && !personalTrips.some((trip) => trip.routeId === activeRouteId) ? [{ id: 'current-trip', routeId: activeRouteId, city: getRoute(activeRouteId)?.cityId ?? '上海', status: tripMode, createdAt: new Date().toISOString() } satisfies PersonalTrip] : []
+    const order = { active: 0, upcoming: 1, completed: 2 }
+    return [...active, ...personalTrips].sort((a, b) => (archivedRouteIds.includes(a.routeId) ? 3 : order[a.status]) - (archivedRouteIds.includes(b.routeId) ? 3 : order[b.status]) || b.createdAt.localeCompare(a.createdAt))
+  }, [activeRouteId, archivedRouteIds, personalTrips, tripMode])
+  const tripLabel = (trip: PersonalTrip) => archivedRouteIds.includes(trip.routeId) ? '已归档' : statusLabel[trip.status]
+  const displayedTrips = filter === '全部' ? trips : trips.filter((trip) => tripLabel(trip) === filter)
+  const savedItems = discoverItems.filter((item) => savedPosts.includes(item.id)); const selectedPost = publishedPosts.find((post) => post.id === postMenu)
+  const goTab = (next: Tab) => { setTab(next); navigate(next === '行程' ? '/profile/trips' : next === '发布' ? '/profile/posts' : '/profile/favorites', { replace: true }) }
+  return <AppShell showTabBar><main className="profile-page">
+    <section className="profile-cover"><img src={cover} alt="个人主页背景" onError={(event) => { event.currentTarget.src = '/assets/shanghai-skyline.jpg' }} /><button className="profile-menu-button" aria-label="打开个人中心菜单" onClick={() => setMenuOpen(true)}><Menu /></button></section>
+    <section className="profile-intro"><div className="profile-intro__top"><ZouAvatar src={avatar} name={nickname} size="xl" /><ZouButton variant="secondary" onClick={() => navigate('/profile/edit')}>编辑资料</ZouButton></div><h1>{nickname}</h1><p>{bio}</p></section>
+    <section className="profile-utility-links" aria-label="旅行工具"><button onClick={() => navigate('/journey/footprint')}><span><Footprints />我的足迹</span><small>{footprintCount} 个记录</small><ChevronRight /></button><button onClick={() => navigate('/journey/tools')}><span><WalletCards />行程工具</span><small>费用、清单、分享</small><ChevronRight /></button></section>
+    <div className="profile-tabs" role="tablist">{tabs.map((item) => <button role="tab" aria-selected={tab === item} key={item} onClick={() => goTab(item)}>{item}</button>)}</div>
+    {tab === '行程' ? <section className="profile-content"><div className="trip-filters" role="tablist">{['全部', '即将开始', '进行中', '已完成', '已归档'].map((item) => <button key={item} aria-selected={filter === item} onClick={() => setFilter(item)}>{item}</button>)}</div>{displayedTrips.length ? <div className="trip-record-list">{displayedTrips.map((trip) => { const route = getRoute(trip.routeId); const archived = archivedRouteIds.includes(trip.routeId); return route ? <article className="trip-record" key={trip.id}><button type="button" className="trip-record__open" onClick={() => navigate(trip.status === 'active' && !archived ? '/trips' : `/trips/${trip.routeId}`)}><header><strong>{route.cityId} · {route.title}</strong><span data-status={archived ? 'archived' : trip.status}>{tripLabel(trip)}</span></header><p>{route.duration} · {route.pois.length} 个地点</p><small>{route.pois.map((poi) => poi.name).slice(0, 3).join(' → ')} <ChevronRight /></small></button>{archived ? <div className="trip-record__actions"><button type="button" onClick={() => { restoreRoute(trip.routeId); setToast('已恢复行程') }}><RotateCcw />恢复行程</button></div> : trip.status === 'completed' ? <div className="trip-record__actions"><button type="button" onClick={() => { archiveRoute(trip.routeId); setToast('已归档行程') }}><Archive />归档行程</button></div> : null}</article> : null })}</div> : <ProfileEmpty title="还没有行程" body="去发现一条喜欢的路线，或者让走走帮你规划。" action="开始规划" onClick={() => navigate('/travel/new')} />}</section> : null}
+    {tab === '发布' ? <section className="profile-content">{publishedPosts.length ? <div className="profile-post-list">{publishedPosts.map((post) => { const route = getRoute(post.routeId); if (!route) return null; const item = createUserDiscoverItem(route); return <article className="profile-post" key={post.id}><button onClick={() => navigate(`/discover/${item.id}`)}><img src={post.cover || item.cover} alt="" /><span><strong>{post.title}</strong><small>{route.category} · {route.duration} · {route.pois.length}地点</small><small>{new Date(post.publishedAt).toLocaleDateString('zh-CN')} 发布</small></span></button><button className="post-more" aria-label="管理发布" onClick={() => setPostMenu(post.id)}><MoreHorizontal /></button></article> })}</div> : <ProfileEmpty title="还没有发布过路线" body="完成一次行程后，可以把它分享给其他人。" action="查看我的行程" onClick={() => goTab('行程')} />}</section> : null}
+    {tab === '收藏' ? <section className="profile-content">{savedItems.length ? <div className="collection-list">{savedItems.map((item) => { const route = getRoute(item.routeId); return route ? <article className="collection-card" key={item.id}><button onClick={() => navigate(`/discover/${item.id}`)}><span><strong>{item.title}</strong><small>{route.cityId} · {route.duration} · {route.pois.length}地点</small><small>{item.tags.join(' / ')}</small></span><ChevronRight /></button><footer><span><Bookmark fill="currentColor" /> 已收藏</span><button className="collection-follow" onClick={() => navigate(`/discover/${item.id}?follow=1`)}>跟着走</button></footer></article> : null })}</div> : <ProfileEmpty title="还没有收藏路线" body="发现里看到想去的地方，可以先收藏起来。" action="去发现" onClick={() => navigate('/discover')} />}</section> : null}
+    <ZouBottomSheet open={menuOpen} onClose={() => setMenuOpen(false)} title="个人中心"><button className="sheet-row" onClick={() => { setMenuOpen(false); navigate('/settings') }}>设置<ChevronRight /></button></ZouBottomSheet>
+    <ZouBottomSheet open={Boolean(selectedPost)} onClose={() => setPostMenu(null)} title="管理发布">{selectedPost ? <><button className="sheet-row" onClick={() => { setPostMenu(null); navigate(`/discover/post-${selectedPost.routeId}-shared`) }}>查看发布<ChevronRight /></button><button className="sheet-row is-danger" onClick={() => setConfirmDelete(true)}><Trash2 />删除发布</button></> : null}</ZouBottomSheet>
+    <ZouBottomSheet open={confirmDelete} onClose={() => setConfirmDelete(false)} title="确认删除这条发布？"><p>删除后，它会同时从发现和我的发布中移除。</p><ZouButton onClick={() => { if (selectedPost) deletePublishedPost(selectedPost.id); setConfirmDelete(false); setPostMenu(null); setToast('已删除发布') }}>确认删除</ZouButton><ZouButton variant="secondary" onClick={() => setConfirmDelete(false)}>取消</ZouButton></ZouBottomSheet>
+    {toast ? <ZouToast message={toast} onClose={() => setToast('')} /> : null}
+  </main></AppShell>
 }
+
+const ProfileEmpty = ({ title, body, action, onClick }: { title: string; body: string; action: string; onClick: () => void }) => <div className="profile-empty"><h2>{title}</h2><p>{body}</p><ZouButton onClick={onClick}>{action}</ZouButton></div>
 
 export const ProfileEditPage = () => {
-  const navigate = useNavigate()
-  const nickname = useAppStore((s) => s.nickname)
-  const avatar = useAppStore((s) => s.avatar)
-  const setProfile = useAppStore((s) => s.setProfile)
-  const [name, setName] = useState(nickname)
-  const [image, setImage] = useState(avatar)
-  return <AppShell><ZouNavigationBar title="编辑资料" /><div className="page-content profile-edit"><label className="avatar-upload"><img src={image} alt="当前头像" /><span><Camera />更换头像</span><input type="file" accept="image/*" onChange={(event) => { const file = event.target.files?.[0]; if (file) setImage(URL.createObjectURL(file)) }} /></label><label>昵称<input value={name} onChange={(event) => setName(event.target.value)} /></label><label>简介<textarea defaultValue="喜欢慢慢走，也喜欢把走过的路整理清楚。" /></label><ZouButton onClick={() => { setProfile(name, image); navigate('/profile') }}>保存资料</ZouButton></div></AppShell>
-}
-
-export const PeopleListPage = ({ title }: { title: '关注' | '粉丝' }) => {
-  const following = useAppStore((s) => s.followedAuthors)
-  const toggleFollow = useAppStore((s) => s.toggleFollow)
-  return <AppShell><ZouNavigationBar title={title} /><div className="page-content people-list">{['林晓', '周周', '安安', '阿柚', '野生小海'].map((name, index) => { const isFollowing = following.includes(name); return <article key={name}><ZouAvatar src={discoverItems[index].cover} name={name} /><div><strong>{name}</strong><small>{index % 2 ? '上海 · 12 条行程' : '杭州 · 8 条行程'}</small></div><button aria-pressed={isFollowing} onClick={() => toggleFollow(name)}>{isFollowing ? '已关注' : '关注'}</button></article> })}</div></AppShell>
+  const navigate = useNavigate(); const nickname = useAppStore((s) => s.nickname); const avatar = useAppStore((s) => s.avatar); const cover = useAppStore((s) => s.cover); const bio = useAppStore((s) => s.bio); const setProfile = useAppStore((s) => s.setProfile); const setCover = useAppStore((s) => s.setCover)
+  const [name, setName] = useState(nickname); const [image, setImage] = useState(avatar); const [background, setBackground] = useState(cover); const [description, setDescription] = useState(bio); const [saving, setSaving] = useState(false)
+  const save = () => { setSaving(true); window.setTimeout(() => { setProfile(name || '小鹏', image, description); setCover(background); setSaving(false); navigate('/profile') }, 260) }
+  return <AppShell><ZouNavigationBar title="编辑资料" /><div className="page-content profile-edit"><label className="avatar-upload"><img src={image} alt="当前头像" /><span><Camera />更换头像</span><input type="file" accept="image/*" onChange={(event) => { const file = event.target.files?.[0]; if (file) readImage(file, setImage) }} /></label><label className="profile-background-edit"><span>主页背景</span><img src={background} alt="当前主页背景" /><input aria-label="更换主页背景" type="file" accept="image/*" onChange={(event) => { const file = event.target.files?.[0]; if (file) readImage(file, setBackground) }} /></label><label>昵称<input maxLength={40} value={name} onChange={(event) => setName(event.target.value)} /></label><label>个人简介<textarea maxLength={120} value={description} onChange={(event) => setDescription(event.target.value)} /><small>{description.length}/120</small></label><ZouButton loading={saving} onClick={save}>保存资料</ZouButton></div></AppShell>
 }

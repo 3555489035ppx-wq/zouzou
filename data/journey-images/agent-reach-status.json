@@ -1,0 +1,43 @@
+{
+  "checkedAt": "2026-08-30T16:00:00.000Z",
+  "agentReachVersion": "1.5.0",
+  "doctorCommand": "agent-reach doctor --json",
+  "channels": {
+    "github": "warn",
+    "twitter": "warn",
+    "youtube": "off",
+    "reddit": "warn",
+    "facebook": "warn",
+    "instagram": "warn",
+    "bilibili": "ok",
+    "xiaohongshu": "warn",
+    "linkedin": "warn",
+    "xiaoyuzhou": "off",
+    "v2ex": "ok",
+    "xueqiu": "warn",
+    "rss": "ok",
+    "exa_search": "warn",
+    "web": "ok"
+  },
+  "douyin": {
+    "agentReachDoctorChannel": "not_registered",
+    "note": "Agent-Reach v1.5.0 doctor output contains no douyin channel. OpenCLI site names do not change this status."
+  },
+  "opencli": {
+    "version": "1.8.7",
+    "daemon": "connected",
+    "extension": "connected",
+    "connectivity": "connected"
+  },
+  "xiaohongshu": {
+    "sessionPolicy": "existing browser session only; no cookie or automatic login used",
+    "searchesAttempted": [
+      "上海 武康路 街景",
+      "上海 外滩 夜景",
+      "上海 安福路 咖啡",
+      "上海 火锅 餐厅环境"
+    ],
+    "result": "blocked",
+    "reason": "Public search navigation redirected to website-login/captcha (安全验证). No note metadata or image URLs were collected and no captcha was bypassed."
+  }
+}

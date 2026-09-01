@@ -13,6 +13,7 @@ import {
   type TripRequest,
   type TripUnderstanding,
 } from '../src/services/trip/planner'
+import { tripIntentSchema } from '../src/services/trip/schemas'
 
 export type IntentProvider = 'openai' | 'deepseek' | 'local'
 
@@ -237,10 +238,12 @@ export function normalizeTripIntent(value: unknown): TripIntent {
     hotel: asNullableString(value.hotel),
   }
 
-  return {
+  const validated = tripIntentSchema.safeParse({
     ...intentWithoutMissing,
     missing: normalizeMissing(asStringArray(value.missing), intentWithoutMissing),
-  }
+  })
+  if (!validated.success) throw new Error('旅行意图校验失败。')
+  return validated.data as TripIntent
 }
 
 export function sanitizeTripRequest(value: unknown): TripRequest {

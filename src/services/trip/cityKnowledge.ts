@@ -1,3 +1,11 @@
+import { cityAdditionalSpecs } from './cityKnowledge.expanded'
+import { citySpecialSpecs } from './cityKnowledge.special'
+import { cityCoreSpecs } from './cityCoreSpecs'
+import { cityHotelSpecs } from './cityHotelSpecs'
+import { enrichPlaceSummary } from './cityPlaceDetails'
+import { cityRegionalSpecs } from './cityKnowledge.regional'
+import { cityLocalSpecs } from './cityLocalSpecs'
+
 export type KnowledgeCategory = 'attraction' | 'food' | 'restaurant' | 'activity'
 
 export type KnowledgeSourceKind = 'official' | 'amap' | 'community'
@@ -26,6 +34,11 @@ export type CityKnowledgeItem = {
   dietaryTags?: string[]
   summary: string
   coordinates: [number, number]
+  /** Concrete POI name used by the live AMap resolver. */
+  venueName?: string
+  address?: string
+  menuHighlights?: string[]
+  searchKeyword?: string
   durationMinutes: number
   price: KnowledgePrice
   opening?: {
@@ -47,6 +60,16 @@ export type HotelOption = {
   summary: string
   source: KnowledgeSource
   verified: boolean
+  /** Experience labels derived from community accommodation content. */
+  communityTags?: string[]
+  /** Number of source guides that surfaced the hotel or its area. */
+  communityEvidence?: number
+  /** Source links kept for user verification. */
+  communitySources?: KnowledgeSource[]
+  /** Places or areas associated with the community accommodation signal. */
+  anchorTerms?: string[]
+  mapUrl?: string
+  bookingUrl?: string
 }
 
 export type CityKnowledge = {
@@ -60,12 +83,79 @@ export type CityKnowledge = {
 }
 
 const UPDATED_AT = '2026-08-30'
+const cleanKnowledgeCopy = (value: string) => value
+  .replaceAll('社区内容提到的本地生活项目', '走走整理的当地体验')
+  .replaceAll('社区内容提到的本地吃法或店名', '走走整理的具体吃法或店名')
+  .replaceAll('社区内容提到', '走走整理')
+  .replaceAll('社区攻略', '公开地点资料')
+  .replaceAll('社区', '街区')
+  .replaceAll('苍蝇馆子', '家常小店')
+  .replaceAll('小红书', '公开资料')
+  .replaceAll('B站', '公开资料')
+  .replaceAll('抖音', '公开资料')
+  .replace(/价格、时价和加工费不得从静态条目推断[。；;]?/g, '')
+  .replace(/时价、加工费和卫生状况必须实时核验[。；;]?/g, '')
+  .replace(/招牌、营业时间、排队和配料按当天门店信息确认[。；;]?/g, '热门时段预留排队时间。')
 const amapSource = (label: string, query: string): KnowledgeSource => ({
   label,
   url: `https://ditu.amap.com/search?query=${encodeURIComponent(query)}`,
   kind: 'amap',
   checkedAt: UPDATED_AT,
 })
+
+function hotelOptionsForCity(city: string): HotelOption[] {
+  return (cityHotelSpecs[city] ?? []).map((spec) => ({
+    id: `${city}-${spec.tier}-hotel`,
+    name: spec.name,
+    area: spec.area,
+    tier: spec.tier,
+    nightly: spec.nightly,
+    summary: `${spec.summary} 价格为规划参考，日期和房型不同会变化。`,
+    source: amapSource(`高德 POI：${spec.name}公开名称`, `${city} ${spec.name}`),
+    verified: false,
+    anchorTerms: spec.anchorTerms,
+  }))
+}
+
+const researchSources: Record<string, KnowledgeSource[]> = {
+  杭州: [
+    { label: '杭州市文化广电旅游局：文化旅游精品线路', url: 'https://wgly.hangzhou.gov.cn/module/download/downfile.jsp?classid=0&filename=c3ccb4250d3143a09047ee20fbe1170c.pdf', kind: 'official', checkedAt: UPDATED_AT },
+    { label: 'Trip.com 公开体验：龙井采茶与茶文化', url: 'https://us.trip.com/things-to-do/detail/102143519/', kind: 'community', checkedAt: UPDATED_AT },
+  ],
+  南京: [
+    { label: '南京中山陵园管理局：音乐台', url: 'https://zschina.nanjing.gov.cn/fjms/jqjd/ylt/', kind: 'official', checkedAt: UPDATED_AT },
+    { label: '南京中山陵园管理局：景区景点', url: 'https://zschina.nanjing.gov.cn/fjms/', kind: 'official', checkedAt: UPDATED_AT },
+    { label: '南京欢乐谷：官方游玩页', url: 'https://nj.happyvalley.cn/play/index.shtml', kind: 'official', checkedAt: UPDATED_AT },
+    { label: 'Trip.com 公开体验：钟山景区组合路线', url: 'https://us.trip.com/things-to-do/detail/101734870/', kind: 'community', checkedAt: UPDATED_AT },
+  ],
+  成都: [
+    { label: '成都大熊猫繁育研究基地：票务与参观提示', url: 'https://m.panda.org.cn/cn/', kind: 'official', checkedAt: UPDATED_AT },
+    { label: '成都金沙遗址博物馆：古蜀文明资料', url: 'https://jinshasitemuseum.hicdac.cn/', kind: 'official', checkedAt: UPDATED_AT },
+  ],
+  厦门: [
+    { label: '厦门市人民政府：旅游业高质量发展意见', url: 'https://www.xm.gov.cn/zwgk/flfg/sfwj/202109/t20210901_2580031.htm', kind: 'official', checkedAt: UPDATED_AT },
+    { label: '厦门机场：厦门旅游指南', url: 'https://www.xiamenairport.com.cn/lkzn/xmlyzn-jdtj.aspx', kind: 'official', checkedAt: UPDATED_AT },
+  ],
+  北京: [
+    { label: '故宫博物院：在线订票', url: 'https://www.dpm.org.cn/subject_booking/index.html', kind: 'official', checkedAt: UPDATED_AT },
+    { label: '北京旅游网：景区预约平台', url: 'https://s.visitbeijing.com.cn/appointments?area=2', kind: 'official', checkedAt: UPDATED_AT },
+  ],
+  武汉: [
+    { label: '湖北省文化和旅游厅：湖北省博物馆', url: 'https://wlt.hubei.gov.cn/zfxxgk/fdzdgknr/jgjj/zsdw/202008/t20200805_2740545.shtml', kind: 'official', checkedAt: UPDATED_AT },
+    { label: '湖北省博物馆：参观服务', url: 'https://www.hbww.org.cn/fuwu/index.html', kind: 'official', checkedAt: UPDATED_AT },
+    { label: '百度百科：武汉“过早”饮食线索', url: 'https://bkso.baidu.com/item/%E8%BF%87%E6%97%A9/22556314?fromModule=lemma_inlink', kind: 'community', checkedAt: UPDATED_AT },
+    { label: 'Trip.com 公开体验：湖北省博物馆讲解', url: 'https://us.trip.com/things-to-do/detail/97722587/', kind: 'community', checkedAt: UPDATED_AT },
+  ],
+  长沙: [
+    { label: 'Trip.com 公开体验：橘子洲/岳麓书院组合', url: 'https://us.trip.com/things-to-do/detail/94243678/', kind: 'community', checkedAt: UPDATED_AT },
+  ],
+  昆明: [
+    { label: 'Trip.com 公开体验：石林景区', url: 'https://us.trip.com/things-to-do/detail/81314740/', kind: 'community', checkedAt: UPDATED_AT },
+  ],
+  三亚: [
+    { label: 'Trip.com 公开体验：南山/大小洞天组合', url: 'https://us.trip.com/things-to-do/detail/32555956/', kind: 'community', checkedAt: UPDATED_AT },
+  ],
+}
 
 const hunanGovSource: KnowledgeSource = {
   label: '湖南省人民政府：岳麓山橘子洲预约提示',
@@ -81,46 +171,15 @@ const hunanMuseumSource: KnowledgeSource = {
   checkedAt: UPDATED_AT,
 }
 
-const changshaHotelSource = amapSource('高德 POI：长沙住宿区域查询', '长沙 五一广场 酒店')
+const changshaHotelOptions = hotelOptionsForCity('长沙')
 
 const changshaKnowledge: CityKnowledge = {
   city: '长沙',
   status: 'curated',
   updatedAt: UPDATED_AT,
-  intro: '以五一广场为交通基点，把岳麓山—橘子洲—老城逛吃串成不绕路的三日骨架。价格是预算估算，实时 POI、预约和库存仍需出行前核验。',
-  sources: [hunanGovSource, hunanMuseumSource, changshaHotelSource],
-  hotelOptions: [
-    {
-      id: 'changsha-budget-hotel',
-      name: '五一广场地铁站附近经济型酒店',
-      area: '芙蓉区 / 五一广场',
-      tier: 'budget',
-      nightly: { min: 220, max: 320 },
-      summary: '离地铁和老城较近，优先满足低预算与少换乘。',
-      source: changshaHotelSource,
-      verified: false,
-    },
-    {
-      id: 'changsha-comfort-hotel',
-      name: 'IFS / 五一广场附近舒适型酒店',
-      area: '芙蓉区 / 解放西',
-      tier: 'comfort',
-      nightly: { min: 380, max: 580 },
-      summary: '房间舒适度与位置更均衡，适合两人 3 天 2 晚。',
-      source: changshaHotelSource,
-      verified: false,
-    },
-    {
-      id: 'changsha-premium-hotel',
-      name: '湘江 / IFS 附近高星酒店',
-      area: '芙蓉区 / 湘江沿线',
-      tier: 'premium',
-      nightly: { min: 700, max: 1100 },
-      summary: '把更多预算留给景观、服务与酒店本身。',
-      source: changshaHotelSource,
-      verified: false,
-    },
-  ],
+  intro: '以五一广场为交通基点，把岳麓山—橘子洲—老城逛吃串成不绕路的三日骨架。价格为规划估算，预约、开放时段和当天房态按公开信息为准。',
+  sources: [hunanGovSource, hunanMuseumSource, ...changshaHotelOptions.map((hotel) => hotel.source)],
+  hotelOptions: changshaHotelOptions,
   items: [
     {
       id: 'changsha-yuelu',
@@ -285,17 +344,15 @@ const changshaKnowledge: CityKnowledge = {
   ],
 }
 
+const shanghaiHotelOptions = hotelOptionsForCity('上海')
+
 const shanghaiKnowledge: CityKnowledge = {
   city: '上海',
   status: 'curated',
   updatedAt: UPDATED_AT,
   intro: '保留武康路、安福路、外滩等街区主线，并把展览、咖啡和本地餐饮作为可替换节点。',
-  sources: [amapSource('高德 POI：上海旅行候选查询', '上海 武康路 安福路 外滩')],
-  hotelOptions: [
-    { id: 'shanghai-budget-hotel', name: '静安寺地铁站附近经济型酒店', area: '静安', tier: 'budget', nightly: { min: 320, max: 480 }, summary: '优先控制住宿成本，通勤仍方便。', source: amapSource('高德 POI：上海住宿区域查询', '上海 静安寺 酒店'), verified: false },
-    { id: 'shanghai-comfort-hotel', name: '静安寺 / 淮海中路附近舒适型酒店', area: '静安 / 黄浦', tier: 'comfort', nightly: { min: 520, max: 780 }, summary: '位置和舒适度均衡。', source: amapSource('高德 POI：上海住宿区域查询', '上海 静安寺 淮海中路 酒店'), verified: false },
-    { id: 'shanghai-premium-hotel', name: '外滩 / 陆家嘴景观酒店', area: '黄浦 / 浦东', tier: 'premium', nightly: { min: 900, max: 1600 }, summary: '将更多预算用于景观与服务。', source: amapSource('高德 POI：上海住宿区域查询', '上海 外滩 陆家嘴 酒店'), verified: false },
-  ],
+  sources: [amapSource('高德 POI：上海旅行候选查询', '上海 武康路 安福路 外滩'), ...shanghaiHotelOptions.map((hotel) => hotel.source)],
+  hotelOptions: shanghaiHotelOptions,
   items: [
     { id: 'shanghai-wukang', name: '武康路', category: 'attraction', area: '徐汇', tags: ['城市漫步', '街区', '上午'], summary: '保留街区漫步时间，不把整条路压成打卡点。', coordinates: [121.4374, 31.2111], durationMinutes: 90, price: { min: 0, max: 20, unit: 'person', note: '街区免费，消费取决于店铺' }, source: amapSource('高德 POI：武康路', '上海 武康路'), verified: false },
     { id: 'shanghai-anfu', name: '安福路', category: 'activity', area: '徐汇', tags: ['城市漫步', '街区', '逛店'], summary: '和武康路放在同一片区，减少折返。', coordinates: [121.4435, 31.2161], durationMinutes: 60, price: { min: 0, max: 30, unit: 'person', note: '街区免费' }, source: amapSource('高德 POI：安福路', '上海 安福路'), verified: false },
@@ -314,9 +371,20 @@ type CitySeedSpec = {
   tags: string[]
   summary?: string
   coordinates: [number, number]
+  venueName?: string
+  address?: string
+  menuHighlights?: string[]
+  searchKeyword?: string
   durationMinutes?: number
   price?: KnowledgePrice
   dietaryTags?: string[]
+  opening?: {
+    from: string
+    to: string
+    label: string
+    closedWeekdays?: number[]
+  }
+  source?: KnowledgeSource
 }
 
 const citySeedSpecs: Record<string, CitySeedSpec[]> = {
@@ -510,7 +578,7 @@ const citySeedSpecs: Record<string, CitySeedSpec[]> = {
     { name: '锅包肉', category: 'restaurant', area: '老道外 / 道里', tags: ['本地美食', '午餐', '东北菜'], summary: '传统东北菜代表，通常含猪肉，不吃猪肉时直接排除。', coordinates: [126.65, 45.77], durationMinutes: 75, price: { min: 50, max: 110, unit: 'person', note: '人均为规划估算' }, dietaryTags: ['meat', 'pork'] },
     { name: '红肠—大列巴', category: 'food', area: '中央大街 / 老道外', tags: ['本地美食', '伴手礼', '街头小吃'], summary: '适合当作伴手礼或轻食，红肠为肉类，大列巴配方按包装确认。', coordinates: [126.64, 45.76], durationMinutes: 30, dietaryTags: ['meat'] },
     { name: '马迭尔冰棍', category: 'food', area: '中央大街', tags: ['本地小吃', '本地美食', '甜品'], summary: '冷饮和乳制品，冬季食用按个人耐受度决定。', coordinates: [126.64, 45.76], durationMinutes: 20, dietaryTags: ['dairy'] },
-    { name: '老道外澡堂体验', category: 'activity', area: '道外区', tags: ['本地人项目', '洗浴体验', '休息'], summary: '作为冬季保暖与休息的备选，选择正规场所并先确认营业状态。', coordinates: [126.65, 45.78], durationMinutes: 120, price: { min: 40, max: 150, unit: 'person', note: '场所与服务价格需实时确认' } },
+    { name: '老道外澡堂体验', category: 'activity', area: '道外区', tags: ['本地人项目', '洗浴体验', '休息'], summary: '作为冬季保暖与休息的备选，选择正规场所并预留舒适停留时间。', coordinates: [126.65, 45.78], durationMinutes: 120, price: { min: 40, max: 150, unit: 'person', note: '场所与服务价格按规划估算' } },
   ],
   贵阳: [
     { name: '甲秀楼', category: 'attraction', area: '南明区', tags: ['城市地标', '夜景', '经典'], summary: '适合傍晚看桥、楼和河岸灯光，和青云市集可以顺路。', coordinates: [106.71, 26.57], durationMinutes: 90, price: { min: 0, max: 20, unit: 'ticket', note: '开放状态需复核' } },
@@ -536,6 +604,7 @@ const citySeedSpecs: Record<string, CitySeedSpec[]> = {
     { name: '米豆腐', category: 'food', area: '武陵源小吃铺', tags: ['本地小吃', '本地美食', '随走随吃'], summary: '豆制小吃，拌料可能含辣，点单时确认调味。', coordinates: [110.55, 29.35], durationMinutes: 25, dietaryTags: ['spicy'] },
     { name: '武陵源早市—土家织锦体验', category: 'activity', area: '武陵源区', tags: ['本地人项目', '早市', '非遗体验'], summary: '把早餐、集市和手工艺体验作为景区之外的半日，具体活动按现场确认。', coordinates: [110.55, 29.35], durationMinutes: 100 },
   ],
+  ...cityRegionalSpecs,
 }
 
 function seedPrice(spec: CitySeedSpec): KnowledgePrice {
@@ -545,37 +614,152 @@ function seedPrice(spec: CitySeedSpec): KnowledgePrice {
   return { min: 0, max: spec.category === 'attraction' ? 80 : 30, unit: spec.category === 'attraction' ? 'ticket' : 'person', note: '价格或消费规则需出行前复核' }
 }
 
-function seededKnowledge(city: string, specs: CitySeedSpec[]): CityKnowledge {
-  const items = specs.map((spec, index) => {
-    const source = amapSource(`高德 POI：${city}${spec.name}`, `${city} ${spec.name}`)
+function seededItem(city: string, spec: CitySeedSpec, index: number, idPrefix = 'seed'): CityKnowledgeItem {
+  const source = 'source' in spec && spec.source
+    ? spec.source
+    : amapSource(`高德 POI：${city}${spec.name}`, `${city} ${spec.name}`)
+  return {
+    id: `${city}-${idPrefix}-${index + 1}`,
+    name: spec.name,
+    category: spec.category,
+    area: cleanKnowledgeCopy(spec.area),
+    tags: spec.tags.map(cleanKnowledgeCopy),
+    ...(spec.dietaryTags ? { dietaryTags: spec.dietaryTags } : {}),
+    ...(spec.venueName ? { venueName: spec.venueName } : {}),
+    ...(spec.address ? { address: spec.address } : {}),
+    ...(spec.menuHighlights ? { menuHighlights: spec.menuHighlights } : {}),
+    ...(spec.searchKeyword ? { searchKeyword: spec.searchKeyword } : {}),
+    ...(spec.opening ? { opening: spec.opening } : {}),
+    summary: cleanKnowledgeCopy(enrichPlaceSummary(spec.name, spec.summary ?? `${spec.name}是${city}的${spec.category === 'food' || spec.category === 'restaurant' ? '本地餐饮内容' : '旅行地点'}，按走走规划参考整理。`)),
+    coordinates: spec.coordinates,
+    durationMinutes: spec.durationMinutes ?? (spec.category === 'attraction' ? 120 : 90),
+    price: seedPrice(spec),
+    source,
+    verified: false,
+  } satisfies CityKnowledgeItem
+}
+
+type FoodVenueCandidate = {
+  name: string
+  area: string
+  coordinates: [number, number]
+  venueName?: string
+  dietaryTags?: string[]
+  address?: string
+  menuHighlights?: string[]
+  searchKeyword?: string
+  price?: KnowledgePrice
+  source?: KnowledgeSource
+}
+
+const foodCategories = new Set<KnowledgeCategory>(['food', 'restaurant'])
+
+const foodVenueCandidates = (city: string): FoodVenueCandidate[] => (cityLocalSpecs[city] ?? [])
+  .filter((spec) => foodCategories.has(spec.category))
+  .map((spec) => ({
+    name: spec.name,
+    area: spec.area,
+    coordinates: spec.coordinates,
+    venueName: spec.venueName,
+    dietaryTags: spec.dietaryTags,
+    address: spec.address,
+    menuHighlights: spec.menuHighlights,
+    searchKeyword: spec.searchKeyword,
+    price: spec.price,
+    source: spec.source,
+  }))
+
+const foodText = (item: Pick<CityKnowledgeItem, 'name' | 'area' | 'summary' | 'tags' | 'menuHighlights'>) => [
+  item.name,
+  item.area,
+  item.summary,
+  ...item.tags,
+  ...(item.menuHighlights ?? []),
+].join(' ')
+
+const foodVenueScore = (item: CityKnowledgeItem, candidate: FoodVenueCandidate) => {
+  const itemText = foodText(item)
+  const candidateText = [candidate.name, candidate.area, ...(candidate.menuHighlights ?? [])].join(' ')
+  const directMatch = item.name.includes(candidate.name) || candidate.name.includes(item.name)
+  const sharedHighlight = (candidate.menuHighlights ?? []).some((highlight) => itemText.includes(highlight))
+  const sharedArea = item.area.includes(candidate.area) || candidate.area.includes(item.area)
+  const venueDishRisk = /热干面|糊汤粉|海鲜|虾|蟹|火锅/.test(candidate.name)
+  const itemDishRisk = /热干面|糊汤粉|海鲜|虾|蟹|火锅/.test(item.name)
+  return (directMatch ? 100 : 0) + (sharedHighlight ? 35 : 0) + (sharedArea ? 15 : 0) + (candidateText.includes(item.name) ? 20 : 0)
+    - (venueDishRisk && !itemDishRisk ? 30 : 0)
+}
+
+/**
+ * Food hints are useful for search, but a route stop must point to a named
+ * venue. Attach the strongest local venue candidate. The visible label is the
+ * shop name; the original dish remains searchable in the summary and menu
+ * highlights.
+ */
+function concretizeFoodItems(city: string, items: CityKnowledgeItem[]): CityKnowledgeItem[] {
+  const candidates = foodVenueCandidates(city)
+  if (candidates.length === 0) return items
+  return items.map((item, index) => {
+    if (item.category === 'food' && item.tags.includes('咖啡')) return item
+    if (!foodCategories.has(item.category) || (item.venueName && item.searchKeyword)) return item
+    const candidate = [...candidates]
+      .map((venue, venueIndex) => ({ venue, score: foodVenueScore(item, venue), venueIndex }))
+      .sort((left, right) => {
+        const preferredIndex = (index + item.name.length) % candidates.length
+        return right.score - left.score
+          || Math.abs(left.venueIndex - preferredIndex) - Math.abs(right.venueIndex - preferredIndex)
+          || left.venueIndex - right.venueIndex
+      })[0]?.venue
+    if (!candidate) return item
+    const venueName = candidate.venueName ?? candidate.name
+    const displayName = `${venueName}｜${item.name}`
+    const source = candidate.source ?? amapSource(`高德 POI：${venueName}`, `${city} ${venueName}`)
     return {
-      id: `${city}-seed-${index + 1}`,
-      name: spec.name,
-      category: spec.category,
-      area: spec.area,
-      tags: spec.tags,
-      ...(spec.dietaryTags ? { dietaryTags: spec.dietaryTags } : {}),
-      summary: spec.summary ?? `${spec.name}是${city}的${spec.category === 'food' || spec.category === 'restaurant' ? '本地餐饮候选' : '旅行候选地点'}，具体开放、价格和路线需出行前复核。`,
-      coordinates: spec.coordinates,
-      durationMinutes: spec.durationMinutes ?? (spec.category === 'attraction' ? 120 : 90),
-      price: seedPrice(spec),
+      ...item,
+      name: displayName,
+      area: candidate.area || item.area,
+      coordinates: candidate.coordinates,
+      dietaryTags: [...new Set([...(item.dietaryTags ?? []), ...(candidate.dietaryTags ?? [])])],
+      venueName,
+      ...(candidate.address ? { address: candidate.address } : {}),
+      menuHighlights: [...new Set([item.name, ...(candidate.menuHighlights ?? [])])],
+      searchKeyword: candidate.searchKeyword ?? `${city} ${venueName}`,
+      price: candidate.price ?? item.price,
       source,
-      verified: false,
-    } satisfies CityKnowledgeItem
+      summary: cleanKnowledgeCopy(`${item.summary} 推荐门店：${venueName}。`),
+    }
   })
-  const hotelSource = amapSource(`高德 POI：${city}住宿区域查询`, `${city} 核心区 酒店`)
+}
+
+function seededKnowledge(city: string, specs: CitySeedSpec[]): CityKnowledge {
+  const uniqueSpecs = [...new Map(specs.map((spec) => [spec.name, spec])).values()]
+  const items = concretizeFoodItems(city, uniqueSpecs.map((spec, index) => seededItem(city, spec, index)))
+  const hotelOptions = hotelOptionsForCity(city)
   return {
     city,
     status: 'curated',
     updatedAt: UPDATED_AT,
-    intro: `${city}已建立知名景点、城市漫步、本地小吃和本地生活项目的结构化候选层。门票、营业时间、排队、价格和路线不作为静态事实，生成后仍需实时核验。`,
-    sources: [hotelSource, ...items.map((item) => item.source)],
-    hotelOptions: [
-      { id: `${city}-budget-hotel`, name: `${city}核心区经济型酒店（待选）`, area: '核心区 / 地铁沿线', tier: 'budget', nightly: { min: 180, max: 320 }, summary: '优先保证交通和预算，具体门店按实时库存选择。', source: hotelSource, verified: false },
-      { id: `${city}-comfort-hotel`, name: `${city}核心区舒适型酒店（待选）`, area: '核心区 / 地铁沿线', tier: 'comfort', nightly: { min: 360, max: 620 }, summary: '位置、舒适度和预算的中间档位。', source: hotelSource, verified: false },
-      { id: `${city}-premium-hotel`, name: `${city}核心区高星酒店（待选）`, area: '核心区 / 景观片区', tier: 'premium', nightly: { min: 700, max: 1300 }, summary: '把更多预算留给位置、景观和服务。', source: hotelSource, verified: false },
-    ],
+    intro: `${city}已整理知名景点、具体餐饮门店和可检索的城市体验地点，按市中心、片区和周边路线组织。门票、排队和路线会随日期变化，按当天公开信息为准。`,
+    sources: [...(researchSources[city] ?? []), ...hotelOptions.map((hotel) => hotel.source), ...items.map((item) => item.source)],
+    hotelOptions,
     items,
+  }
+}
+
+function expandCuratedKnowledge(knowledge: CityKnowledge, specs: CitySeedSpec[]) {
+  const existingNames = new Set(knowledge.items.map((item) => item.name))
+  const existingItems = knowledge.items.map((item) => ({
+    ...item,
+    area: cleanKnowledgeCopy(item.area),
+    tags: item.tags.map(cleanKnowledgeCopy),
+    summary: cleanKnowledgeCopy(enrichPlaceSummary(item.name, item.summary)),
+  }))
+  const additionalItems = specs
+    .filter((spec) => !existingNames.has(spec.name))
+    .map((spec, index) => seededItem(knowledge.city, spec, index, 'expanded'))
+  return {
+    ...knowledge,
+    sources: [...knowledge.sources, ...(researchSources[knowledge.city] ?? []), ...additionalItems.map((item) => item.source)],
+    items: concretizeFoodItems(knowledge.city, [...existingItems, ...additionalItems]),
   }
 }
 
@@ -585,7 +769,7 @@ function fallbackKnowledge(city: string): CityKnowledge {
     city,
     status: 'fallback',
     updatedAt: UPDATED_AT,
-    intro: `${city}暂时没有足够的事实级城市条目；先按城市候选生成完整结构，价格、营业时间和路线必须在出行前用实时 POI 复核。`,
+    intro: `${city}暂时没有足够的事实级城市条目；先按城市候选生成完整结构，地点和路线需结合当天地图信息确认。`,
     sources: [amapSource(`高德 POI：${city}候选查询`, `${city} 景点 餐厅 酒店`)],
     hotelOptions: [
       { id: `${city}-budget-hotel`, name: `${city}市中心经济型酒店（待选）`, area: '市中心', tier: 'budget', nightly: { min: 180, max: 300 }, summary: '低预算占位候选，需实时查询门店。', source: amapSource(`高德 POI：${city}住宿查询`, `${city} 市中心 酒店`), verified: false },
@@ -603,13 +787,35 @@ function fallbackKnowledge(city: string): CityKnowledge {
 }
 
 export const cityKnowledge: Record<string, CityKnowledge> = {
-  上海: shanghaiKnowledge,
-  长沙: changshaKnowledge,
-  ...Object.fromEntries(Object.entries(citySeedSpecs).map(([city, specs]) => [city, seededKnowledge(city, specs)])),
+  上海: expandCuratedKnowledge(shanghaiKnowledge, [...(cityAdditionalSpecs.上海 ?? []), ...(citySpecialSpecs.上海 ?? []), ...(cityCoreSpecs.上海 ?? []), ...(cityLocalSpecs.上海 ?? [])]),
+  长沙: expandCuratedKnowledge(changshaKnowledge, [...(cityAdditionalSpecs.长沙 ?? []), ...(citySpecialSpecs.长沙 ?? []), ...(cityCoreSpecs.长沙 ?? []), ...(cityLocalSpecs.长沙 ?? [])]),
+  ...Object.fromEntries(Object.entries(citySeedSpecs).map(([city, specs]) => [
+    city,
+    seededKnowledge(city, [...specs, ...(cityAdditionalSpecs[city] ?? []), ...(citySpecialSpecs[city] ?? []), ...(cityCoreSpecs[city] ?? []), ...(cityLocalSpecs[city] ?? [])]),
+  ])),
 }
 
 export function getCityKnowledge(city: string): CityKnowledge {
   return cityKnowledge[city] ?? fallbackKnowledge(city)
+}
+
+const forbiddenGeneratedCopy = /社区推荐|社区内容提到|社区攻略|小红书|B站|抖音|bilibili|本地生活项目|苍蝇馆子/i
+const placeholderKnowledgeCopy = /待核验|待确认|占位|自由探索/i
+const genericFoodCopy = /^(?:本地特色小吃|本地餐馆|本地午餐|本地晚餐|特色晚餐|本帮菜午餐|老城厢午餐|静安午餐|陆家嘴午餐|外滩晚餐)$/
+const marketExperienceCopy = /菜市场|农贸市场|早市|夜市|市井生活/i
+
+/**
+ * Only these items are allowed to become user-facing itinerary stops. A dish
+ * without a venue and a market without a searchable place name remain useful
+ * research hints, but they are not executable itinerary locations.
+ */
+export function isConcreteKnowledgeItem(item: CityKnowledgeItem) {
+  const visibleText = [item.name, item.area, item.summary, ...item.tags].join(' ')
+  if (forbiddenGeneratedCopy.test(visibleText) || placeholderKnowledgeCopy.test(item.name)) return false
+  if (genericFoodCopy.test(item.name)) return false
+  if (item.category === 'food' || item.category === 'restaurant') return Boolean(item.venueName && item.searchKeyword)
+  if (marketExperienceCopy.test(item.name)) return Boolean(item.venueName && item.address && item.searchKeyword)
+  return true
 }
 
 export function selectHotelOption(knowledge: CityKnowledge, budget: number | null, nights: number): HotelOption {
@@ -622,6 +828,6 @@ export function selectHotelOption(knowledge: CityKnowledge, budget: number | nul
 }
 
 export function knowledgeMatches(item: CityKnowledgeItem, terms: string[]) {
-  const text = [item.name, item.area, item.summary, ...item.tags].join(' ')
+  const text = [item.name, item.venueName ?? '', item.address ?? '', item.area, item.summary, ...item.tags, ...(item.menuHighlights ?? [])].join(' ')
   return terms.some((term) => text.includes(term))
 }

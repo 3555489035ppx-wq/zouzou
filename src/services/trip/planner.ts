@@ -1,16 +1,56 @@
 import { cityNames, getCityProfile } from '../../demo-data/cities'
 import type { Place, Plan } from '../../demo-data/trips'
-import { dietarySummary, emptyDietaryProfile, extractDietaryProfile, foodCompatibilityIssues, inferFoodTags } from './dietary'
-import { guidePlatformsLabel, type GuideCandidate, type GuideContext } from './guides'
-import { getCityKnowledge, knowledgeMatches, selectHotelOption, type CityKnowledge, type CityKnowledgeItem, type KnowledgeSource } from './cityKnowledge'
+import { dietarySummary, emptyDietaryProfile, extractDietaryProfile, foodCompatibilityIssues, type DietaryProfile } from './dietary'
+import { type GuideContext } from './guides'
+import { getCityKnowledge, isConcreteKnowledgeItem, knowledgeMatches, selectHotelOption, type CityKnowledge, type CityKnowledgeItem, type HotelOption } from './cityKnowledge'
+import { getHotelRecommendations, hotelOptionMeta, hotelOptionReason } from './hotelRecommendation'
+import { cityRouteSpecs, getCityRouteZone } from './cityRouteSpecs'
 import { readVersioned, writeVersioned } from '../storage'
+import { parseGeneratedPlans, parseTripUnderstanding } from './schemas'
+
+const genericKnowledgeAliases = new Set(['城市', '地区', '景区', '风景区', '风景名胜区', '公园', '博物馆', '美术馆', '历史街区', '文化街区', '步行街', '古镇', '老街', '广场', '市场', '菜市场', '早市', '夜市', '路线', '体验', '中心', '餐馆', '餐厅', '酒店', '小吃', '美食', '本地美食', '本地小吃', '饭店', '饭馆', '面馆', '粉店', '小馆', '菜馆', '食堂', '老店', '苍蝇馆子'])
+const genericKnowledgeAliasFragments = new Set([...genericKnowledgeAliases].flatMap((term) => {
+  const fragments: string[] = []
+  for (let length = 2; length <= term.length; length += 1) {
+    for (let start = 0; start + length <= term.length; start += 1) fragments.push(term.slice(start, start + length))
+  }
+  return fragments
+}))
+
+function knowledgeAliases(item: CityKnowledgeItem, city: string) {
+  const compactName = item.name.replace(/[（）()]/g, '')
+  const text = compactName.replace(/[—\-/：:·|]/g, '')
+  const aliases = new Set<string>([
+    item.name,
+    item.venueName ?? '',
+    ...(item.menuHighlights ?? []),
+    compactName,
+    ...compactName.split(/[—\-/：:·|]/).map((part) => part.trim()).filter(Boolean),
+  ])
+  for (let length = 2; length <= Math.min(6, text.length); length += 1) {
+    for (let start = 0; start + length <= text.length; start += 1) {
+      aliases.add(text.slice(start, start + length))
+    }
+  }
+  return [...aliases].filter((alias) => alias.length >= 2
+    && alias !== city
+    && !genericKnowledgeAliasFragments.has(alias))
+}
+
+function knowledgeRequirementMatches(item: CityKnowledgeItem, requirement: string) {
+  const normalizedRequirement = requirement.trim()
+  if (!normalizedRequirement) return false
+  if (normalizedRequirement === '展览') return item.category === 'attraction' && item.tags.includes('展览')
+  const searchableNames = [item.name, item.venueName, ...(item.menuHighlights ?? [])].filter((name): name is string => Boolean(name))
+  return searchableNames.some((name) => name.includes(normalizedRequirement) || normalizedRequirement.includes(name))
+}
 
 export const DEFAULT_SHANGHAI_PROMPT = '我和朋友计划 2026年9月18日到9月20日去上海 3天2晚。9月18日10:30到虹桥火车站，住静安寺附近酒店，9月20日18:30从虹桥返程。两个人，本地总预算4000元（含住宿和市内交通，不含往返车票）。想去武康路、安福路、看展和外滩，不想太赶，喜欢咖啡，最好每天留一段缓冲。'
 
 export const TRIP_INPUT_STORAGE = 'zouzou-trip-input'
 export const TRIP_MEDIA_STORAGE = 'zouzou-trip-media'
 export const TRIP_UNDERSTANDING_STORAGE = 'zouzou-trip-understanding'
-export const TRIP_PLANS_STORAGE = 'zouzou-generated-plans-v1'
+export const TRIP_PLANS_STORAGE = 'zouzou-generated-plans-v3'
 
 export type TripMedia = {
   id: string
@@ -98,6 +138,7 @@ export type PlannedStop = Place & {
   mode: TravelMode
   opening?: OpeningWindow
   fixed?: boolean
+  hotelOptionId?: string
   dietaryTags?: string[]
   factState: 'verified' | 'estimated'
   factSource: string
@@ -139,6 +180,8 @@ export type GeneratedPlan = Plan & {
   evidence: string[]
   guideContext?: GuideContext
   knowledge: CityKnowledge
+  hotelRecommendations?: HotelOption[]
+  selectedHotelId?: string
 }
 
 export type ReplacementCandidate = {
@@ -151,6 +194,7 @@ type StopInput = Omit<PlannedStop, 'x' | 'z'>
 
 const makeStop = (input: StopInput): PlannedStop => ({
   ...input,
+  area: input.area ?? input.zone,
   x: Math.round((input.lng - 121.47) * 100),
   z: Math.round((31.23 - input.lat) * 100),
 })
@@ -314,14 +358,43 @@ export function understandTrip(request: TripRequest): TripUnderstanding {
     ...Object.values(cityProfile.stopNames ?? {}),
   ]).filter((place) => place.length >= 2 && !/咖啡|午餐|晚餐|本地|散步|夜景|路线|酒店|城市/.test(place) && combined.includes(place))
   mustVisit.push(...explicitCityPlaces)
-  knowledge.items.forEach((item) => {
-    const aliases = [item.name, item.name.replace(/风景名胜区|历史文化街区|（待核验）/g, '')]
-    if (aliases.some((alias) => alias.length >= 2 && combined.includes(alias))
-      && !mustVisit.some((existing) => existing.includes(item.name) || item.name.includes(existing))) mustVisit.push(item.name)
+  const profilePlaceTerms = new Set(unique([
+    ...cityProfile.demoLabels,
+    ...Object.values(cityProfile.stopNames ?? {}),
+  ]).flatMap((term) => [term, term.replace(/(?:边|咖啡|晚餐|夜景)$/, '')]).filter((term) => term.length >= 2))
+  const aliasesByItem = knowledge.items.map((item) => ({ item, aliases: knowledgeAliases(item, destination) }))
+  const aliasCounts = new Map<string, number>()
+  aliasesByItem.forEach(({ aliases }) => aliases.forEach((alias) => aliasCounts.set(alias, (aliasCounts.get(alias) ?? 0) + 1)))
+  const matchedProfilePlaceAliases = new Set<string>()
+  const matchedFoodVenues = new Set<string>()
+  aliasesByItem.forEach(({ item, aliases }) => {
+    const matchedAlias = aliases.find((alias) => {
+      const isProfilePlace = profilePlaceTerms.has(alias) && (item.category === 'attraction' || item.category === 'activity')
+      const isMenuAlias = item.menuHighlights?.includes(alias) ?? false
+      if (isProfilePlace && matchedProfilePlaceAliases.has(alias)) return false
+      return (alias.length >= 3 || aliasCounts.get(alias) === 1 || isProfilePlace || (isMenuAlias && isConcreteKnowledgeItem(item))) && combined.includes(alias)
+    })
+    if (matchedAlias && isConcreteKnowledgeItem(item)) {
+      const isFood = item.category === 'food' || item.category === 'restaurant'
+      if (isFood) {
+        // Several menu hints can resolve to the same shop. Keep one concrete
+        // venue requirement so the planner can satisfy all of them with a
+        // single named stop and still show the full menu in its note.
+        const venue = item.venueName ?? item.name
+        if (!matchedFoodVenues.has(venue)) {
+          matchedFoodVenues.add(venue)
+          if (!mustVisit.includes(venue)) mustVisit.push(venue)
+        }
+      } else if (!mustVisit.includes(item.name)) {
+        mustVisit.push(item.name)
+      }
+    }
+    if (matchedAlias && profilePlaceTerms.has(matchedAlias)) matchedProfilePlaceAliases.add(matchedAlias)
   })
   if (/咖啡|coffee/.test(combined.toLowerCase())) preferences.push('咖啡')
   if (/city\s*walk|散步|慢走|街区/.test(combined.toLowerCase())) preferences.push('City Walk')
   if (/美食|小吃|餐厅|餐馆|湘菜|臭豆腐|糖油粑粑|口味虾|吃/.test(combined)) preferences.push('本地美食')
+  if (/湘菜/.test(combined)) preferences.push('湘菜')
   if (/夜景|灯光|日落/.test(combined)) preferences.push('夜景')
   if (/室内|下雨|雨天/.test(combined)) preferences.push('室内备选')
   if (/不要太赶|不想太赶|不太赶|不赶|轻松|松弛|慢慢/.test(combined)) constraints.push('每天至少保留一段缓冲，不安排连续跨区移动')
@@ -368,7 +441,7 @@ export function understandTrip(request: TripRequest): TripUnderstanding {
     `用户文字：${text || '未提供文字描述'}`,
     ...request.media.map((item) => `截图线索：${item.name}`),
     ...(request.mediaFacts ?? []).map((fact) => `截图识别：${fact.name} · ${fact.kind} · 置信度 ${Math.round(fact.confidence * 100)}%${fact.needsConfirmation ? ' · 需要确认' : ''}`),
-    `${destination}城市知识库：${knowledge.status === 'curated' ? '官方地点事实 + 地图候选' : '候选地点占位'}；交通、价格和营业状态在生产环境需由服务端实时复核。`,
+    `${destination}城市知识库：${knowledge.status === 'curated' ? '官方地点资料 + 片区索引' : '城市地点索引'}；路线和预算按规划参考整理。`,
   ]
 
   return {
@@ -380,106 +453,8 @@ export function understandTrip(request: TripRequest): TripUnderstanding {
   }
 }
 
-const realShanghaiDays = (): Record<string, PlannedStop[]> => ({
-  'Day 1': [
-    makeStop({ id: 'arrival-hongqiao', time: '10:30', name: '虹桥火车站', type: '到达', stay: '30min', budget: 0, transport: '前往静安寺约 35 分钟', note: '到站后先去酒店放行李，把到达作为今天的固定锚点。', lng: 121.327, lat: 31.198, durationMinutes: 30, travelFromPreviousMinutes: 0, zone: '虹桥', mode: 'train', fixed: true, factState: 'estimated', factSource: '用户计划 + 真实交通节点' }),
-    makeStop({ id: 'jingan-hotel-checkin', time: '11:45', name: '静安寺附近酒店', type: '住宿', stay: '30min', budget: 490, transport: '步行 / 地铁约 20 分钟', note: '两晚住宿参考价 ¥980，按 ¥490/晚展示，实际以预订平台为准。', lng: 121.445, lat: 31.223, durationMinutes: 30, travelFromPreviousMinutes: 35, zone: '静安', mode: 'taxi', fixed: true, factState: 'estimated', factSource: '用户计划：住宿已锁定；住宿为本地参考价' }),
-    makeStop({ id: 'jingan-lunch', time: '12:20', name: '静安午餐', type: '午餐', stay: '45min', budget: 80, transport: '前往武康路约 25 分钟', note: '用一顿不需要排长队的午餐开始，给下午留出弹性。', lng: 121.444, lat: 31.225, durationMinutes: 45, travelFromPreviousMinutes: 5, zone: '静安', mode: 'walk', factState: 'estimated', factSource: '本地餐饮估算' }),
-    makeStop({ id: 'wukang-road', time: '13:30', name: '武康路', type: 'City Walk', stay: '1h 30min', budget: 0, transport: '步行 10 分钟', note: '保留街区漫步时间，不把整条路压成打卡点。', lng: 121.4374, lat: 31.2111, durationMinutes: 90, travelFromPreviousMinutes: 25, zone: '徐汇', mode: 'taxi', fixed: true, factState: 'estimated', factSource: '真实公共街区' }),
-    makeStop({ id: 'anfu-road', time: '15:10', name: '安福路', type: '街区', stay: '1h', budget: 0, transport: '步行 10 分钟', note: '和武康路放在同一片区，减少折返。', lng: 121.4435, lat: 31.2161, durationMinutes: 60, travelFromPreviousMinutes: 10, zone: '徐汇', mode: 'walk', fixed: true, factState: 'estimated', factSource: '真实公共街区' }),
-    makeStop({ id: 'wukang-cafe', time: '16:20', name: '武康路咖啡休息', type: '咖啡', stay: '1h', budget: 85, transport: '前往静安约 20 分钟', note: '把收藏的咖啡店作为缓冲，不把它当成必须打卡的硬任务。', lng: 121.4385, lat: 31.2145, durationMinutes: 60, travelFromPreviousMinutes: 10, zone: '徐汇', mode: 'walk', factState: 'estimated', factSource: '用户收藏线索 + 价格估算' }),
-    makeStop({ id: 'jingan-dinner', time: '18:00', name: '静安晚餐', type: '晚餐', stay: '1h 30min', budget: 220, transport: '步行回酒店约 12 分钟', note: '晚餐后直接回酒店，第一天不安排夜间跨区。', lng: 121.448, lat: 31.229, durationMinutes: 90, travelFromPreviousMinutes: 20, zone: '静安', mode: 'taxi', factState: 'estimated', factSource: '本地餐饮估算' }),
-  ],
-  'Day 2': [
-    makeStop({ id: 'hotel-start', time: '09:30', name: '静安寺附近酒店', type: '住宿', stay: '15min', budget: 490, transport: '前往浦东约 35 分钟', note: '第二晚住宿参考价 ¥490，实际以预订平台为准。', lng: 121.445, lat: 31.223, durationMinutes: 15, travelFromPreviousMinutes: 0, zone: '静安', mode: 'walk', fixed: true, factState: 'estimated', factSource: '用户计划：住宿已锁定；住宿为本地参考价' }),
-    makeStop({ id: 'shanghai-museum-east', time: '10:25', name: '上海博物馆东馆', type: '展览', stay: '2h', budget: 60, transport: '步行 10 分钟', note: '安排在上午的室内主活动，避开午后跨区和天气波动。', lng: 121.544, lat: 31.228, durationMinutes: 120, travelFromPreviousMinutes: 35, zone: '浦东', mode: 'metro', opening: { from: '10:00', to: '18:00', label: '周二至周日 10:00–18:00', closedWeekdays: [1] }, fixed: true, factState: 'estimated', factSource: '真实博物馆；开放状态需出行前复核' }),
-    makeStop({ id: 'lujiazui-lunch', time: '12:35', name: '陆家嘴午餐', type: '午餐', stay: '1h 15min', budget: 100, transport: '前往滨江约 10 分钟', note: '用餐地点靠近下一段滨江路线，不为找餐厅额外绕路。', lng: 121.507, lat: 31.239, durationMinutes: 75, travelFromPreviousMinutes: 10, zone: '陆家嘴', mode: 'walk', factState: 'estimated', factSource: '本地餐饮估算' }),
-    makeStop({ id: 'pudong-riverside', time: '14:00', name: '陆家嘴滨江', type: '散步', stay: '1h 10min', budget: 0, transport: '前往外滩约 30 分钟', note: '给看展和晚餐之间留出一段无任务的江边时间。', lng: 121.518, lat: 31.240, durationMinutes: 70, travelFromPreviousMinutes: 10, zone: '浦东', mode: 'walk', factState: 'estimated', factSource: '真实公共滨水空间' }),
-    makeStop({ id: 'bund', time: '16:00', name: '外滩', type: '散步', stay: '1h 30min', budget: 0, transport: '步行 5 分钟', note: '下午到傍晚连续停留，不把外滩和浦东两侧来回切换。', lng: 121.4902, lat: 31.2393, durationMinutes: 90, travelFromPreviousMinutes: 30, zone: '外滩', mode: 'taxi', fixed: true, factState: 'estimated', factSource: '真实公共滨水空间' }),
-    makeStop({ id: 'bund-dinner', time: '18:10', name: '外滩晚餐', type: '晚餐', stay: '1h 30min', budget: 220, transport: '回酒店约 30 分钟', note: '晚餐后回静安，不再叠加夜景景点。', lng: 121.487, lat: 31.240, durationMinutes: 90, travelFromPreviousMinutes: 5, zone: '外滩', mode: 'walk', factState: 'estimated', factSource: '本地餐饮估算' }),
-  ],
-  'Day 3': [
-    makeStop({ id: 'hotel-checkout', time: '09:30', name: '静安寺附近酒店', type: '退房', stay: '20min', budget: 0, transport: '前往豫园约 25 分钟', note: '退房后把行李寄存到返程前，避免拖着行李逛老城。', lng: 121.445, lat: 31.223, durationMinutes: 20, travelFromPreviousMinutes: 0, zone: '静安', mode: 'walk', fixed: true, factState: 'estimated', factSource: '用户计划：住宿已锁定' }),
-    makeStop({ id: 'yuyuan', time: '10:15', name: '豫园', type: '园林', stay: '1h 30min', budget: 40, transport: '步行 10 分钟', note: '最后一天只安排一个老城主景点，给返程留出充足缓冲。', lng: 121.492, lat: 31.227, durationMinutes: 90, travelFromPreviousMinutes: 25, zone: '老城厢', mode: 'taxi', opening: { from: '08:30', to: '16:30', label: '日间开放时段，需按当日公告复核' }, fixed: true, factState: 'estimated', factSource: '真实园林；开放状态需出行前复核' }),
-    makeStop({ id: 'oldtown-lunch', time: '12:00', name: '老城厢午餐', type: '午餐', stay: '1h 15min', budget: 90, transport: '前往思南约 25 分钟', note: '午餐不安排过远，避免下午为了找店折返。', lng: 121.493, lat: 31.225, durationMinutes: 75, travelFromPreviousMinutes: 10, zone: '老城厢', mode: 'walk', factState: 'estimated', factSource: '本地餐饮估算' }),
-    makeStop({ id: 'sinan-bookstore', time: '13:50', name: '思南书局', type: '书店', stay: '1h 10min', budget: 0, transport: '回酒店取行李约 20 分钟', note: '安排一个安静收尾，和前两天的街区与展览形成节奏变化。', lng: 121.466, lat: 31.212, durationMinutes: 70, travelFromPreviousMinutes: 25, zone: '黄浦', mode: 'taxi', opening: { from: '10:00', to: '18:00', label: '日间开放时段，需按当日公告复核' }, factState: 'estimated', factSource: '真实书店；开放状态需出行前复核' }),
-    makeStop({ id: 'hotel-luggage', time: '15:30', name: '酒店取行李', type: '取行李', stay: '20min', budget: 0, transport: '前往虹桥约 40 分钟', note: '出发前回酒店取行李，给市内交通预留缓冲。', lng: 121.445, lat: 31.223, durationMinutes: 20, travelFromPreviousMinutes: 20, zone: '静安', mode: 'taxi', fixed: true, factState: 'estimated', factSource: '用户计划：住宿已锁定' }),
-    makeStop({ id: 'return-hongqiao', time: '16:30', name: '虹桥火车站', type: '返程', stay: '1h 30min', budget: 0, transport: '18:30 返程', note: '提前到站，留出安检、取票和临时改签的空间。', lng: 121.327, lat: 31.198, durationMinutes: 90, travelFromPreviousMinutes: 40, zone: '虹桥', mode: 'taxi', fixed: true, factState: 'estimated', factSource: '用户计划：18:30 返程' }),
-  ],
-})
-
-const cityRouteOffsets = [
-  { lng: -0.018, lat: 0.012 },
-  { lng: -0.006, lat: 0.009 },
-  { lng: 0.006, lat: 0.004 },
-  { lng: 0.016, lat: -0.002 },
-  { lng: 0.023, lat: -0.012 },
-]
-
-function cityStopName(city: string, profileLabels: string[], stop: PlannedStop, intent: TripIntent) {
-  if (stop.type === '到达') return intent.arrivalLocation ?? `${city}到达点（待确认）`
-  if (stop.type === '返程') return intent.departureLocation ?? `${city}返程点（待确认）`
-  if (['住宿', '退房', '取行李'].includes(stop.type)) return intent.hotel ?? `${city}中心酒店（待确认）`
-
-  const roleNames: Record<string, string | undefined> = {
-    'wukang-road': profileLabels[0],
-    'anfu-road': profileLabels[1],
-    'wukang-cafe': profileLabels[2],
-    'shanghai-museum-east': profileLabels[3],
-    'lujiazui-lunch': `${city}本地午餐`,
-    'pudong-riverside': `${city}滨水散步`,
-    bund: profileLabels[0] ?? `${city}城市地标`,
-    'bund-dinner': `${city}特色晚餐`,
-    yuyuan: profileLabels[1] ?? `${city}历史街区`,
-    'oldtown-lunch': `${city}本地午餐`,
-    'sinan-bookstore': profileLabels[3] ?? `${city}文化空间`,
-    'suzhou-creek-night': `${city}夜景`,
-    'jingan-lunch': `${city}本地午餐`,
-    'jingan-dinner': `${city}特色晚餐`,
-  }
-  return getCityProfile(city).stopNames?.[stop.id] ?? roleNames[stop.id] ?? `${city} · ${stop.type}`
-}
-
-/**
- * The first prototype has a fully specified Shanghai route. For the other
- * supported cities, preserve the time/budget skeleton while replacing
- * Shanghai-only names and coordinates with the selected city's profile. All
- * such stops stay estimated until a POI/route provider verifies them.
- */
-function adaptDaysForCity(days: Record<string, PlannedStop[]>, intent: TripIntent) {
-  if (intent.destination === '上海') return days
-  const profile = getCityProfile(intent.destination)
-  const center = profile.mapCenter
-  const labels = profile.demoLabels
-
-  return Object.fromEntries(Object.entries(days).map(([day, stops]) => {
-    const dayNumber = Number(day.replace(/\D/g, '')) || 1
-    return [day, stops.map((stop, index) => {
-      const offset = cityRouteOffsets[(index + dayNumber) % cityRouteOffsets.length]
-      const isAnchor = ['到达', '返程', '住宿', '退房', '取行李'].includes(stop.type)
-      const transport = stop.type === '到达'
-        ? '到达后前往住宿点，交通时间待核验'
-        : stop.type === '返程'
-          ? '预留返程交通缓冲，时间待核验'
-          : '相邻片区移动时间待核验'
-      return {
-        ...stop,
-        name: cityStopName(intent.destination, labels, stop, intent),
-        lng: center[0] + offset.lng * profile.routeScale,
-        lat: center[1] + offset.lat * profile.routeScale,
-        coordinateSource: `${intent.destination}结构化候选地点；坐标待 POI 核验`,
-        verified: false,
-        zone: `${intent.destination}参考片区`,
-        mode: isAnchor ? stop.mode : 'metro',
-        transport,
-        opening: undefined,
-        fixed: isAnchor ? stop.fixed : undefined,
-        factState: 'estimated' as const,
-        factSource: `${intent.destination}结构化候选地点；路线、营业状态和价格需出行前复核`,
-        note: `${stop.note} 当前为${intent.destination}的城市候选映射，需结合攻略来源和实时 POI 再确认。`,
-      }
-    })]
-  }))
+export function isHotelStop(stop: Pick<PlannedStop, 'type'>) {
+  return ['住宿', '退房', '取行李'].includes(stop.type)
 }
 
 const midpoint = (value: { min: number; max: number }) => Math.round((value.min + value.max) / 2)
@@ -500,6 +475,7 @@ function knowledgeItemToStop(
   time: string,
   travelFromPreviousMinutes: number,
   mode: TravelMode,
+  dietary: DietaryProfile,
 ): PlannedStop {
   const [fallbackLng, fallbackLat] = profile.mapCenter
   const [lng, lat] = item.coordinates[0] === 0 && item.coordinates[1] === 0
@@ -508,7 +484,9 @@ function knowledgeItemToStop(
   const budget = midpoint(item.price) * (item.price.unit === 'person' || item.price.unit === 'ticket' ? 2 : 1)
   const type = knowledgeItemType(item)
   const factState = item.verified ? 'verified' : 'estimated'
-  const sourceText = item.verified ? `${item.source.label}（事实层）` : `${item.source.label}（候选，需核验）`
+  const sourceText = item.verified ? '走走知识库 · 地点信息已核验' : '走走知识库 · 地点信息需出发前复核'
+  const routeZone = getCityRouteZone(city, item.name, item.area)
+  const visibleMenu = (item.menuHighlights ?? []).filter((dish) => foodCompatibilityIssues(dish, dietary).length === 0)
   return makeStop({
     id: `${city}-${item.id}`,
     time,
@@ -517,14 +495,20 @@ function knowledgeItemToStop(
     stay: item.durationMinutes >= 60 ? `${Math.floor(item.durationMinutes / 60)}h${item.durationMinutes % 60 ? ` ${item.durationMinutes % 60}min` : ''}` : `${item.durationMinutes}min`,
     budget,
     transport: travelFromPreviousMinutes === 0 ? '从住宿点出发' : `${mode === 'walk' ? '步行' : mode === 'metro' ? '地铁' : '打车'}约 ${travelFromPreviousMinutes} 分钟`,
-    note: `${item.summary}${item.price.note ? ` ${item.price.note}。` : ''}`,
+    note: [
+      item.summary,
+      item.address ? `地址：${item.address}` : '',
+      visibleMenu.length > 0 ? `可点：${visibleMenu.join('、')}` : '',
+    ].filter(Boolean).join(' '),
     lng,
     lat,
-    coordinateSource: `${item.source.label} · ${item.source.checkedAt}`,
+    area: item.area,
+    searchKeyword: item.searchKeyword ?? item.venueName ?? item.name,
+    coordinateSource: item.verified ? '高德 POI · 已核验' : '高德 POI · 等待实时核验',
     verified: item.verified,
     durationMinutes: Math.min(item.durationMinutes, type === '景点' || type === '展览' ? 120 : 90),
     travelFromPreviousMinutes,
-    zone: item.area,
+    zone: routeZone.name,
     mode,
     opening: item.opening,
     dietaryTags: item.dietaryTags,
@@ -533,158 +517,156 @@ function knowledgeItemToStop(
   })
 }
 
-function generatedAreaItem(city: string, name: string, index: number, profile: ReturnType<typeof getCityProfile>): CityKnowledgeItem {
-  const [lng, lat] = profile.mapCenter
-  return {
-    id: `${city}-area-${index}`,
-    name,
-    category: 'activity',
-    area: `${city}市中心`,
-    tags: ['城市漫步', '自由探索'],
-    summary: '把这段时间留给附近小店、街景和临时发现，不把每一分钟排满。',
-    coordinates: [lng + (index - 2) * 0.006, lat + (index % 2 ? 0.004 : -0.003)],
-    durationMinutes: 55,
-    price: { min: 0, max: 0, unit: 'person', note: '自由探索，不设固定消费' },
-    source: { label: '走走节奏设计', url: '#', kind: 'community', checkedAt: '2026-08-30' },
-    verified: false,
-  }
+function tripItemPriority(item: CityKnowledgeItem, intent: TripIntent) {
+  const required = intent.mustVisit.some((term) => knowledgeRequirementMatches(item, term))
+  const preferred = intent.preferences.some((term) => knowledgeMatches(item, [term]))
+  const meal = item.category === 'food' || item.category === 'restaurant'
+  return (required ? 100 : 0) + (preferred ? 20 : 0) + (meal ? 5 : 0)
 }
 
-const COMMUNITY_CHECKED_AT = '2026-08-30'
-
-function communitySource(candidates: GuideCandidate[], hint: string, kind: 'place' | 'food' | 'local'): KnowledgeSource {
-  const candidate = candidates.find((item) => kind === 'place'
-    ? item.placeHints.includes(hint)
-    : kind === 'food'
-      ? item.foodHints?.includes(hint)
-      : item.localExperienceHints?.includes(hint))
-  return {
-    label: candidate ? `${guidePlatformsLabel([candidate])}社区攻略线索` : '社区攻略线索',
-    url: candidate?.sourceUrl ?? '#',
-    kind: 'community',
-    checkedAt: COMMUNITY_CHECKED_AT,
-  }
-}
-
-function guideHintItem(city: string, name: string, index: number, profile: ReturnType<typeof getCityProfile>, candidates: GuideCandidate[]): CityKnowledgeItem {
-  const [lng, lat] = profile.mapCenter
-  return {
-    id: `${city}-guide-hint-${index}`,
-    name: `${name}（社区线索）`,
-    category: 'activity',
-    area: `${city}候选片区`,
-    tags: ['社区线索', '待核验'],
-    summary: '社区内容反复提到的体验线索；门店、路线、价格和开放状态需要实时确认。',
-    coordinates: [lng + (index - 1) * 0.008, lat + (index % 2 ? 0.004 : -0.004)],
-    durationMinutes: 75,
-    price: { min: 0, max: 60, unit: 'person', note: '社区线索估算，出行前核验' },
-    source: communitySource(candidates, name, 'place'),
-    verified: false,
-  }
-}
-
-function guideFoodHintItem(city: string, name: string, index: number, profile: ReturnType<typeof getCityProfile>, candidates: GuideCandidate[]): CityKnowledgeItem {
-  const [lng, lat] = profile.mapCenter
-  const sourceLabel = guidePlatformsLabel(candidates)
-  return {
-    id: `${city}-guide-food-${index}`,
-    name: `${name}（社区线索）`,
-    category: 'food',
-    area: `${city}本地生活线索`,
-    tags: ['本地小吃', '社区线索', '待核验'],
-    summary: `${sourceLabel}社区内容提到的${name}体验；具体门店、排队和价格需要实时确认。`,
-    coordinates: [lng + (index - 1) * 0.006, lat + (index % 2 ? 0.003 : -0.003)],
-    durationMinutes: 45,
-    price: { min: 15, max: 80, unit: 'person', note: '社区体验估算，出行前核验' },
-    dietaryTags: inferFoodTags(name),
-    source: communitySource(candidates, name, 'food'),
-    verified: false,
-  }
-}
-
-function guideLocalExperienceHintItem(city: string, name: string, index: number, profile: ReturnType<typeof getCityProfile>, candidates: GuideCandidate[]): CityKnowledgeItem {
-  const [lng, lat] = profile.mapCenter
-  return {
-    id: `${city}-guide-local-${index}`,
-    name: `${name}（社区线索）`,
-    category: 'activity',
-    area: `${city}本地生活线索`,
-    tags: ['本地人项目', '社区线索', '待核验'],
-    summary: `社区内容提到的本地生活项目：${name}；是否适合当天、具体地点和开放状态需要实时确认。`,
-    coordinates: [lng + (index - 1) * 0.007, lat + (index % 2 ? 0.004 : -0.004)],
-    durationMinutes: 75,
-    price: { min: 0, max: 80, unit: 'person', note: '社区体验估算，出行前核验' },
-    source: communitySource(candidates, name, 'local'),
-    verified: false,
-  }
-}
-
-function applyLegacyGuideHints(days: Record<string, PlannedStop[]>, intent: TripIntent, guideContext: GuideContext | undefined) {
-  const candidates = guideContext?.candidates ?? []
-  const profile = getCityProfile(intent.destination)
-  const foodHints = unique(candidates.flatMap((candidate) => candidate.foodHints ?? []))
-    .filter((hint) => foodCompatibilityIssues(hint, intent.dietary ?? emptyDietaryProfile(), inferFoodTags(hint)).length === 0)
-    .slice(0, 2)
-  const localHints = unique(candidates.flatMap((candidate) => candidate.localExperienceHints ?? [])).slice(0, 1)
-  const replaceStop = (day: string, stopId: string, item: CityKnowledgeItem) => {
-    const stops = days[day]
-    const current = stops?.find((stop) => stop.id === stopId)
-    if (!current) return
-    const replacement = knowledgeItemToStop(item, intent.destination, profile, current.time, current.travelFromPreviousMinutes, current.mode)
-    days[day] = stops.map((stop) => stop.id === stopId
-      ? { ...replacement, id: current.id, transport: current.transport, note: `${replacement.note} ${current.note}` }
-      : stop)
-  }
-
-  foodHints.forEach((hint, index) => {
-    replaceStop(index === 0 ? 'Day 1' : 'Day 3', index === 0 ? 'jingan-lunch' : 'oldtown-lunch', guideFoodHintItem(intent.destination, hint, index, profile, candidates))
+function routeBands(items: CityKnowledgeItem[], city: string) {
+  const bands = new Map<string, { zone: ReturnType<typeof getCityRouteZone>; items: CityKnowledgeItem[] }>()
+  items.forEach((item) => {
+    const zone = getCityRouteZone(city, item.name, item.area)
+    const key = `${zone.order}:${zone.name}`
+    bands.set(key, { zone, items: [...(bands.get(key)?.items ?? []), item] })
   })
-  localHints.forEach((hint, index) => {
-    replaceStop('Day 3', 'sinan-bookstore', guideLocalExperienceHintItem(intent.destination, hint, index, profile, candidates))
+  const declaredOrder = new Map((cityRouteSpecs[city] ?? []).map((zone, index) => [zone.name, index]))
+  return [...bands.values()]
+    .sort((left, right) => left.zone.order - right.zone.order
+      || (declaredOrder.get(left.zone.name) ?? Number.MAX_SAFE_INTEGER) - (declaredOrder.get(right.zone.name) ?? Number.MAX_SAFE_INTEGER))
+    .map((band) => band.items)
+}
+
+function itemIsMeal(item: CityKnowledgeItem) {
+  return item.category === 'restaurant' || (item.category === 'food' && !item.tags.includes('咖啡'))
+}
+
+function plannedStopIsMeal(stop: Pick<PlannedStop, 'type'>) {
+  return /午餐|晚餐|本地小吃/.test(stop.type)
+}
+
+function mealIdentity(item: CityKnowledgeItem) {
+  return (item.venueName ?? item.name).replace(/[（）()·/—\-\s]/g, '').toLowerCase()
+}
+
+function assignItemsToDays(items: CityKnowledgeItem[], city: string, dayCount: number, intent: TripIntent, itemLimit: number) {
+  const buckets = Array.from({ length: dayCount }, () => [] as CityKnowledgeItem[])
+  const bands = routeBands(items, city)
+  if (bands.length === 0) return buckets
+
+  bands.forEach((band, bandIndex) => {
+    const dayIndex = bands.length <= dayCount
+      ? Math.min(dayCount - 1, bandIndex)
+      : Math.round((bandIndex * (dayCount - 1)) / (bands.length - 1))
+    const ordered = [...band].sort((left, right) => tripItemPriority(right, intent) - tripItemPriority(left, intent))
+    const required = ordered.filter((item) => intent.mustVisit.some((term) => knowledgeRequirementMatches(item, term)))
+    const preferred = ordered.filter((item) => !required.includes(item)
+      && intent.preferences.some((term) => knowledgeMatches(item, [term])))
+    const meals = ordered.filter(itemIsMeal)
+    const nonMeals = ordered.filter((item) => !itemIsMeal(item))
+    const selected: CityKnowledgeItem[] = []
+    const selectedMealKeys = new Set<string>()
+    const add = (item: CityKnowledgeItem) => {
+      if (selected.includes(item)) return
+      if (itemIsMeal(item)) {
+        const key = mealIdentity(item)
+        if (selectedMealKeys.has(key)) return
+        selectedMealKeys.add(key)
+      }
+      selected.push(item)
+    }
+    required.forEach(add)
+    preferred.filter((item) => !itemIsMeal(item)).slice(0, 2).forEach(add)
+    preferred.filter(itemIsMeal).slice(0, 1).forEach(add)
+    meals.slice(0, 1).forEach(add)
+    nonMeals.forEach(add)
+    buckets[dayIndex].push(...selected.slice(0, Math.max(itemLimit, required.length)))
   })
-  return days
+  return buckets
+}
+
+function scheduleItemRank(item: CityKnowledgeItem) {
+  const type = knowledgeItemType(item)
+  if (type === '午餐') return 1
+  if (type === '晚餐') return 3
+  if (type === '夜景') return 4
+  return 0
+}
+
+function keepMealWithinItemLimit(
+  selectedItems: CityKnowledgeItem[],
+  requiredItems: CityKnowledgeItem[],
+  itemLimit: number,
+) {
+  const limit = Math.max(itemLimit, requiredItems.length)
+  const limited = selectedItems.slice(0, limit)
+  const meal = selectedItems.find(itemIsMeal)
+  if (!meal || limited.some(itemIsMeal)) return limited
+
+  const replaceIndex = [...limited.keys()]
+    .reverse()
+    .find((index) => !requiredItems.includes(limited[index]) && !itemIsMeal(limited[index]))
+  if (replaceIndex !== undefined) limited[replaceIndex] = meal
+  else limited.push(meal)
+  return limited
 }
 
 function buildCityKnowledgeItems(intent: TripIntent, knowledge: CityKnowledge, guideContext: GuideContext | undefined) {
-  const profile = getCityProfile(intent.destination)
   const dietary = intent.dietary ?? emptyDietaryProfile()
   const compatibleKnowledge = knowledge.items.filter((item) => item.category !== 'food' && item.category !== 'restaurant'
-    || foodCompatibilityIssues(`${item.name} ${item.summary}`, dietary, item.dietaryTags).length === 0)
-  const matched = compatibleKnowledge.filter((item) => knowledgeMatches(item, [...intent.mustVisit, ...intent.preferences]))
+    || (isConcreteKnowledgeItem(item) && foodCompatibilityIssues(`${item.name} ${item.summary}`, dietary, item.dietaryTags).length === 0))
+    .filter((item) => isConcreteKnowledgeItem(item))
+  const matched = compatibleKnowledge.filter((item) => intent.mustVisit.some((term) => knowledgeRequirementMatches(item, term))
+    || intent.preferences.some((term) => knowledgeMatches(item, [term])))
   const guideCandidates = guideContext?.candidates ?? []
-  const guideFoodHints = unique(guideCandidates.flatMap((candidate) => candidate.foodHints ?? []))
-    .filter((hint) => foodCompatibilityIssues(hint, dietary, inferFoodTags(hint)).length === 0)
-    .slice(0, 4)
-  const guideLocalHints = unique(guideCandidates.flatMap((candidate) => candidate.localExperienceHints ?? [])).slice(0, 4)
-  const guidePlaceHints = unique(guideCandidates.flatMap((candidate) => candidate.placeHints)).slice(0, 6)
-  const communityItems = [
-    ...guideFoodHints.map((hint, index) => guideFoodHintItem(intent.destination, hint, index, profile, guideCandidates)),
-    ...guideLocalHints.map((hint, index) => guideLocalExperienceHintItem(intent.destination, hint, index, profile, guideCandidates)),
-    ...guidePlaceHints.map((hint, index) => guideHintItem(intent.destination, hint, index, profile, guideCandidates)),
-  ]
+  const guideHints = guideCandidates.flatMap((candidate) => [
+    ...candidate.placeHints,
+    ...(candidate.foodHints ?? []),
+    ...(candidate.localExperienceHints ?? []),
+  ])
+  const guideMatched = compatibleKnowledge.filter((item) => guideHints.some((hint) => {
+    const menu = item.menuHighlights ?? []
+    return item.name.includes(hint) || hint.includes(item.name) || menu.some((dish) => dish.includes(hint) || hint.includes(dish))
+  }))
   const byName = new Map<string, CityKnowledgeItem>()
   const addItem = (item: CityKnowledgeItem) => {
-    if (!byName.has(item.name)) byName.set(item.name, item)
+    const key = item.category === 'food' || item.category === 'restaurant'
+      ? mealIdentity(item)
+      : item.name
+    const existing = byName.get(key)
+    const existingIsVenue = Boolean(existing && existing.name === existing.venueName)
+    const nextIsVenue = item.name === item.venueName
+    if (!existing || (!existingIsVenue && nextIsVenue)) {
+      if (existing) byName.delete(key)
+      byName.set(key, item)
+    }
   }
   if (knowledge.status === 'curated') {
     matched.forEach(addItem)
-    communityItems.forEach(addItem)
+    guideMatched.forEach(addItem)
     compatibleKnowledge.filter((item) => !matched.includes(item)).forEach(addItem)
   } else {
-    communityItems.forEach(addItem)
+    guideMatched.forEach(addItem)
     matched.forEach(addItem)
     compatibleKnowledge.filter((item) => !matched.includes(item)).forEach(addItem)
   }
-  profile.demoLabels.forEach((label, index) => {
-    if (knowledge.status === 'curated' && /咖啡|午餐|晚餐|本地/.test(label)) return
-    if (![...byName.keys()].some((name) => name.includes(label) || label.includes(name))) addItem(generatedAreaItem(intent.destination, label, index, profile))
-  })
   const items = [...byName.values()]
-  let index = 0
-  while (items.length < Math.max(5, intent.durationDays * 5)) {
-    items.push(generatedAreaItem(intent.destination, `${intent.destination}片区自由探索 ${index + 1}`, index + 6, profile))
-    index += 1
+  const requiredTerms = intent.mustVisit
+  const priorityPreferenceTerms = intent.preferences.filter((term) => !['本地美食', '夜景', '室内备选', 'City Walk'].includes(term))
+  const priority = (item: CityKnowledgeItem) => {
+    if (requiredTerms.some((term) => knowledgeRequirementMatches(item, term))) return 2
+    if (priorityPreferenceTerms.some((term) => knowledgeMatches(item, [term]))) return 1
+    return 0
   }
+  items.sort((left, right) => {
+    const leftPriority = priority(left)
+    const rightPriority = priority(right)
+    if (leftPriority !== rightPriority) return rightPriority - leftPriority
+    const leftNamedRestaurant = left.category === 'restaurant' && left.tags.includes('本地餐馆') ? 1 : 0
+    const rightNamedRestaurant = right.category === 'restaurant' && right.tags.includes('本地餐馆') ? 1 : 0
+    return rightNamedRestaurant - leftNamedRestaurant
+  })
   return items
 }
 
@@ -693,12 +675,13 @@ function addMinutes(value: string, amount: number) {
   return `${String(Math.floor(total / 60) % 24).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`
 }
 
-function buildKnowledgeDays(intent: TripIntent, knowledge: CityKnowledge, guideContext: GuideContext | undefined, density: 'easy' | 'match' | 'rich') {
+function buildKnowledgeDays(intent: TripIntent, knowledge: CityKnowledge, guideContext: GuideContext | undefined, density: 'easy' | 'match' | 'rich', selectedHotel: HotelOption) {
   const profile = getCityProfile(intent.destination)
+  const dietary = intent.dietary ?? emptyDietaryProfile()
   const items = buildCityKnowledgeItems(intent, knowledge, guideContext)
   const dayCount = Math.max(1, intent.durationDays)
-  const buckets = Array.from({ length: dayCount }, () => [] as CityKnowledgeItem[])
-  items.forEach((item, index) => buckets[index % dayCount].push(item))
+  const itemLimit = density === 'easy' ? 4 : 6
+  const buckets = assignItemsToDays(items, intent.destination, dayCount, intent, itemLimit)
   const days: Record<string, PlannedStop[]> = {}
 
   buckets.forEach((dayItems, dayIndex) => {
@@ -723,32 +706,67 @@ function buildKnowledgeDays(intent: TripIntent, knowledge: CityKnowledge, guideC
         factState: intent.arrivalLocation ? 'estimated' : 'estimated', factSource: intent.arrivalLocation ? '用户输入的到达锚点' : '城市中心占位锚点',
       }))
     } else {
-      const hotel = selectHotelOption(knowledge, intent.budget, intent.nights)
       addStop(makeStop({
-        id: `${intent.destination}-hotel-day-${dayNumber}`, time: cursor, name: hotel.name, type: '住宿', stay: '15min', budget: midpoint(hotel.nightly),
-        transport: '从上一片区返回约 20 分钟', note: `${hotel.summary} ${intent.nights > 0 ? `连续 ${intent.nights} 晚参考价 ¥${midpoint(hotel.nightly) * intent.nights}。` : ''}`,
-        lng: profile.mapCenter[0], lat: profile.mapCenter[1], durationMinutes: 15, travelFromPreviousMinutes: 0, zone: hotel.area, mode: 'walk', fixed: true,
-        factState: hotel.verified ? 'verified' : 'estimated', factSource: `${hotel.source.label}（实时库存和价格需核验）`,
+        id: `${intent.destination}-hotel-day-${dayNumber}`, time: cursor, name: selectedHotel.name, type: '住宿', stay: '15min', budget: midpoint(selectedHotel.nightly), hotelOptionId: selectedHotel.id,
+        transport: '从上一片区返回约 20 分钟', note: `${selectedHotel.summary} ${intent.nights > 0 ? `连续 ${intent.nights} 晚参考价 ¥${midpoint(selectedHotel.nightly) * intent.nights}。` : ''}`,
+        lng: profile.mapCenter[0], lat: profile.mapCenter[1], durationMinutes: 15, travelFromPreviousMinutes: 0, zone: selectedHotel.area, mode: 'walk', fixed: true,
+        factState: selectedHotel.verified ? 'verified' : 'estimated', factSource: `${selectedHotel.source.label}（价格和房态按当天公开信息为准）`,
       }))
     }
 
     if (isFirst) {
-      const hotel = selectHotelOption(knowledge, intent.budget, intent.nights)
       addStop(makeStop({
-        id: `${intent.destination}-hotel-check-in`, time: addMinutes(cursor, 25), name: hotel.name, type: '住宿', stay: '30min', budget: midpoint(hotel.nightly),
-        transport: '步行 / 地铁约 20 分钟', note: `${hotel.summary} ${intent.nights > 0 ? `连续 ${intent.nights} 晚参考价 ¥${midpoint(hotel.nightly) * intent.nights}，实际以预订平台为准。` : ''}`,
-        lng: profile.mapCenter[0], lat: profile.mapCenter[1], durationMinutes: 30, travelFromPreviousMinutes: 25, zone: hotel.area, mode: 'metro', fixed: true,
-        factState: hotel.verified ? 'verified' : 'estimated', factSource: `${hotel.source.label}（实时库存和价格需核验）`,
+        id: `${intent.destination}-hotel-check-in`, time: addMinutes(cursor, 25), name: selectedHotel.name, type: '住宿', stay: '30min', budget: midpoint(selectedHotel.nightly), hotelOptionId: selectedHotel.id,
+        transport: '步行 / 地铁约 20 分钟', note: `${selectedHotel.summary} ${intent.nights > 0 ? `连续 ${intent.nights} 晚参考价 ¥${midpoint(selectedHotel.nightly) * intent.nights}，实际以酒店当天公开信息为准。` : ''}`,
+        lng: profile.mapCenter[0], lat: profile.mapCenter[1], durationMinutes: 30, travelFromPreviousMinutes: 25, zone: selectedHotel.area, mode: 'metro', fixed: true,
+        factState: selectedHotel.verified ? 'verified' : 'estimated', factSource: `${selectedHotel.source.label}（价格和房态按当天公开信息为准）`,
       }))
     }
 
-    const itemLimit = density === 'easy' ? 4 : density === 'rich' ? 6 : 5
-    const selectedItems = dayItems.slice(0, itemLimit)
-    const lunches = selectedItems.filter((item) => knowledgeItemType(item) === '午餐')
-    const dinners = selectedItems.filter((item) => knowledgeItemType(item) === '晚餐')
-    const nightItems = selectedItems.filter((item) => knowledgeItemType(item) === '夜景')
-    const otherItems = selectedItems.filter((item) => !lunches.includes(item) && !dinners.includes(item) && !nightItems.includes(item))
-    ;[...lunches, ...otherItems, ...dinners, ...nightItems].forEach((item) => {
+    const requiredItems = dayItems.filter((item) => intent.mustVisit.some((term) => knowledgeRequirementMatches(item, term)))
+    const preferredItems = dayItems.filter((item) => !requiredItems.includes(item)
+      && intent.preferences.some((term) => knowledgeMatches(item, [term])))
+    const mealItems = dayItems.filter((item) => itemIsMeal(item) && !requiredItems.includes(item) && !preferredItems.includes(item))
+    const requiredOrders = requiredItems.map((item) => getCityRouteZone(intent.destination, item.name, item.area).order)
+    const alignedDayItems = requiredOrders.length === 0
+      ? dayItems
+      : dayItems.filter((item) => {
+        const order = getCityRouteZone(intent.destination, item.name, item.area).order
+        return order >= Math.min(...requiredOrders) && order <= Math.max(...requiredOrders)
+      })
+    const alignedPreferredItems = preferredItems.filter((item) => alignedDayItems.includes(item))
+    const alignedMealItems = mealItems.filter((item) => alignedDayItems.includes(item))
+    const selectedItems: CityKnowledgeItem[] = []
+    const selectedMealKeys = new Set<string>()
+    const hasRequiredMeal = intent.mustVisit.some((term) => items.some((item) => itemIsMeal(item) && knowledgeRequirementMatches(item, term)))
+    let optionalMealAdded = false
+    ;[...requiredItems, ...alignedPreferredItems, ...alignedMealItems, ...alignedDayItems].forEach((item) => {
+      if (selectedItems.includes(item)) return
+      if (itemIsMeal(item)) {
+        const key = mealIdentity(item)
+        if (selectedMealKeys.has(key)) return
+        if (!requiredItems.includes(item)) {
+          if (hasRequiredMeal || optionalMealAdded) return
+          optionalMealAdded = true
+        }
+        selectedMealKeys.add(key)
+      }
+      selectedItems.push(item)
+    })
+    const itemsForDay = keepMealWithinItemLimit(selectedItems, requiredItems, itemLimit)
+    const orderedItems = [...itemsForDay].sort((left, right) => {
+      const leftZone = getCityRouteZone(intent.destination, left.name, left.area)
+      const rightZone = getCityRouteZone(intent.destination, right.name, right.area)
+      const leftRequired = intent.mustVisit.some((term) => knowledgeRequirementMatches(left, term)) ? 1 : 0
+      const rightRequired = intent.mustVisit.some((term) => knowledgeRequirementMatches(right, term)) ? 1 : 0
+      const leftMeal = itemIsMeal(left)
+      const rightMeal = itemIsMeal(right)
+      const leftNight = scheduleItemRank(left) === 4
+      const rightNight = scheduleItemRank(right) === 4
+      const mealBeforeNight = leftMeal && rightNight ? -1 : leftNight && rightMeal ? 1 : 0
+      return leftZone.order - rightZone.order || mealBeforeNight || rightRequired - leftRequired || scheduleItemRank(left) - scheduleItemRank(right)
+    })
+    orderedItems.forEach((item) => {
       const travel = previous && previous.zone === item.area ? 10 : previous ? 25 : 0
       const mode: TravelMode = travel <= 12 ? 'walk' : 'metro'
       let time = addMinutes(cursor, travel)
@@ -759,7 +777,7 @@ function buildKnowledgeDays(intent: TripIntent, knowledge: CityKnowledge, guideC
       if (item.opening && timeToMinutes(time) < timeToMinutes(item.opening.from)) time = item.opening.from
       const latestEnd = isLast && intent.departureTime ? timeToMinutes(intent.departureTime) - 30 : 22 * 60
       if (timeToMinutes(time) + Math.min(item.durationMinutes, type === '景点' || type === '展览' ? 120 : 90) > latestEnd) return
-      const stop = knowledgeItemToStop(item, intent.destination, profile, time, travel, mode)
+      const stop = knowledgeItemToStop(item, intent.destination, profile, time, travel, mode, dietary)
       addStop(stop)
     })
 
@@ -776,13 +794,42 @@ function buildKnowledgeDays(intent: TripIntent, knowledge: CityKnowledge, guideC
     }
     days[`Day ${dayNumber}`] = stops
   })
-  return days
+  if (Object.values(days).flat().some(plannedStopIsMeal)) return days
+
+  const mealCandidates = [...items.filter(itemIsMeal)].sort((left, right) => {
+    const leftRequired = intent.mustVisit.some((term) => knowledgeRequirementMatches(left, term)) ? 1 : 0
+    const rightRequired = intent.mustVisit.some((term) => knowledgeRequirementMatches(right, term)) ? 1 : 0
+    return rightRequired - leftRequired || Number(right.category === 'restaurant') - Number(left.category === 'restaurant')
+  })
+  const slots = Object.entries(days).flatMap(([day, stops]) => stops.map((stop, index) => ({ day, stops, stop, index })))
+    .filter(({ stop }) => !stop.fixed && !isHotelStop(stop) && !intent.mustVisit.some((term) => matchesMustVisit(stop, term)))
+  if (mealCandidates.length === 0 || slots.length === 0) return days
+
+  const mealSlot = mealCandidates.flatMap((candidate) => slots.map((slot) => {
+    const candidateZone = getCityRouteZone(intent.destination, candidate.name, candidate.area)
+    const slotZone = getCityRouteZone(intent.destination, slot.stop.name, slot.stop.area ?? slot.stop.zone)
+    return { candidate, slot, distance: Math.abs(slotZone.order - candidateZone.order) }
+  })).filter((option) => option.distance === 0).sort((left, right) => left.distance - right.distance
+    || Number(intent.mustVisit.some((term) => knowledgeRequirementMatches(right.candidate, term))) - Number(intent.mustVisit.some((term) => knowledgeRequirementMatches(left.candidate, term)))
+    || Number(right.candidate.category === 'restaurant') - Number(left.candidate.category === 'restaurant')
+    || Number(left.slot.day.replace(/\D/g, '')) - Number(right.slot.day.replace(/\D/g, ''))
+    || left.slot.index - right.slot.index)[0]
+  if (!mealSlot) return days
+
+  const { candidate: meal, slot } = mealSlot
+  const replacement = knowledgeItemToStop(meal, intent.destination, profile, slot.stop.time, slot.stop.travelFromPreviousMinutes, slot.stop.mode, dietary)
+  const replacementStop = meal.category === 'restaurant'
+    ? { ...replacement, type: timeToMinutes(slot.stop.time) < 16 * 60 ? '午餐' : '晚餐' }
+    : replacement
+  return {
+    ...days,
+    [slot.day]: slot.stops.map((stop, index) => index === slot.index ? replacementStop : stop),
+  }
 }
 
-function knowledgeBudget(days: Record<string, PlannedStop[]>, intent: TripIntent, knowledge: CityKnowledge, density: 'easy' | 'match' | 'rich'): Omit<BudgetBreakdown, 'total'> {
+function knowledgeBudget(days: Record<string, PlannedStop[]>, intent: TripIntent, selectedHotel: HotelOption, density: 'easy' | 'match' | 'rich'): Omit<BudgetBreakdown, 'total'> {
   const allStops = Object.values(days).flat()
-  const hotel = selectHotelOption(knowledge, intent.budget, intent.nights)
-  const lodging = midpoint(hotel.nightly) * intent.nights
+  const lodging = midpoint(selectedHotel.nightly) * intent.nights
   const coffee = allStops.filter((stop) => stop.type.includes('咖啡')).reduce((sum, stop) => sum + stop.budget, 0)
   const meals = allStops.filter((stop) => /午餐|晚餐|小吃/.test(stop.type)).reduce((sum, stop) => sum + stop.budget, 0)
   const tickets = allStops.filter((stop) => /景点|展览|园林/.test(stop.type)).reduce((sum, stop) => sum + stop.budget, 0)
@@ -814,7 +861,7 @@ const breakdown = (values: Omit<BudgetBreakdown, 'total'>): BudgetBreakdown => (
 
 function matchesMustVisit(stop: PlannedStop, requirement: string) {
   if (requirement === '展览') return stop.type.includes('展') || /美术馆|博物馆/.test(stop.name)
-  return stop.name.includes(requirement) || stop.type.includes(requirement)
+  return stop.name.includes(requirement) || stop.type.includes(requirement) || Boolean(stop.searchKeyword?.includes(requirement))
 }
 
 export function validatePlan(plan: Pick<GeneratedPlan, 'days' | 'intent' | 'budget' | 'budgetLimit' | 'dates'>): ValidationReport {
@@ -851,7 +898,7 @@ export function validatePlan(plan: Pick<GeneratedPlan, 'days' | 'intent' | 'budg
         }
       }
       if (/午餐|晚餐|本地小吃|餐馆|餐饮/.test(stop.type)) {
-        const foodIssues = foodCompatibilityIssues(`${stop.name} ${stop.note}`, dietary, stop.dietaryTags)
+        const foodIssues = foodCompatibilityIssues(stop.name, dietary, stop.dietaryTags)
         if (foodIssues.length > 0) {
           dietaryValid = false
           issues.push(`${day}：${stop.name} 与饮食限制冲突（${foodIssues.join('、')}）。`)
@@ -893,9 +940,14 @@ function createPlan(
   difference: string,
   budgetValues: Omit<BudgetBreakdown, 'total'>,
   knowledge: CityKnowledge,
+  hotelRecommendations: HotelOption[],
+  selectedHotel: HotelOption,
   guideContext?: GuideContext,
 ): GeneratedPlan {
-  const budgetBreakdown = breakdown(budgetValues)
+  const budgetBreakdown = breakdown({
+    ...budgetValues,
+    lodging: midpoint(selectedHotel.nightly) * intent.nights,
+  })
   const plan: GeneratedPlan = {
     id,
     label,
@@ -913,16 +965,19 @@ function createPlan(
     budgetBreakdown,
     intent,
     knowledge,
+    hotelRecommendations,
+    selectedHotelId: selectedHotel.id,
     ...(guideContext && guideContext.candidates.length > 0 ? { guideContext } : {}),
     validation: { passed: false, score: 0, checks: [], issues: [] },
     evidence: [
-      `地点为${intent.destination}的城市结构化候选地点或区域。`,
+      `地点为${intent.destination}；最终行程只使用走走知识库中可搜索的具体地点，地图位置由高德实时 POI 核验。`,
       knowledge.intro,
       ...(guideContext && guideContext.candidates.length > 0
-        ? [`参考了 ${guideContext.candidates.length} 条${guidePlatformsLabel(guideContext.candidates)}社区攻略线索；仅用于体验排序，不把内容中的价格、营业时间或路线当成事实。`]
+        ? [`参考了 ${guideContext.candidates.length} 条公开地点线索；仅用于匹配走走知识库中的具体地点。`]
         : []),
-      '交通耗时、餐饮价格和门票为本地演示估算，不是实时库存或订单。',
-      '出行前应重新核对营业时间、预约规则和当天路况。',
+      `住宿默认选择：${selectedHotel.name}；按住宿片区、预算和路线匹配。`,
+      '交通耗时、餐饮价格和门票为规划参考，不是实时库存或订单。',
+      '路线是可编辑规划，时间与预算可按你的安排调整。',
     ],
   }
   return { ...plan, validation: validatePlan(plan) }
@@ -930,57 +985,18 @@ function createPlan(
 
 export function generatePlans(intent: TripIntent, guideContext?: GuideContext): GeneratedPlan[] {
   const knowledge = getCityKnowledge(intent.destination)
-  const useLegacyShanghai = intent.destination === '上海'
-    && intent.durationDays === 3
-    && intent.mustVisit.includes('武康路')
-    && intent.arrivalLocation === '虹桥火车站'
-  if (!useLegacyShanghai) {
-    const variants: Array<{ id: 'match' | 'easy' | 'rich'; label: string; density: 'easy' | 'match' | 'rich'; walking: string; difference: string }> = [
-      { id: 'match', label: '最匹配', density: 'match', walking: '片区优先', difference: '把必去地点、本地小吃、餐厅和住宿档位放进同一条不绕路的时间轴。' },
-      { id: 'easy', label: '最轻松', density: 'easy', walking: '少走动', difference: '每天减少一个非必要停留，保留完整用餐和自由探索时间。' },
-      { id: 'rich', label: '体验最丰富', density: 'rich', walking: '体验更多', difference: '增加一段夜景或本地体验，但仍按预算和返程锚点留缓冲。' },
-    ]
-    return variants.map((variant) => {
-      const days = buildKnowledgeDays(intent, knowledge, guideContext, variant.density)
-      const budgetValues = knowledgeBudget(days, intent, knowledge, variant.density)
-      return createPlan(variant.id, variant.label, days, intent, variant.walking, variant.difference, budgetValues, knowledge, guideContext)
-    })
-  }
-  const base = applyLegacyGuideHints(adaptDaysForCity(realShanghaiDays(), intent), intent, guideContext)
-  const city = intent.destination
-  const profile = getCityProfile(city)
-  const easy = cloneDays(base)
-  easy['Day 2'] = easy['Day 2'].filter((stop) => stop.id !== 'pudong-riverside')
-  easy['Day 3'] = easy['Day 3'].filter((stop) => stop.id !== 'sinan-bookstore')
-
-  const rich = cloneDays(base)
-  rich['Day 2'].push(makeStop({
-    id: 'suzhou-creek-night',
-    time: '20:15',
-    name: city === '上海' ? '苏州河夜景' : profile.stopNames?.['suzhou-creek-night'] ?? `${city}夜景`,
-    type: '夜景',
-    stay: '1h',
-    budget: 0,
-    transport: '回酒店约 20 分钟，时间待核验',
-    note: '只在体力允许时加这一站，作为丰富方案的可选夜间收尾。',
-    lng: city === '上海' ? 121.462 : profile.mapCenter[0] + 0.012,
-    lat: city === '上海' ? 31.246 : profile.mapCenter[1] + 0.006,
-    durationMinutes: 60,
-    travelFromPreviousMinutes: 25,
-    zone: city === '上海' ? '苏河' : `${city}参考片区`,
-    mode: city === '上海' ? 'taxi' : 'metro',
-    factState: 'estimated',
-    factSource: `${city}公共夜景候选；路线和开放状态需出行前复核`,
-  }))
-
-  const guideNote = `按${city}的结构化城市知识库候选地点安排。`
-  const lodging = city === '上海' ? 980 : 760
-
-  return [
-    createPlan('match', '最匹配', base, intent, '7.4 km', `${guideNote}保留到达日和返程日缓冲。`, { lodging, meals: 790, transport: 260, tickets: 100, coffee: 85, buffer: 500 }, knowledge, guideContext),
-    createPlan('easy', '最轻松', easy, intent, '5.6 km', `${guideNote}减少两个非必要停留，保留必去地点和休息时间。`, { lodging, meals: 650, transport: 220, tickets: 100, coffee: 60, buffer: 500 }, knowledge, guideContext),
-    createPlan('rich', '体验最丰富', rich, intent, '9.1 km', `${guideNote}增加一段夜间体验，但不改变返程日的安全缓冲。`, { lodging, meals: 920, transport: 340, tickets: 180, coffee: 120, buffer: 550 }, knowledge, guideContext),
+  const hotelRecommendations = getHotelRecommendations(knowledge, intent, guideContext)
+  const selectedHotel = hotelRecommendations[0] ?? selectHotelOption(knowledge, intent.budget, intent.nights)
+  const variants: Array<{ id: 'match' | 'easy' | 'rich'; label: string; density: 'easy' | 'match' | 'rich'; walking: string; difference: string }> = [
+    { id: 'match', label: '最匹配', density: 'match', walking: '片区优先', difference: '把必去地点、具体餐饮门店和住宿档位放进同一条不绕路的时间轴。' },
+    { id: 'easy', label: '最轻松', density: 'easy', walking: '少走动', difference: '每天减少一个非必要停留，保留完整用餐和缓冲时间。' },
+    { id: 'rich', label: '体验最丰富', density: 'rich', walking: '体验更多', difference: '增加一段已命名的城市体验，但仍按预算和返程锚点留缓冲。' },
   ]
+  return variants.map((variant) => {
+    const days = buildKnowledgeDays(intent, knowledge, guideContext, variant.density, selectedHotel)
+    const budgetValues = knowledgeBudget(days, intent, selectedHotel, variant.density)
+    return createPlan(variant.id, variant.label, days, intent, variant.walking, variant.difference, budgetValues, knowledge, hotelRecommendations, selectedHotel, guideContext)
+  })
 }
 
 const replacementCatalog: Record<string, { candidate: ReplacementCandidate; patch: Partial<PlannedStop> }> = {
@@ -1009,6 +1025,16 @@ const replacementCatalog: Record<string, { candidate: ReplacementCandidate; patc
 export function getReplacementCandidates(plan: GeneratedPlan, placeId: string): ReplacementCandidate[] {
   const place = Object.values(plan.days).flat().find((item) => item.id === placeId)
   if (!place) return []
+  if (isHotelStop(place)) {
+    const currentHotelId = place.hotelOptionId ?? plan.selectedHotelId
+    const options = getHotelRecommendationsForPlan(plan)
+    return [...options.filter((option) => option.id !== currentHotelId && option.name !== place.name), ...options.filter((option) => option.id === currentHotelId || option.name === place.name)]
+      .map((option) => ({
+        name: option.name,
+        meta: hotelOptionMeta(option),
+        reason: hotelOptionReason(option),
+      }))
+  }
   if (place.type.includes('咖啡')) return [replacementCatalog['衡山和集'].candidate, replacementCatalog['Seesaw Coffee（武康路）'].candidate]
   if (place.type.includes('展')) return [replacementCatalog['浦东美术馆'].candidate, replacementCatalog['上海自然博物馆'].candidate]
   if (place.name.includes('外滩')) return [replacementCatalog['外白渡桥'].candidate, replacementCatalog['浦东美术馆'].candidate]
@@ -1024,7 +1050,61 @@ export function updateGeneratedPlan(plan: GeneratedPlan, days: Record<string, Pl
   }
 }
 
+export function getHotelRecommendationsForPlan(plan: GeneratedPlan) {
+  return plan.hotelRecommendations?.length
+    ? plan.hotelRecommendations
+    : getHotelRecommendations(plan.knowledge, plan.intent, plan.guideContext)
+}
+
+function hotelOptionForPlan(plan: GeneratedPlan, name: string) {
+  return getHotelRecommendationsForPlan(plan).find((option) => option.name === name)
+}
+
+export function replacePlanHotel(plan: GeneratedPlan, placeId: string, replacementName: string): GeneratedPlan {
+  const target = Object.values(plan.days).flat().find((place) => place.id === placeId)
+  const replacement = hotelOptionForPlan(plan, replacementName)
+  if (!target || !isHotelStop(target) || !replacement) return plan
+  const nightly = midpoint(replacement.nightly)
+  const days = Object.fromEntries(Object.entries(cloneDays(plan.days)).map(([day, stops]) => [day, stops.map((stop) => {
+    if (!isHotelStop(stop)) return stop
+    const isLuggage = stop.type === '取行李'
+    return {
+      ...stop,
+      name: isLuggage ? `${replacement.name}取行李` : replacement.name,
+      area: replacement.area,
+      zone: replacement.area,
+      hotelOptionId: replacement.id,
+      budget: stop.type === '住宿' ? nightly : 0,
+      note: stop.type === '住宿'
+        ? `${replacement.summary} ${plan.nights > 0 ? `连续 ${plan.nights} 晚参考价 ¥${nightly * plan.nights}，实际以酒店当天公开信息为准。` : ''}`
+        : `${stop.note} 当前住宿：${replacement.name}。`,
+      searchKeyword: replacement.name,
+      verified: replacement.verified,
+      factState: replacement.verified ? 'verified' : 'estimated',
+      factSource: `${replacement.source.label}（价格、房态和准确位置按当天公开信息为准）`,
+    }
+  })])) as Record<string, PlannedStop[]>
+  const budgetBreakdown = breakdown({
+    lodging: nightly * plan.nights,
+    meals: plan.budgetBreakdown.meals,
+    transport: plan.budgetBreakdown.transport,
+    tickets: plan.budgetBreakdown.tickets,
+    coffee: plan.budgetBreakdown.coffee,
+    buffer: plan.budgetBreakdown.buffer,
+  })
+  const nextPlan = {
+    ...plan,
+    days,
+    budgetBreakdown,
+    budget: budgetBreakdown.total,
+    selectedHotelId: replacement.id,
+  }
+  return updateGeneratedPlan(nextPlan, days)
+}
+
 export function replacePlanPlace(plan: GeneratedPlan, placeId: string, replacementName: string): GeneratedPlan {
+  const target = Object.values(plan.days).flat().find((place) => place.id === placeId)
+  if (target && isHotelStop(target)) return replacePlanHotel(plan, placeId, replacementName)
   const replacement = replacementCatalog[replacementName]
   if (!replacement) return plan
   const days = cloneDays(plan.days)
@@ -1043,11 +1123,11 @@ function readSession<T>(key: string): T | null {
 }
 
 export function readStoredUnderstanding() {
-  return readSession<TripUnderstanding>(TRIP_UNDERSTANDING_STORAGE)
+  return parseTripUnderstanding(readSession<unknown>(TRIP_UNDERSTANDING_STORAGE))
 }
 
 export function readStoredPlans() {
-  const value = readSession<GeneratedPlan[]>(TRIP_PLANS_STORAGE)
+  const value = parseGeneratedPlans(readSession<unknown>(TRIP_PLANS_STORAGE))
   return value && value.length > 0 ? value : null
 }
 

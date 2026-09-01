@@ -11,7 +11,7 @@
   --color-rule-strong: oklch(83% 0.004 250);
   --color-accent: oklch(18% 0.005 250);
   --color-accent-ink: oklch(100% 0 0);
-  --color-focus: oklch(48% 0.16 250);
+  --color-focus: oklch(36% 0.006 250);
   --color-error: oklch(55% 0.19 25);
   --color-success: oklch(44% 0.12 150);
   --color-bot-notification: #2496e8;
@@ -28,6 +28,16 @@
   --space-xl: 32px;
   --space-2xl: 40px;
   --space-3xl: 64px;
+  /* Shared page-layout semantics. The presentation frame owns the 54px
+     status chrome; regular pages add only the visual gap below it. */
+  --page-horizontal-padding: 20px;
+  --page-header-top-spacing: 8px;
+  --page-header-bottom-spacing: 16px;
+  --page-section-gap: 20px;
+  --presentation-status-height: 54px;
+  --presentation-safe-spacing: 14px;
+  --presentation-height: 874px;
+  --presentation-content-top: calc(var(--presentation-status-height) + var(--presentation-safe-spacing) + var(--rule-thin));
   --text-caption: 12px;
   --text-footnote: 13px;
   --text-body: 17px;

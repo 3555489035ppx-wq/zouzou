@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { motion } from 'framer-motion'
 import { ZouTabBar } from './ui'
 import { useAppStore } from '../stores/appStore'
@@ -9,6 +9,7 @@ export const AppShell = ({ children, showTabBar = false, immersive = false }: { 
   const location = useLocation()
   const shellRef = useRef<HTMLElement>(null)
   const pageRef = useRef<HTMLDivElement>(null)
+  const [online, setOnline] = useState(() => typeof navigator === 'undefined' ? true : navigator.onLine)
   const [searchParams] = useSearchParams()
   // Presentation mode is an iframe. Relying only on the query flag meant a
   // tab click (which navigates to a clean route) dropped the safe-area inset
@@ -21,8 +22,15 @@ export const AppShell = ({ children, showTabBar = false, immersive = false }: { 
   useEffect(() => {
     if (embedded && window.parent !== window) window.parent.postMessage({ type: 'zouzou-route', pathname: location.pathname }, window.location.origin)
   }, [embedded, location.pathname])
+  useEffect(() => {
+    const update = () => setOnline(navigator.onLine)
+    window.addEventListener('online', update)
+    window.addEventListener('offline', update)
+    return () => { window.removeEventListener('online', update); window.removeEventListener('offline', update) }
+  }, [])
   return (
     <main ref={shellRef} className={`app-shell ${showTabBar ? 'has-tabbar' : ''} ${immersive ? 'is-immersive' : ''} ${embedded ? 'is-embedded' : ''}`}>
+      {!online ? <div className="offline-banner" role="status">当前离线，已保存内容仍可查看</div> : null}
       <motion.div ref={pageRef} className="app-page" initial={{ opacity: 0, y: reducedMotion ? 0 : 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: reducedMotion ? 0.1 : 0.26, ease: [0.16, 1, 0.3, 1] }}>
         {children}
       </motion.div>

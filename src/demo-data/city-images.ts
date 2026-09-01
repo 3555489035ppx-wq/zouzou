@@ -1,3 +1,6 @@
+import { regionalCityImages } from './regional-city-images'
+import { cityCoverImages } from './city-cover-images'
+
 export type CityImage = {
   src: string
   alt: string
@@ -166,14 +169,14 @@ export const cityImages: Record<string, CityImage> = {
     downloadUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/20260222_Kunming_Dianchi_Lake%2C_looking_at_the_West_Mountain_from_the_East_Bank.jpg/1280px-20260222_Kunming_Dianchi_Lake%2C_looking_at_the_West_Mountain_from_the_East_Bank.jpg',
   },
   三亚: {
-    src: '/assets/cities/sanya-beach.jpg',
-    alt: '三亚海滩与热带海岸',
-    landmark: '三亚海岸',
-    sourceUrl: 'https://commons.wikimedia.org/wiki/File:Beaches_in_Sanya,_Hainan,_China2.jpg',
-    credit: 'Huangdan2060',
+    src: '/assets/locations/sanya-bay-sunrise.jpg',
+    alt: '三亚湾沙滩与城市海湾天际线',
+    landmark: '三亚湾',
+    sourceUrl: 'https://commons.wikimedia.org/wiki/File:Sanya_Bay_-_01.jpg',
+    credit: 'Anna Frodesiak',
     license: 'CC0',
     licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/deed.en',
-    downloadUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/Beaches_in_Sanya%2C_Hainan%2C_China2.jpg/1280px-Beaches_in_Sanya%2C_Hainan%2C_China2.jpg',
+    downloadUrl: 'https://upload.wikimedia.org/wikipedia/commons/c/c1/Sanya_Bay_-_01.jpg',
   },
   桂林: {
     src: '/assets/cities/guilin-scenery.jpg',
@@ -215,12 +218,13 @@ export const cityImages: Record<string, CityImage> = {
     licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0',
     downloadUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/1_tianzishan_wulingyuan_zhangjiajie_2012.jpg/1280px-1_tianzishan_wulingyuan_zhangjiajie_2012.jpg',
   },
+  ...regionalCityImages,
 }
 
 /**
- * Place-level photos keep a route and its social cards from reusing one city
- * cover for every stop. These are real Shanghai location photos downloaded
- * from Wikimedia Commons; attribution is recorded in docs/THIRD_PARTY.md.
+ * Place-level photos keep a route and its discovery cards from reusing one
+ * generic city cover. These are real location photos downloaded from Wikimedia
+ * Commons; attribution is recorded in the mapping and source manifest.
  */
 const shanghaiLocationImages: CityImage[] = [
   {
@@ -275,7 +279,94 @@ const shanghaiLocationImages: CityImage[] = [
   },
 ]
 
-const cityImageGalleries: Record<string, CityImage[]> = { 上海: shanghaiLocationImages }
+const sanyaLocationImages: CityImage[] = [
+  {
+    src: '/assets/locations/sanya-bay-sunrise.jpg',
+    alt: '三亚湾沙滩与城市海湾天际线',
+    landmark: '三亚湾',
+    sourceUrl: 'https://commons.wikimedia.org/wiki/File:Sanya_Bay_-_01.jpg',
+    credit: 'Anna Frodesiak',
+    license: 'CC0',
+    licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/deed.en',
+    downloadUrl: 'https://upload.wikimedia.org/wikipedia/commons/c/c1/Sanya_Bay_-_01.jpg',
+  },
+  {
+    src: '/assets/locations/sanya-yalong-bay.jpg',
+    alt: '亚龙湾热带海岸与椰林',
+    landmark: '亚龙湾',
+    sourceUrl: 'https://commons.wikimedia.org/wiki/File:Strand_in_der_Yalong_Bay_Bucht_in_Sanya_auf_der_Insel_Hainan.jpg',
+    credit: 'Kusafiri',
+    license: 'CC BY-SA 3.0',
+    licenseUrl: 'https://creativecommons.org/licenses/by-sa/3.0',
+    downloadUrl: 'https://upload.wikimedia.org/wikipedia/commons/8/8b/Strand_in_der_Yalong_Bay_Bucht_in_Sanya_auf_der_Insel_Hainan.jpg',
+  },
+  {
+    src: '/assets/locations/sanya-wuzhizhou.jpg',
+    alt: '蜈支洲岛海岸与清澈海水',
+    landmark: '蜈支洲岛',
+    sourceUrl: 'https://commons.wikimedia.org/wiki/File:Wuzhizhou_Island_seaside_scenery.jpg',
+    credit: '我乃野云鹤',
+    license: 'CC BY-SA 4.0',
+    licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0',
+    downloadUrl: 'https://upload.wikimedia.org/wikipedia/commons/0/00/Wuzhizhou_Island_seaside_scenery.jpg',
+  },
+  {
+    src: '/assets/locations/sanya-seafood-noodle.jpg',
+    alt: '三亚糟粕醋海鲜粉',
+    landmark: '糟粕醋海鲜粉',
+    sourceUrl: 'https://commons.wikimedia.org/wiki/File:Zaopocu_seafood_rice_noodle_soup_at_Qiansheng_Hainanfen,_Sanya_(20230326124453).jpg',
+    credit: 'N509FZ',
+    license: 'CC BY-SA 4.0',
+    licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0',
+    downloadUrl: 'https://upload.wikimedia.org/wikipedia/commons/1/10/Zaopocu_seafood_rice_noodle_soup_at_Qiansheng_Hainanfen%2C_Sanya_(20230326124453).jpg',
+  },
+]
+
+const sanyaAdditionalImages: CityImage[] = [
+  {
+    src: '/assets/locations/sanya-tianya-haijiao.jpg', alt: '天涯海角海岸巨石与海面', landmark: '天涯海角',
+    sourceUrl: 'https://commons.wikimedia.org/wiki/File:Tianya_Haijiao_-_01.jpg', credit: 'Anna Frodesiak', license: 'CC0', licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/deed.en',
+    downloadUrl: 'https://upload.wikimedia.org/wikipedia/commons/0/01/Tianya_Haijiao_-_01.jpg',
+  },
+  {
+    src: '/assets/locations/sanya-phoenix-island.jpg', alt: '凤凰岛与三亚湾海岸线', landmark: '凤凰岛',
+    sourceUrl: 'https://commons.wikimedia.org/wiki/File:Phoenix_Island,_Sanya_Bay_-_01.jpg', credit: 'Anna Frodesiak', license: 'CC0', licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/deed.en',
+    downloadUrl: 'https://upload.wikimedia.org/wikipedia/commons/4/4c/Phoenix_Island%2C_Sanya_Bay_-_01.jpg',
+  },
+  {
+    src: '/assets/locations/sanya-dadonghai.jpg', alt: '大东海沙滩与热带海岸', landmark: '大东海',
+    sourceUrl: 'https://commons.wikimedia.org/wiki/File:Dadonghai_beach_Sanya.jpg', credit: 'Kellykaneshiro', license: 'CC BY 3.0', licenseUrl: 'https://creativecommons.org/licenses/by/3.0',
+    downloadUrl: 'https://upload.wikimedia.org/wikipedia/commons/a/ab/Dadonghai_beach_Sanya.jpg',
+  },
+  {
+    src: '/assets/locations/sanya-bay-03.jpg', alt: '三亚湾椰林与海湾景色', landmark: '三亚湾椰林',
+    sourceUrl: 'https://commons.wikimedia.org/wiki/File:Sanya_Bay_03.jpg', credit: 'Zhangmoon618', license: 'CC BY-SA 3.0', licenseUrl: 'https://creativecommons.org/licenses/by-sa/3.0',
+    downloadUrl: 'https://upload.wikimedia.org/wikipedia/commons/3/3b/Sanya_Bay_03.jpg',
+  },
+  {
+    src: '/assets/locations/sanya-bay-12.jpg', alt: '三亚湾海边晚霞与城市轮廓', landmark: '三亚湾晚霞',
+    sourceUrl: 'https://commons.wikimedia.org/wiki/File:Sanya_Bay_12.JPG', credit: 'Huangdan2060', license: 'CC BY 3.0', licenseUrl: 'https://creativecommons.org/licenses/by/3.0',
+    downloadUrl: 'https://upload.wikimedia.org/wikipedia/commons/9/92/Sanya_Bay_12.JPG',
+  },
+  {
+    src: '/assets/locations/sanya-bay-23.jpg', alt: '三亚湾海岸步道与海面', landmark: '三亚湾步道',
+    sourceUrl: 'https://commons.wikimedia.org/wiki/File:Sanya_Bay_23.JPG', credit: 'Huangdan2060', license: 'CC BY 3.0', licenseUrl: 'https://creativecommons.org/licenses/by/3.0',
+    downloadUrl: 'https://upload.wikimedia.org/wikipedia/commons/8/8f/Sanya_Bay_23.JPG',
+  },
+  {
+    src: '/assets/locations/sanya-bay-24.jpg', alt: '三亚湾海岸与远山', landmark: '三亚湾远山',
+    sourceUrl: 'https://commons.wikimedia.org/wiki/File:Sanya_Bay_24.JPG', credit: 'Huangdan2060', license: 'CC BY 3.0', licenseUrl: 'https://creativecommons.org/licenses/by/3.0',
+    downloadUrl: 'https://upload.wikimedia.org/wikipedia/commons/e/e8/Sanya_Bay_24.JPG',
+  },
+]
+
+const cityImageGalleries: Record<string, CityImage[]> = Object.fromEntries(
+  Object.keys(cityImages).map((city) => {
+    if (city === '上海') return [city, [...shanghaiLocationImages, ...(cityCoverImages[city] ?? [])]]
+    if (city === '三亚') return [city, [...sanyaLocationImages, ...sanyaAdditionalImages]]
+    return [city, [cityImages[city], ...(cityCoverImages[city] ?? [])]]
+  }),
+) as Record<string, CityImage[]>
 
 export function getCityImage(city: string): CityImage {
   return cityImages[city] ?? cityImages['上海']

@@ -50,7 +50,7 @@ export const ZouNavigationBar = ({ title, back = true, right }: { title?: string
 const tabs = [
   { label: '首页', path: '/home', icon: Home },
   { label: '行程', path: '/trips', icon: Route },
-  { label: '社区', path: '/community', icon: Orbit },
+  { label: '发现', path: '/discover', icon: Orbit },
   { label: '我', path: '/profile', icon: UserRound },
 ]
 
@@ -60,7 +60,7 @@ export const ZouTabBar = () => {
   return (
     <nav className="zou-tabbar" aria-label="主导航">
       {tabs.map((tab) => {
-        const selected = tab.path === '/community'
+        const selected = tab.path === '/discover'
           ? location.pathname.startsWith('/community') || location.pathname.startsWith('/discover')
           : location.pathname === tab.path || (tab.path !== '/home' && location.pathname.startsWith(tab.path))
         const Icon = tab.icon
@@ -110,6 +110,51 @@ export const ZouDaySelector = ({ day, onChange }: { day: string; onChange: (day:
 export const ZouSearchBar = ({ value, onChange, placeholder = '搜索地点、路线或描述' }: { value: string; onChange: (value: string) => void; placeholder?: string }) => (
   <label className="zou-search"><Search aria-hidden="true" /><span className="sr-only">搜索</span><input name="search" autoComplete="off" type="search" value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} />{value ? <button type="button" aria-label="清空搜索" onClick={() => onChange('')}><X /></button> : null}</label>
 )
+
+export const DestinationPicker = ({ value, onChange, name, ariaLabel = '目的地' }: { value: string; onChange: (value: string) => void; name?: string; ariaLabel?: string }) => {
+  const rootRef = useRef<HTMLDivElement>(null)
+  const searchRef = useRef<HTMLInputElement>(null)
+  const listId = `destination-list-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`
+  const [open, setOpen] = useState(false)
+  const [query, setQuery] = useState('')
+  const cities = cityNames.filter((city) => city.includes(query.trim()))
+
+  useEffect(() => {
+    if (open) searchRef.current?.focus()
+  }, [open])
+
+  useEffect(() => {
+    if (!open) return
+    const closeOnOutsidePointer = (event: PointerEvent) => {
+      if (!rootRef.current?.contains(event.target as Node)) setOpen(false)
+    }
+    window.addEventListener('pointerdown', closeOnOutsidePointer)
+    return () => window.removeEventListener('pointerdown', closeOnOutsidePointer)
+  }, [open])
+
+  return (
+    <div className="destination-picker" ref={rootRef}>
+      {name ? <input type="hidden" name={name} value={value} readOnly /> : null}
+      <button
+        type="button"
+        className="destination-picker__trigger"
+        aria-label={ariaLabel}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-controls={open ? listId : undefined}
+        onClick={() => setOpen((current) => !current)}
+      >
+        <span>{value}</span><ChevronDown aria-hidden="true" />
+      </button>
+      {open ? <div className="destination-picker__menu">
+        <div className="destination-picker__search"><Search aria-hidden="true" /><input ref={searchRef} aria-label="搜索目的地" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="搜索城市或目的地" /></div>
+        <div id={listId} className="destination-picker__options" role="listbox" aria-label="目的地列表">
+          {cities.length > 0 ? cities.map((city) => <button type="button" role="option" aria-selected={value === city} className="destination-picker__option" key={city} onClick={() => { onChange(city); setQuery(''); setOpen(false) }}>{city}</button>) : <p className="destination-picker__empty">没有找到这个目的地</p>}
+        </div>
+      </div> : null}
+    </div>
+  )
+}
 
 export const ZouMotionBot = ({ state = 'idle', label, size = 'lg', gaze = null }: { state?: BotState; label?: string; size?: 'sm' | 'lg'; gaze?: Look | null }) => {
   const reducedMotion = useAppStore((s) => s.reducedMotion)
@@ -166,10 +211,10 @@ export const ZouPlanCard = ({ plan, selected, onSelect, onOpen }: { plan: Plan; 
   </article>
 )
 
-export const ZouPlaceCard = ({ place, locked, onLock, onReplace, onDelete, onMore }: { place: Place & { factState?: 'verified' | 'estimated'; factSource?: string }; locked?: boolean; onLock: () => void; onReplace: () => void; onDelete: () => void; onMore?: () => void }) => (
+export const ZouPlaceCard = ({ place, locked, onLock, onReplace, onDelete, onMore }: { place: Place; locked?: boolean; onLock: () => void; onReplace: () => void; onDelete: () => void; onMore?: () => void }) => (
   <article className="place-card">
     <div className="place-card__time">{place.time}</div>
-    <div className="place-card__body"><div><h3>{place.name}</h3><p>{place.type} · 停留 {place.stay} · ¥{place.budget}</p></div><p className="place-card__note">{place.note}</p>{place.factState ? <small className="place-card__source">{place.factState === 'verified' ? '事实已核验' : '候选待核验'} · {place.factSource}</small> : null}<div className="place-card__transport">下一段 · {place.transport}</div></div>
+    <div className="place-card__body"><div><h3>{place.name}</h3><p>{place.type} · 停留 {place.stay} · ¥{place.budget}</p></div><p className="place-card__note">{place.note}</p><div className="place-card__transport">下一段 · {place.transport}</div></div>
     <div className="place-card__actions">{locked ? <button aria-label="解锁地点" aria-pressed="true" onClick={onLock}><Lock /></button> : null}<button onClick={onReplace}>替换</button><button aria-label="更多操作" aria-haspopup="menu" onClick={onMore ?? onDelete}><MoreHorizontal /></button></div>
   </article>
 )
@@ -212,8 +257,10 @@ export const CityPicker = ({ open, onClose }: { open: boolean; onClose: () => vo
       track('location_permission', { result: next })
     }
   }
-  const locationCopy: Record<LocationStatus, string> = { idle: '点击后请求', requesting: '正在获取…', granted: '已授权', denied: '已拒绝', unavailable: '设备不支持', error: '获取失败' }
-  const locationMessage = locationStatus === 'granted'
+  const locationCopy: Record<LocationStatus, string> = { idle: '', requesting: '正在获取…', granted: '已授权', denied: '已拒绝', unavailable: '设备不支持', error: '获取失败' }
+  const locationMessage = locationStatus === 'idle'
+    ? ''
+    : locationStatus === 'granted'
     ? '已获得当前位置；本地预览不会自动反查城市，请从下方确认城市。'
     : locationStatus === 'denied'
       ? '你仍可手动选择城市，之后可在系统设置中重新授权。'
@@ -221,8 +268,8 @@ export const CityPicker = ({ open, onClose }: { open: boolean; onClose: () => vo
         ? '当前设备不支持定位，请手动选择城市。'
         : locationStatus === 'error'
           ? '暂时无法获取位置，请检查系统设置后重试。'
-          : '只有点击当前位置后才会请求定位权限。'
-  return <ZouBottomSheet open={open} onClose={onClose} title="选择城市"><ZouSearchBar value={query} onChange={setQuery} placeholder="搜索城市" /><button type="button" className="sheet-row" onClick={locate} disabled={locationStatus === 'requesting'} aria-describedby="city-picker-location-status"><MapPin /><span>当前位置</span><span>{locationCopy[locationStatus]}</span></button><p id="city-picker-location-status" className="location-status" aria-live="polite">{locationMessage}</p><h3>热门城市</h3><div className="city-grid">{cities.map((item) => <button type="button" key={item} aria-pressed={city === item} onClick={() => { setCity(item); onClose() }}>{item}</button>)}</div></ZouBottomSheet>
+          : ''
+  return <ZouBottomSheet open={open} onClose={onClose} title="选择城市"><ZouSearchBar value={query} onChange={setQuery} placeholder="搜索城市" /><button type="button" className="sheet-row" onClick={locate} disabled={locationStatus === 'requesting'} aria-describedby={locationMessage ? 'city-picker-location-status' : undefined}><MapPin /><span>当前位置</span>{locationCopy[locationStatus] ? <span>{locationCopy[locationStatus]}</span> : null}</button>{locationMessage ? <p id="city-picker-location-status" className="location-status" aria-live="polite">{locationMessage}</p> : null}<h3>热门地点</h3><div className="city-grid">{cities.map((item) => <button type="button" key={item} aria-pressed={city === item} onClick={() => { setCity(item); onClose() }}>{item}</button>)}</div></ZouBottomSheet>
 }
 
 export const FriendStatus = ({ accepted }: { accepted: boolean }) => <span className={accepted ? 'status accepted' : 'status pending'}>{accepted ? <><Check />已接受</> : '等待接受'}</span>

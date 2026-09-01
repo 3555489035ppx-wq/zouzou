@@ -8,8 +8,50 @@ export function createAmapRoute(AMap: AMapNamespace, path: AMapPoint[], options:
 
 type AMapRouteResult = {
   routes?: Array<{
-    steps?: Array<{ path?: unknown[] }>
+    distance?: number
+    time?: number
+    duration?: number
+    steps?: Array<{
+      path?: unknown[]
+      instruction?: string
+      road?: string
+      distance?: number
+      time?: number
+      duration?: number
+    }>
   }>
+}
+
+export type TravelMode = 'walking' | 'driving' | 'transit' | 'riding'
+
+export type RouteStep = {
+  instruction?: string
+  road?: string
+  distanceMeters?: number
+  durationSeconds?: number
+  path: AMapPoint[]
+}
+
+export type RouteLeg = {
+  id: string
+  fromPoiId?: string
+  toPoiId?: string
+  mode: TravelMode
+  distanceMeters: number
+  durationSeconds: number
+  path: AMapPoint[]
+  steps?: RouteStep[]
+  provider: 'amap' | 'osrm-public'
+}
+
+export type RouteSnapshot = {
+  mode: TravelMode
+  legs: RouteLeg[]
+  path: AMapPoint[]
+  distanceMeters: number
+  durationSeconds: number
+  provider: 'amap' | 'osrm-public'
+  createdAt: number
 }
 
 type AMapLngLat = {
@@ -56,37 +98,97 @@ const getRoutePoints = (result: unknown): AMapPoint[] => {
   return path.filter((point, index) => index === 0 || point[0] !== path[index - 1][0] || point[1] !== path[index - 1][1])
 }
 
+const getRouteSteps = (result: unknown): RouteStep[] => {
+  const route = (result as AMapRouteResult)?.routes?.[0]
+  return route?.steps?.flatMap((step) => {
+    const path = step.path?.map(toPoint).filter((point): point is AMapPoint => point !== null) ?? []
+    return path.length > 0 ? [{ instruction: step.instruction, road: step.road, distanceMeters: step.distance, durationSeconds: typeof step.time === 'number' ? step.time : step.duration, path }] : []
+  }) ?? []
+}
+
 const AMAP_ROUTE_TIMEOUT_MS = 8_000
 
-export async function getAmapWalkingRoute(AMap: AMapNamespace, stops: AMapPoint[], signal?: AbortSignal): Promise<AMapPoint[]> {
+export type RouteEndpoint = { position: AMapPoint; poiId?: string }
+
+const amapRouteCache = new Map<string, RouteLeg>()
+
+const routeCacheKey = (from: RouteEndpoint, to: RouteEndpoint) => `${from.poiId ?? from.position.join(',')}-${to.poiId ?? to.position.join(',')}-walking`
+
+export function clearAmapRouteCache() {
+  amapRouteCache.clear()
+}
+
+export async function getAmapWalkingRouteLeg(AMap: AMapNamespace, from: RouteEndpoint, to: RouteEndpoint, signal?: AbortSignal): Promise<RouteLeg> {
+  if (signal?.aborted) throw new ServiceError('路线请求已取消。', 'CANCELLED')
+  const key = routeCacheKey(from, to)
+  const cached = amapRouteCache.get(key)
+  if (cached) return cached
   const Walking = AMap.Walking
   if (!Walking) throw new Error('高德步行路线服务未加载')
-  if (stops.length < 2) return stops
-  if (signal?.aborted) throw new ServiceError('路线请求已取消。', 'CANCELLED')
-  const legs = await Promise.all(stops.slice(1).map((destination, index) => new Promise<AMapPoint[]>((resolve, reject) => {
+  const route = await new Promise<RouteLeg>((resolve, reject) => {
     let settled = false
     const timer = globalThis.setTimeout(() => finish(new ServiceError('高德路线服务响应超时，请稍后重试。', 'TIMEOUT')), AMAP_ROUTE_TIMEOUT_MS)
     const abort = () => finish(new ServiceError('路线请求已取消。', 'CANCELLED'))
-    const finish = (error?: Error, points?: AMapPoint[]) => {
+    const finish = (error?: Error, value?: RouteLeg) => {
       if (settled) return
       settled = true
       globalThis.clearTimeout(timer)
       signal?.removeEventListener('abort', abort)
-      error ? reject(error) : resolve(points ?? [])
+      if (error) reject(error)
+      else if (value) resolve(value)
+      else reject(new ServiceError('高德未返回可用步行路线', 'INVALID_RESPONSE'))
     }
     signal?.addEventListener('abort', abort, { once: true })
     try {
       const walking = new Walking()
-      walking.search(stops[index], destination, (status, result) => {
+      walking.search(from.position, to.position, (status, result) => {
         const points = status === 'complete' ? getRoutePoints(result) : []
         if (points.length < 2) finish(new ServiceError('高德未返回可用步行路线', 'INVALID_RESPONSE'))
-        else finish(undefined, points)
+        else {
+          const amapResult = result as AMapRouteResult
+          const firstRoute = amapResult.routes?.[0]
+          finish(undefined, {
+            id: key,
+            fromPoiId: from.poiId,
+            toPoiId: to.poiId,
+            mode: 'walking',
+            distanceMeters: typeof firstRoute?.distance === 'number' ? firstRoute.distance : pathDistanceMeters(points),
+            durationSeconds: typeof firstRoute?.time === 'number' ? firstRoute.time : typeof firstRoute?.duration === 'number' ? firstRoute.duration : 0,
+            path: points,
+            steps: getRouteSteps(result),
+            provider: 'amap',
+          })
+        }
       })
     } catch (error) {
       finish(new ServiceError('高德步行路线服务暂时不可用。', 'UNKNOWN', { cause: error }))
     }
-  })))
-  return legs.reduce<AMapPoint[]>((route, leg) => route.concat(route.length ? leg.slice(1) : leg), [])
+  })
+  amapRouteCache.set(key, route)
+  return route
+}
+
+const asRouteEndpoint = (value: AMapPoint | RouteEndpoint): RouteEndpoint => Array.isArray(value) ? { position: value } : value
+
+export async function getAmapWalkingRouteSnapshot(AMap: AMapNamespace, stops: Array<AMapPoint | RouteEndpoint>, signal?: AbortSignal): Promise<RouteSnapshot> {
+  const endpoints = stops.map(asRouteEndpoint)
+  if (endpoints.length < 2) return { mode: 'walking', legs: [], path: endpoints[0] ? [endpoints[0].position] : [], distanceMeters: 0, durationSeconds: 0, provider: 'amap', createdAt: Date.now() }
+  const legs = await Promise.all(endpoints.slice(1).map((to, index) => getAmapWalkingRouteLeg(AMap, endpoints[index], to, signal)))
+  const path = legs.reduce<AMapPoint[]>((route, leg) => route.concat(route.length ? leg.path.slice(1) : leg.path), [])
+  return {
+    mode: 'walking',
+    legs,
+    path,
+    distanceMeters: legs.reduce((total, leg) => total + leg.distanceMeters, 0),
+    durationSeconds: legs.reduce((total, leg) => total + leg.durationSeconds, 0),
+    provider: 'amap',
+    createdAt: Date.now(),
+  }
+}
+
+export async function getAmapWalkingRoute(AMap: AMapNamespace, stops: AMapPoint[], signal?: AbortSignal): Promise<AMapPoint[]> {
+  const snapshot = await getAmapWalkingRouteSnapshot(AMap, stops, signal)
+  return snapshot.path
 }
 
 type PublicWalkingRouteResponse = {
@@ -98,7 +200,7 @@ export type WalkingRouteResult = {
   path: AMapPoint[]
   distanceMeters: number
   durationSeconds: number
-  provider: 'osrm-public'
+  provider: 'amap' | 'osrm-public'
 }
 
 const publicWalkingRouteBase = (import.meta.env.VITE_WALKING_ROUTE_URL ?? 'https://routing.openstreetmap.de/routed-foot/route/v1/driving').replace(/\/+$/, '')
