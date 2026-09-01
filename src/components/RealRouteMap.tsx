@@ -38,6 +38,7 @@ type RouteMapProps = {
   center?: AMapPoint
   progress?: number
   compact?: boolean
+  overview?: boolean
   focus?: [number, number] | null
   botState?: BotState
   onNodeSelect?: (index: number) => void
@@ -157,7 +158,7 @@ function deferRootUnmount(root: ReturnType<typeof createRoot>) {
   queueMicrotask(() => root.unmount())
 }
 
-function MapLibreRouteMap({ places, center = defaultCenter, progress = 0, compact = false, focus = null, botState = 'walking', onNodeSelect, userLocation = null, followUser = false, onMapInteraction, onRouteMatch, onRouteSnapshot, onReady }: RouteMapProps) {
+function MapLibreRouteMap({ places, center = defaultCenter, progress = 0, compact = false, overview = false, focus = null, botState = 'walking', onNodeSelect, userLocation = null, followUser = false, onMapInteraction, onRouteMatch, onRouteSnapshot, onReady }: RouteMapProps) {
   const host = useRef<HTMLDivElement>(null)
   const map = useRef<MapLibreMap | null>(null)
   const bot = useRef<Marker | null>(null)
@@ -195,7 +196,7 @@ function MapLibreRouteMap({ places, center = defaultCenter, progress = 0, compac
     if (!host.current || map.current) return
     const controller = new AbortController()
     let cancelled = false
-    const instance = new Map({ container: host.current, style, center, zoom: 11.6, attributionControl: { compact: true }, interactive: !compact })
+    const instance = new Map({ container: host.current, style, center, zoom: overview ? 3.7 : 11.6, attributionControl: { compact: true }, interactive: !compact || overview })
     map.current = instance
     onRouteSnapshot?.(null)
     const handleMapInteraction = () => onMapInteractionRef.current?.()
@@ -209,7 +210,7 @@ function MapLibreRouteMap({ places, center = defaultCenter, progress = 0, compac
         if (!hasVerifiedCoordinates(place)) return
         const element = document.createElement('button')
         element.type = 'button'
-        element.className = `route-node ${index === 0 || index === places.length - 1 ? 'route-node--edge' : ''}`
+        element.className = `route-node ${overview || index === 0 || index === places.length - 1 ? 'route-node--edge' : ''}`
         element.dataset.index = String(index)
         element.setAttribute('aria-label', `聚焦${place.name}`)
         element.innerHTML = `<span>${index + 1}</span><b>${place.name}</b>`
@@ -219,7 +220,14 @@ function MapLibreRouteMap({ places, center = defaultCenter, progress = 0, compac
       if (verifiedPlaces.length > 0) {
         const bounds = new LngLatBounds()
         verifiedPlaces.forEach((place) => bounds.extend([place.lng, place.lat]))
-        instance.fitBounds(bounds, { padding: compact ? 34 : 72, maxZoom: compact ? 13.8 : 12.8, duration: 0 })
+        if (!overview) instance.fitBounds(bounds, { padding: compact ? 34 : 72, maxZoom: compact ? 13.8 : 12.8, duration: 0 })
+      }
+      if (overview) {
+        window.requestAnimationFrame(() => instance.resize())
+        setMapReady(true)
+        setRouteStatus('ready')
+        onReady?.()
+        return
       }
       const botElement = document.createElement('div')
       botElement.className = 'route-bot'
@@ -368,7 +376,7 @@ function MapLibreRouteMap({ places, center = defaultCenter, progress = 0, compac
   return <div className="real-route-map" ref={host} data-map-provider="maplibre" role="region" aria-label={routeLabel} aria-busy={!mapReady || routeStatus === 'loading'}>{!mapReady ? <span className="map-loading" role="status">正在准备地图</span> : routeStatus === 'loading' ? <span className="map-loading" role="status">正在计算真实步行路线</span> : routeStatus === 'unavailable' ? <div className="map-route-status"><span role="status">{unavailableText}</span>{canRetryRoute ? <button type="button" className="map-route-retry" onClick={() => { track('route_retried', { stops: places.length }); setRetryCount((value) => value + 1) }}>重试路线</button> : null}</div> : <span className="map-route-status map-route-status--success" role="status">{routeStatus === 'partial' ? '部分真实步行路线已加载' : '已加载真实步行路线'}{summaryText}{routeStatus === 'partial' ? ' · 非步行段以行程文案为准' : ''}</span>}</div>
 }
 
-function AmapRouteMap({ places, city = '', center = defaultCenter, progress = 0, compact = false, focus = null, botState = 'walking', onNodeSelect, onPlacesResolved, userLocation = null, followUser = false, onMapInteraction, onRouteMatch, onRouteSnapshot, onReady }: RouteMapProps) {
+function AmapRouteMap({ places, city = '', center = defaultCenter, progress = 0, compact = false, overview = false, focus = null, botState = 'walking', onNodeSelect, onPlacesResolved, userLocation = null, followUser = false, onMapInteraction, onRouteMatch, onRouteSnapshot, onReady }: RouteMapProps) {
   const host = useRef<HTMLDivElement>(null)
   const map = useRef<AMapMapLike | null>(null)
   const amap = useRef<AMapNamespace | null>(null)
@@ -409,7 +417,7 @@ function AmapRouteMap({ places, city = '', center = defaultCenter, progress = 0,
       if (cancelled || !host.current) return
       amap.current = AMap
       const amapCenter = wgs84ToGcj02(center)
-      const instance = new AMap.Map(host.current, { zoom: 11.6, center: amapCenter, mapStyle: 'amap://styles/whitesmoke', viewMode: '2D', resizeEnable: true, animateEnable: true, jogEnable: true, zoomEnable: true, dragEnable: true, doubleClickZoom: true, scrollWheel: true, keyboardEnable: true })
+      const instance = new AMap.Map(host.current, { zoom: overview ? 3.7 : 11.6, center: amapCenter, mapStyle: 'amap://styles/whitesmoke', viewMode: '2D', resizeEnable: true, animateEnable: true, jogEnable: true, dragEnable: true, doubleClickZoom: true, scrollWheel: true, keyboardEnable: true })
       mapInstance = instance
       map.current = instance
       instance.on?.('dragstart', handleMapInteraction)
@@ -432,6 +440,8 @@ function AmapRouteMap({ places, city = '', center = defaultCenter, progress = 0,
       let resolutionTimedOut = false
       let resolutionDeadlineId: number | null = null
       try {
+        if (overview) resolved = places.map((place) => ({ query: { id: place.id, city, name: place.name }, keyword: place.name, status: 'verified', poi: { id: place.id, name: place.name, position: placeMapPosition(place), address: '', district: '', adcode: '', citycode: '', category: '', tel: '' } }))
+        else {
         const resolution = resolveAmapPlaces(AMap, queries, controller.signal)
         const deadline = new Promise<Awaited<ReturnType<typeof resolveAmapPlaces>>>((resolve) => {
           resolutionDeadlineId = window.setTimeout(() => {
@@ -441,6 +451,7 @@ function AmapRouteMap({ places, city = '', center = defaultCenter, progress = 0,
           }, AMAP_POI_RESOLUTION_DEADLINE_MS)
         })
         resolved = await Promise.race([resolution, deadline])
+        }
       } catch (error) {
         if (error instanceof DOMException && error.name === 'AbortError') return
       } finally {
@@ -497,7 +508,7 @@ function AmapRouteMap({ places, city = '', center = defaultCenter, progress = 0,
         if (provisional && !hasVerifiedCoordinates(places[index])) return
         const element = document.createElement('button')
         element.type = 'button'
-        element.className = `route-node ${index === 0 || index === resolvedPlaces.length - 1 ? 'route-node--edge' : ''}${provisional ? ' route-node--pending' : ''}`
+        element.className = `route-node ${overview || index === 0 || index === resolvedPlaces.length - 1 ? 'route-node--edge' : ''}${provisional ? ' route-node--pending' : ''}`
         element.dataset.index = String(index)
         element.setAttribute('aria-label', `聚焦${place.name}${provisional ? '（待核验）' : ''}`)
         element.innerHTML = `<span>${index + 1}</span><b>${place.name}${provisional ? ' · 待核验' : ''}</b>`
@@ -508,6 +519,7 @@ function AmapRouteMap({ places, city = '', center = defaultCenter, progress = 0,
         instance.add(marker)
         overlays.push(marker)
       })
+      if (overview) return
       const botElement = document.createElement('div')
       botElement.className = 'route-bot'
       botElement.setAttribute('aria-hidden', 'true')

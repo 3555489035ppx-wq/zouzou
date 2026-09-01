@@ -11,7 +11,7 @@ import { searchDiscoverItems } from '../services/discover/search'
 import { useAppStore, type PostComment } from '../stores/appStore'
 import { track } from '../services/analytics'
 
-const sourceLabel: Record<DiscoverItem['contentSource'], string> = { official: '走走精选', knowledge: '城市精选', user: '用户分享' }
+const sourceLabel: Record<DiscoverItem['contentSource'], string> = { official: '走走精选', knowledge: '城市精选', user: '走走精选' }
 const EMPTY_COMMENTS: PostComment[] = []
 
 const durationMinutes = (value: string) => {
@@ -73,7 +73,7 @@ const routePlaces = (route: Route): Place[] => {
 const sectionTitle: Record<DiscoverItem['contentSource'], string> = {
   official: '走走精选',
   knowledge: '城市精选',
-  user: '用户分享',
+  user: '走走精选',
 }
 
 const DiscoverCard = ({ item, basePath }: { item: DiscoverItem; basePath: '/community' | '/discover' }) => {
@@ -109,8 +109,6 @@ export const DiscoverPage = () => {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const city = useAppStore((state) => state.city)
-  const publishedRouteIds = useAppStore((state) => state.publishedRouteIds)
-  const publishedPosts = useAppStore((state) => state.publishedPosts)
   const followedAuthors = useAppStore((state) => state.followedAuthors)
   const [cityOpen, setCityOpen] = useState(false)
   const [category, setCategory] = useState('推荐')
@@ -120,16 +118,12 @@ export const DiscoverPage = () => {
   const query = searchParams.get('q') ?? ''
   const searchOpen = searchParams.get('search') === '1' || location.pathname.endsWith('/search')
   const feed = useMemo(() => {
-    const published = publishedRouteIds.map((routeId) => {
-      const route = getRoute(routeId); const post = publishedPosts.find((entry) => entry.routeId === routeId)
-      return route ? createUserDiscoverItem(route, post ? { title: post.title, subtitle: post.description, cover: post.cover, publishedAt: post.publishedAt } : undefined) : null
-    }).filter((item): item is DiscoverItem => Boolean(item))
-    const filtered = [...published, ...getDiscoverFeed(city, undefined, [])].filter((item, index, items) => items.findIndex((candidate) => candidate.id === item.id) === index).filter((item) => {
-      if (section === '关注') return item.contentSource === 'user' && followedAuthors.includes(item.authorName ?? '')
+    const filtered = getDiscoverFeed(city, undefined, []).filter((item) => item.contentSource !== 'user').filter((item) => {
+      if (section === '关注') return false
       return category === '推荐' || item.category === category
     })
     return searchDiscoverItems(filtered, query, getRoute)
-  }, [category, city, followedAuthors, publishedPosts, publishedRouteIds, query, section])
+  }, [category, city, query, section])
   const feedSections = useMemo(() => {
     const sections: { source: DiscoverItem['contentSource']; items: DiscoverItem[] }[] = []
     feed.forEach((item) => {
