@@ -489,16 +489,18 @@ function AmapRouteMap({ places, city = '', center = defaultCenter, progress = 0,
       const nextUnresolvedCount = resolvedPlaces.filter((place) => place.mapStatus === 'unresolved').length
       setUnresolvedCount(nextUnresolvedCount)
       onPlacesResolved?.(resolvedPlaces)
-      const amapPlaces = resolvedPlaces.map(placeMapPosition)
+      const displayPlaces = resolvedPlaces.map((place, index) => place.mapStatus === 'resolved' || !hasVerifiedCoordinates(places[index]) ? place : places[index])
+      const amapPlaces = displayPlaces.map(placeMapPosition)
       const overlays: AMapOverlay[] = []
       resolvedPlaces.forEach((place, index) => {
-        if (place.mapStatus !== 'resolved') return
+        const provisional = place.mapStatus !== 'resolved'
+        if (provisional && !hasVerifiedCoordinates(places[index])) return
         const element = document.createElement('button')
         element.type = 'button'
-        element.className = `route-node ${index === 0 || index === resolvedPlaces.length - 1 ? 'route-node--edge' : ''}`
+        element.className = `route-node ${index === 0 || index === resolvedPlaces.length - 1 ? 'route-node--edge' : ''}${provisional ? ' route-node--pending' : ''}`
         element.dataset.index = String(index)
-        element.setAttribute('aria-label', `聚焦${place.name}`)
-        element.innerHTML = `<span>${index + 1}</span><b>${place.name}</b>`
+        element.setAttribute('aria-label', `聚焦${place.name}${provisional ? '（待核验）' : ''}`)
+        element.innerHTML = `<span>${index + 1}</span><b>${place.name}${provisional ? ' · 待核验' : ''}</b>`
         if (onNodeSelect) element.addEventListener('click', () => onNodeSelect(index))
         nodeElements.current[index] = element
         const marker = new AMap.Marker({ position: amapPlaces[index], content: element, offset: [-12, -12], zIndex: 12 })
