@@ -16,6 +16,14 @@ test('发现页只呈现走走整理的路线', async ({ page }) => {
   await expect(page.getByText('武康路慢慢走', { exact: true })).toHaveCount(0)
 })
 
+test('约会可以直接选择同行头像人数', async ({ page }) => {
+  await page.goto('/date')
+  await expect(page.getByRole('radio', { name: '2人' })).toHaveAttribute('aria-checked', 'true')
+  await page.getByRole('radio', { name: '3人' }).click()
+  await expect(page.getByRole('radio', { name: '3人' })).toHaveAttribute('aria-checked', 'true')
+  await expect(page.locator('.group-people-picker__hint')).toContainText('已选 3 人')
+})
+
 test('我的足迹使用真实地图承载城市标记', async ({ page }) => {
   await page.goto('/journey/footprint')
   await expect(page.getByLabel('我的足迹城市概览')).toBeVisible()
