@@ -1082,6 +1082,7 @@ input[role="switch"]:checked::after { transform: translateX(20px); }
   background-repeat: no-repeat;
 }
 .real-route-map .maplibregl-canvas,
+.real-route-map .amap-container,
 .real-route-map .amap-layer,
 .real-route-map .amap-overlay-pane,
 .real-route-map .amap-maps { background-color: transparent !important; }
