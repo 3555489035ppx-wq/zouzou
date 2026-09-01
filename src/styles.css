@@ -1380,7 +1380,7 @@ input[role="switch"]:checked::after { transform: translateX(20px); }
 .group-form-section + .group-form-section { padding-top: 22px; border-top: 1px solid var(--color-rule); }
 .group-form-section > strong { font-size: 20px; letter-spacing: -.03em; }
 .group-toggle-list { gap: 8px; }
-.group-toggle-list button { min-height: 36px; border-radius: 9px; background: #f5f5f3; }
+.group-toggle-list button { min-height: 36px; border-radius: 9px; background: var(--color-paper-soft); }
 .group-form-section--details > label,
 .group-form-section--details > div > label { gap: 7px; color: var(--color-ink); font-size: 13px; }
 .group-form-section--details > div { gap: 12px; }
@@ -1390,10 +1390,21 @@ input[role="switch"]:checked::after { transform: translateX(20px); }
   min-height: 48px;
   border-color: #dedfdd;
   border-radius: 10px;
-  background: #f7f7f5;
+  background: var(--color-paper-soft);
   padding: 9px 12px;
   font-size: 15px;
 }
+
+.group-people-picker { display: grid; gap: 7px; padding: 0; border: 0; }
+.group-people-picker legend { padding: 0; color: var(--color-ink); font-size: 13px; font-weight: 650; }
+.group-people-picker__hint { color: var(--color-neutral); font-size: 12px; }
+.group-people-options { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.group-people-option { min-width: 0; min-height: 78px; padding: 9px 4px 8px; display: grid; place-items: center; gap: 5px; border: 1px solid var(--color-rule); border-radius: 12px; background: var(--color-paper-soft); color: var(--color-ink); }
+.group-people-option.is-selected { border-color: var(--color-ink); background: var(--color-ink); color: var(--color-paper); }
+.group-people-option__avatars { min-height: 30px; display: flex; align-items: center; justify-content: center; padding-inline: 2px; }
+.group-people-option__avatars .zou-avatar { width: 28px; height: 28px; margin-inline: -4px; border: 2px solid var(--color-paper-soft); }
+.group-people-option.is-selected .group-people-option__avatars .zou-avatar { border-color: var(--color-ink); }
+.group-people-option strong { font-size: 13px; line-height: 1; }
 
 /* The profile cover owns the top safe area, so its image is visible behind
    the system time in standalone mobile mode instead of leaving a white strip. */
