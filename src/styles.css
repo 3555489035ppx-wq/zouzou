@@ -893,6 +893,13 @@ input[role="switch"]:checked::after { transform: translateX(20px); }
 .map-route-status { position: absolute; z-index: 5; left: 12px; bottom: 12px; padding: 6px 10px; border-radius: 14px; background: rgb(255 255 255 / .9); color: var(--color-neutral); font-size: 11px; box-shadow: 0 2px 10px rgb(0 0 0 / .08); display: inline-flex; align-items: center; gap: 8px; }
 .map-route-retry { border: 0; border-radius: 999px; padding: 4px 8px; background: var(--color-ink); color: var(--color-paper); font-size: 11px; font-weight: 650; }
 .map-route-status--success { max-width: calc(100% - 24px); }
+.map-route-status--unresolved { max-width: calc(100% - 24px); display: grid; justify-items: start; gap: 5px; }
+.map-route-status--unresolved > strong { color: var(--color-ink); }
+.map-route-status--unresolved > span { color: var(--color-neutral); }
+.map-resolution-item { width: 100%; display: grid; gap: 4px; }
+.map-resolution-item small { color: var(--color-neutral); line-height: 1.35; }
+.map-resolution-item button, .map-resolution-item a { width: fit-content; padding: 3px 7px; border: 0; border-radius: 999px; background: var(--color-paper-soft); color: var(--color-ink); font-size: 11px; text-align: left; }
+.map-resolution-item a { color: var(--color-link, #1f6fff); text-decoration: underline; }
 .intent-editor { display: grid; gap: var(--space-md); }
 .intent-editor label { display: grid; gap: 6px; font-weight: 650; }
 .intent-editor input, .intent-editor select, .intent-editor .destination-picker__trigger { min-height: 46px; width: 100%; border: var(--rule-thin) solid var(--color-rule-strong); border-radius: var(--radius-small); padding: 0 var(--space-sm); background: var(--color-paper); }
@@ -1267,6 +1274,14 @@ input[role="switch"]:checked::after { transform: translateX(20px); }
 .profile-utility-links button > span svg { width: 17px; height: 17px; }
 .profile-utility-links button > small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--color-neutral); font-size: 11px; }
 .profile-utility-links button > svg { grid-column: 2; grid-row: 1 / span 2; align-self: center; width: 16px; height: 16px; color: var(--color-muted); }
+.profile-dashboard-card { margin: 0 var(--page-horizontal-padding) 14px; padding: 15px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 1px solid var(--color-rule); border-radius: 16px; background: var(--color-paper-soft); }
+.profile-dashboard-card > div { min-width: 0; display: grid; gap: 3px; }
+.profile-dashboard-card span { color: var(--color-neutral); font-size: 11px; }
+.profile-dashboard-card strong { font-family: var(--font-display); font-size: 17px; }
+.profile-dashboard-card small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--color-neutral); font-size: 11px; }
+.profile-dashboard-card > button { min-height: 36px; flex: 0 0 auto; display: inline-flex; align-items: center; gap: 2px; border: 0; background: transparent; color: var(--color-ink); font-size: 13px; font-weight: 700; }
+.profile-dashboard-card > button svg { width: 15px; height: 15px; }
+.trip-record--generated { background: var(--color-paper-soft); }
 
 @media (max-width: 360px) {
   .journey-form__row { grid-template-columns: 1fr; }

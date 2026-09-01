@@ -23,7 +23,9 @@ import {
   getReplacementCandidates,
   isHotelStop,
   paceLabel,
+  readSavedPlans,
   readStoredPlans,
+  writeSavedPlan,
   updateGeneratedPlan,
   writeStoredPlans,
   type GeneratedPlan,
@@ -143,6 +145,7 @@ export const UnderstandingPage = () => {
     try {
       const generatedPlans = await aiService.generatePlans(understanding, (next, text) => { setStage(next); setLabel(text) })
       writeStoredPlans(generatedPlans)
+      if (generatedPlans[0]) writeSavedPlan(generatedPlans[0])
       track('journey_generated', { planCount: generatedPlans.length })
       advanceTripFlow('PLANS_READY')
       navigate('/travel/plans')
@@ -209,7 +212,7 @@ export const PlanDetailPage = () => {
   const [day, setDay] = useState('Day 1')
   const [view, setView] = useState('时间轴')
   const [activePlan, setActivePlan] = useState<GeneratedPlan>(() => {
-    const available = readStoredPlans() ?? getDefaultGeneratedPlans()
+    const available = readStoredPlans() ?? readSavedPlans() ?? getDefaultGeneratedPlans()
     return available.find((item) => item.id === id) ?? available[0]
   })
   const [locked, setLocked] = useState<string[]>(() => {
@@ -250,8 +253,30 @@ export const PlanDetailPage = () => {
     setActivePlan(nextPlan)
     const stored = readStoredPlans() ?? []
     writeStoredPlans(stored.length > 0 ? stored.map((item) => item.id === nextPlan.id ? nextPlan : item) : [nextPlan])
+    writeSavedPlan(nextPlan)
     track('journey_saved', { planId: nextPlan.id, places: nextPlan.places })
     setToast(message)
+  }
+  const persistResolvedPlaces = (resolvedPlaces: PlannedStop[]) => {
+    const previousPlaces = activePlan.days[day] ?? []
+    const changed = previousPlaces.length !== resolvedPlaces.length || resolvedPlaces.some((place, index) => {
+      const previous = previousPlaces[index]
+      return !previous
+        || previous.name !== place.name
+        || previous.lng !== place.lng
+        || previous.lat !== place.lat
+        || previous.poiId !== place.poiId
+        || previous.amapPoiId !== place.amapPoiId
+        || previous.mapStatus !== place.mapStatus
+        || previous.address !== place.address
+        || previous.coordinateSource !== place.coordinateSource
+    })
+    if (!changed) return
+    const nextPlan = updateGeneratedPlan(activePlan, { ...activePlan.days, [day]: resolvedPlaces })
+    setActivePlan(nextPlan)
+    const stored = readStoredPlans() ?? []
+    writeStoredPlans(stored.length > 0 ? stored.map((item) => item.id === nextPlan.id ? nextPlan : item) : [nextPlan])
+    writeSavedPlan(nextPlan)
   }
   const openEditor = (place: PlannedStop) => {
     const owningDay = dayOptions.find((key) => activePlan.days[key]?.some((item) => item.id === place.id)) ?? day
@@ -317,6 +342,27 @@ export const PlanDetailPage = () => {
       budget: 0,
       transport: `从${anchor.name}步行约 10 分钟`,
       note: '按你的想法新增，先作为路线草稿保存。',
+      lng: cityProfile.mapCenter[0],
+      lat: cityProfile.mapCenter[1],
+      x: 0,
+      z: 0,
+      inputName: name,
+      canonicalName: undefined,
+      address: undefined,
+      poiId: undefined,
+      amapPoiId: undefined,
+      district: undefined,
+      adcode: undefined,
+      citycode: undefined,
+      poiType: undefined,
+      tel: undefined,
+      verifiedAt: undefined,
+      resolutionStatus: undefined,
+      coordinateSystem: undefined,
+      mapStatus: 'unresolved',
+      searchKeyword: name,
+      coordinateSource: '等待高德 POI 核验',
+      verified: false,
       durationMinutes: 60,
       travelFromPreviousMinutes: 10,
       fixed: false,
@@ -341,11 +387,11 @@ export const PlanDetailPage = () => {
       <div className="page-content plan-detail">
         <header><h1>{activePlan.city}{activePlan.nights + 1}天{activePlan.nights}晚</h1><p>{activePlan.pace} · 计划约 ¥{activePlan.budget} · {routeStatus}</p><ZouAvatarStack friends={friends} /></header>
         <ZouDaySelector day={day} onChange={setDay} />
-        <div className="plan-edit-actions"><button type="button" onClick={() => { setNewPlaceDay(day); setAddOpen(true) }}><Plus />添加地点</button><button type="button" onClick={() => setToast('当前行程已保存到本地')}>保存行程</button></div>
+        <div className="plan-edit-actions"><button type="button" onClick={() => { setNewPlaceDay(day); setAddOpen(true) }}><Plus />添加地点</button><button type="button" onClick={() => persistPlan(activePlan)}>保存行程</button></div>
         <ZouSegmentedControl options={["时间轴", "地图"]} value={view} onChange={setView} />
         {view === "时间轴"
           ? <div className="timeline-list">{currentPlaces.map((place) => <ZouPlaceCard key={place.id} place={place} locked={locked.includes(place.id)} onLock={() => setLocked((items) => items.includes(place.id) ? items.filter((item) => item !== place.id) : [...items, place.id])} onReplace={() => setReplaceId(place.id)} onDelete={() => setConfirmDeleteId(place.id)} onMore={() => openEditor(place)} />)}</div>
-          : <div className="mini-map"><RealRouteMap city={activePlan.city} center={cityProfile.mapCenter} places={currentPlaces} progress={0} compact /></div>}
+           : <div className="mini-map"><RealRouteMap city={activePlan.city} center={cityProfile.mapCenter} places={currentPlaces} progress={0} compact onPlacesResolved={(places) => persistResolvedPlaces(places as PlannedStop[])} /></div>}
         {foodRecommendations.length > 0 ? <section className="food-recommendations" aria-label="本地美食推荐">
           <div className="food-recommendations__header"><div><span>本地美食推荐</span><strong>具体店名，按片区选择</strong></div><small>可替换进时间轴</small></div>
           <div className="food-recommendations__list">{foodRecommendations.map((item) => <article key={item.id}>
@@ -412,5 +458,5 @@ export const VotePage = () => {
   const [ended, setEnded] = useState(searchParams.get('complete') === '1')
   const votePlans = useMemo(() => readStoredPlans() ?? fallbackPlans, [])
   const voteCounts = useMemo(() => votePlans.map((plan, index) => ({ ...plan, count: [3, 2, 1][index] + (selectedVote === plan.id ? 1 : 0) })), [selectedVote, votePlans])
-  return <AppShell><ZouNavigationBar title="方案投票" /><div className="page-content vote-page"><header><h1>{ended ? '投票结果' : '每位朋友 1 票'}</h1><p>{ended ? '「最匹配」获得最多票。' : '选择最适合大家的一套走法。'}</p></header><div className="vote-list">{voteCounts.map((plan) => <button key={plan.id} aria-pressed={selectedVote === plan.id} onClick={() => !ended && setVote(plan.id)}><span className="vote-radio">{selectedVote === plan.id ? <Check /> : null}</span><div><strong>{plan.label}</strong><small>{plan.difference}</small></div><b>{plan.count} 票</b></button>)}</div>{!ended ? <ZouButton variant="secondary" onClick={() => setEnded(true)}>结束投票</ZouButton> : <ZouButton onClick={() => { const chosen = votePlans.find((plan) => plan.id === (selectedVote ?? 'match')) ?? votePlans[0]; const chosenCity = (chosen && 'city' in chosen && typeof chosen.city === 'string' ? chosen.city : '上海'); advanceTripFlow('CONFIRM_PLAN'); advanceTripFlow('START_TRIP'); setTripCity(chosenCity); setCity(chosenCity); setTripMode('active'); navigate('/trips') }}>保存行程</ZouButton>}<p className="privacy-note">如果同票，会保留并列方案供你二选一。</p></div></AppShell>
+  return <AppShell><ZouNavigationBar title="方案投票" /><div className="page-content vote-page"><header><h1>{ended ? '投票结果' : '每位朋友 1 票'}</h1><p>{ended ? '「最匹配」获得最多票。' : '选择最适合大家的一套走法。'}</p></header><div className="vote-list">{voteCounts.map((plan) => <button key={plan.id} aria-pressed={selectedVote === plan.id} onClick={() => !ended && setVote(plan.id)}><span className="vote-radio">{selectedVote === plan.id ? <Check /> : null}</span><div><strong>{plan.label}</strong><small>{plan.difference}</small></div><b>{plan.count} 票</b></button>)}</div>{!ended ? <ZouButton variant="secondary" onClick={() => setEnded(true)}>结束投票</ZouButton> : <ZouButton onClick={() => { const chosen = votePlans.find((plan) => plan.id === (selectedVote ?? 'match')) ?? votePlans[0]; const chosenCity = (chosen && 'city' in chosen && typeof chosen.city === 'string' ? chosen.city : '上海'); if (chosen && 'days' in chosen) writeSavedPlan(chosen as GeneratedPlan); advanceTripFlow('CONFIRM_PLAN'); advanceTripFlow('START_TRIP'); setTripCity(chosenCity); setCity(chosenCity); setTripMode('active'); navigate('/trips') }}>保存行程</ZouButton>}<p className="privacy-note">如果同票，会保留并列方案供你二选一。</p></div></AppShell>
 }

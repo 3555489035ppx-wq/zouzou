@@ -1,4 +1,5 @@
 import type { AMapNamespace, AMapPoiLocation, AMapPoiResult, AMapPoint } from './provider'
+import { findRememberedAmapPlace, rememberAmapPlace, rememberedPlaceToAmapPoi } from './placeRegistry'
 
 export type AmapPoi = {
   id: string
@@ -154,8 +155,12 @@ function searchAmapPois(AMap: AMapNamespace, query: AmapPlaceQuery, signal?: Abo
     try {
       const search = new PlaceSearch({ city: query.city, citylimit: true, pageSize: 10, extensions: 'all' })
       search.search(keyword, (status, result) => {
-        if (status !== 'complete') {
+        if (status === 'no_data') {
           finish(undefined, [])
+          return
+        }
+        if (status !== 'complete') {
+          finish(new Error(`高德地点搜索失败：${status}`))
           return
         }
         const pois = (result.poiList?.pois ?? []).flatMap((item, index) => {
@@ -222,7 +227,13 @@ export async function resolveAmapPlaces(AMap: AMapNamespace, queries: AmapPlaceQ
     const keyword = buildAmapSearchKeyword(query)
     if (query.poiId && query.position) {
       const poi = { id: query.poiId, name: query.name, position: query.position, address: query.address }
+      rememberAmapPlace(query, poi)
       return { query, keyword, poi, status: 'verified', verifiedPlace: toVerifiedPlace(query, poi) }
+    }
+    const remembered = findRememberedAmapPlace(query)
+    if (remembered) {
+      const poi = rememberedPlaceToAmapPoi(remembered)
+      return { query, keyword: remembered.searchKeyword, poi, status: 'verified', verifiedPlace: toVerifiedPlace(query, poi, remembered.verifiedAt) }
     }
     const cached = poiCache.get(poiCacheKey(query))
     if (cached) {
@@ -237,6 +248,7 @@ export async function resolveAmapPlaces(AMap: AMapNamespace, queries: AmapPlaceQ
       const tied = bestScore > 0 && ranked.filter((candidate) => candidate.score === bestScore).length > 1
       const status: AmapPlaceResolutionStatus = poi ? 'verified' : tied ? 'ambiguous' : 'not_found'
       const result = { keyword, poi, status, candidates: ranked.slice(0, 5).map((candidate) => candidate.poi) }
+      if (poi) rememberAmapPlace(query, poi)
       poiCache.set(poiCacheKey(query), result)
       return { query, ...result, verifiedPlace: poi ? toVerifiedPlace(query, poi) : undefined }
     } catch (error) {

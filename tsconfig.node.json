@@ -35,6 +35,7 @@
     "src/services/trip/regional-hotel-specs.ts",
     "src/services/trip/hotelRecommendation.ts",
     "src/services/storage.ts",
+    "src/services/amap/placeRegistry.ts",
     "src/services/groupPlans.ts",
     "src/services/groupPlanSchemas.ts",
     "src/services/groupPlanApi.ts",

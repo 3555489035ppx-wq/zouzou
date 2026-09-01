@@ -5,7 +5,8 @@ import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import type { Place } from '../demo-data/trips'
 import { isAmapConfigured, loadAmap, type AMapMapLike, type AMapNamespace, type AMapOverlay, type AMapPoint } from '../services/amap/provider'
-import { resolveAmapPlaces, type AmapPlaceQuery } from '../services/amap/poi'
+import { resolveAmapPlaces, type AmapPlaceQuery, type AmapPlaceResolution, type AmapPoi } from '../services/amap/poi'
+import { amapPlaceSearchUrl, rememberAmapPlace } from '../services/amap/placeRegistry'
 import { createAmapRoute, getAmapWalkingRouteSnapshot, getPublicWalkingRouteResult, wgs84ToGcj02, type RouteLeg, type RouteSnapshot, type WalkingRouteResult } from '../services/amap/route'
 import type { BotState } from '../character/engine/motionEngine'
 import { BloubBotSvg } from './BloubBotSvg'
@@ -384,6 +385,8 @@ function AmapRouteMap({ places, city = '', center = defaultCenter, progress = 0,
   const [mapReady, setMapReady] = useState(false)
   const [routeError, setRouteError] = useState(false)
   const [unresolvedCount, setUnresolvedCount] = useState(0)
+  const [resolutionResults, setResolutionResults] = useState<AmapPlaceResolution[]>([])
+  const [resolutionRevision, setResolutionRevision] = useState(0)
   const [routeSummary, setRouteSummary] = useState<WalkingRouteResult | null>(null)
   const reducedMotion = useAppStore((state) => state.reducedMotion)
   const placesKey = useMemo(() => `${center.join(',')}|${places.map((place) => `${place.id}:${place.name}:${place.lng}:${place.lat}:${place.poiId ?? place.amapPoiId ?? ''}:${place.mapStatus ?? ''}`).join('|')}`, [center, places])
@@ -397,6 +400,7 @@ function AmapRouteMap({ places, city = '', center = defaultCenter, progress = 0,
     setLoadFailed(false)
     setRouteError(false)
     setUnresolvedCount(0)
+    setResolutionResults([])
     setRouteSummary(null)
     onRouteSnapshot?.(null)
     let mapInstance: AMapMapLike | null = null
@@ -433,6 +437,7 @@ function AmapRouteMap({ places, city = '', center = defaultCenter, progress = 0,
         if (resolutionDeadlineId !== null) window.clearTimeout(resolutionDeadlineId)
       }
       if (cancelled || !host.current) return
+      setResolutionResults(resolved)
       const resolvedPlaces = places.map((place) => {
         const result = resolved.find((item) => item.query.id === place.id)
         if (!result?.poi) return {
@@ -572,7 +577,7 @@ function AmapRouteMap({ places, city = '', center = defaultCenter, progress = 0,
     }
   // The AMap instance is stable; only route-marker position changes during playback.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [city, placesKey])
+  }, [city, placesKey, resolutionRevision])
   useEffect(() => { botRoot.current?.render(<BloubBotSvg state={visualBotState(botState)} reducedMotion={reducedMotion} />) }, [botState, reducedMotion])
   useEffect(() => {
     if (!mapReady || !map.current || !amap.current) return
@@ -623,8 +628,13 @@ function AmapRouteMap({ places, city = '', center = defaultCenter, progress = 0,
       element.classList.toggle('is-current', index === active)
     })
   }, [center, places, placesKey, progress])
-  if (loadFailed) return <MapLibreRouteMap places={places} center={center} progress={progress} compact={compact} focus={focus} botState={botState} onNodeSelect={onNodeSelect} userLocation={userLocation} followUser={followUser} onMapInteraction={onMapInteraction} onRouteMatch={onRouteMatch} onRouteSnapshot={onRouteSnapshot} onReady={onReady} />
-  return <div className="real-route-map real-route-map--amap" data-map-provider="amap" role="region" aria-label={`高德真实地图${unresolvedCount ? `，${unresolvedCount} 个地点待确认` : '和步行路线'}`} aria-busy={!mapReady}><div className="real-route-map__canvas" ref={host} aria-hidden="true" />{!mapReady ? <span className="map-loading" role="status">正在加载高德地图和真实地点</span> : routeError ? <span className="map-route-status">路线服务暂不可用，地点仍来自高德地图</span> : unresolvedCount ? <span className="map-route-status">{unresolvedCount} 个地点未匹配到高德 POI，未绘制假路线</span> : routeSummary ? <span className="map-route-status map-route-status--success">已加载高德真实步行路线 · {formatDistance(routeSummary.distanceMeters)}{routeSummary.durationSeconds > 0 ? ` · ${formatDuration(routeSummary.durationSeconds)}` : ''}</span> : null}</div>
+  if (loadFailed) return <div className="real-route-map real-route-map--amap" data-map-provider="amap" role="region" aria-label="高德真实地图暂不可用"><div className="real-route-map__canvas" ref={host} /><span className="map-route-status" role="status">高德地图暂不可用，未绘制替代路线</span></div>
+  const unresolvedResults = resolutionResults.filter((result) => !result.poi)
+  const rememberCandidate = (resolution: AmapPlaceResolution, candidate: AmapPoi) => {
+    rememberAmapPlace(resolution.query, candidate)
+    setResolutionRevision((value) => value + 1)
+  }
+  return <div className="real-route-map real-route-map--amap" data-map-provider="amap" role="region" aria-label={`高德真实地图${unresolvedCount ? `，${unresolvedCount} 个地点待确认` : '和步行路线'}`} aria-busy={!mapReady}><div className="real-route-map__canvas" ref={host} aria-hidden="true" />{!mapReady ? <span className="map-loading" role="status">正在加载高德地图和真实地点</span> : unresolvedCount ? <div className="map-route-status map-route-status--unresolved" role="status"><strong>{unresolvedCount} 个地点待核验</strong><span>高德确认前不绘制路线</span>{unresolvedResults.slice(0, 3).map((result) => <div className="map-resolution-item" key={result.query.id}><small>{result.query.name} · {result.status === 'ambiguous' ? '请选择准确门店' : '暂未找到'}</small>{result.candidates?.slice(0, 3).map((candidate) => <button type="button" key={candidate.id} onClick={() => rememberCandidate(result, candidate)}>记住：{candidate.name}</button>)}<a href={amapPlaceSearchUrl(result.query)} target="_blank" rel="noreferrer">在高德地图中搜索</a></div>)}</div> : routeError ? <span className="map-route-status">路线服务暂不可用，地点仍来自高德地图</span> : routeSummary ? <span className="map-route-status map-route-status--success">已加载高德真实步行路线 · {formatDistance(routeSummary.distanceMeters)}{routeSummary.durationSeconds > 0 ? ` · ${formatDuration(routeSummary.durationSeconds)}` : ''}</span> : null}</div>
 }
 
 export function RealRouteMap(props: RouteMapProps) {

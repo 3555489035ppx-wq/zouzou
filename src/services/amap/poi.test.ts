@@ -1,8 +1,23 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { buildAmapSearchKeyword, clearAmapPoiCache, pickAmapPoi, resolveAmapPlaces, type AmapPoi } from './poi'
+import { clearRememberedAmapPlaces } from './placeRegistry'
+
+function createMemoryStorage() {
+  const values = new Map<string, string>()
+  return {
+    getItem: (key: string) => values.get(key) ?? null,
+    setItem: (key: string, value: string) => { values.set(key, value) },
+    removeItem: (key: string) => { values.delete(key) },
+  }
+}
 
 describe('AMap POI resolution', () => {
-  beforeEach(() => clearAmapPoiCache())
+  beforeEach(() => {
+    vi.stubGlobal('window', { localStorage: createMemoryStorage(), sessionStorage: createMemoryStorage() })
+    clearAmapPoiCache()
+    clearRememberedAmapPlaces()
+  })
+  afterEach(() => vi.unstubAllGlobals())
 
   it('builds a city-scoped query without placeholder wording', () => {
     expect(buildAmapSearchKeyword({ city: '昆明', area: '五华区', name: '野生菌火锅（待选）' }))
@@ -49,5 +64,23 @@ describe('AMap POI resolution', () => {
     await resolveAmapPlaces(AMap, [query])
 
     expect(search).toHaveBeenCalledTimes(1)
+  })
+
+  it('recovers a verified POI from local memory after the runtime cache is cleared', async () => {
+    const firstSearch = vi.fn((_keyword: string, callback: (status: string, result: { poiList: { pois: Array<{ id: string; name: string; location: [number, number]; address: string }> } }) => void) => {
+      callback('complete', { poiList: { pois: [{ id: 'poi-memory', name: '叶新小吃店', location: [121.48, 31.23], address: '上海市黄浦区示例路 1 号' }] } })
+    })
+    class FirstPlaceSearch { search = firstSearch }
+    const query = { id: 'memory', city: '上海', name: '叶新小吃店' }
+    await resolveAmapPlaces({ PlaceSearch: FirstPlaceSearch } as never, [query])
+
+    clearAmapPoiCache()
+    const secondSearch = vi.fn()
+    class SecondPlaceSearch { search = secondSearch }
+    const [recovered] = await resolveAmapPlaces({ PlaceSearch: SecondPlaceSearch } as never, [query])
+
+    expect(recovered.status).toBe('verified')
+    expect(recovered.poi).toMatchObject({ id: 'poi-memory', name: '叶新小吃店', address: '上海市黄浦区示例路 1 号' })
+    expect(secondSearch).not.toHaveBeenCalled()
   })
 })

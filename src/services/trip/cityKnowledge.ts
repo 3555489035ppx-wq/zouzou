@@ -36,9 +36,11 @@ export type CityKnowledgeItem = {
   coordinates: [number, number]
   /** Concrete POI name used by the live AMap resolver. */
   venueName?: string
+  amapPoiId?: string
   address?: string
   menuHighlights?: string[]
   searchKeyword?: string
+  coordinateSystem?: 'wgs84' | 'gcj02'
   durationMinutes: number
   price: KnowledgePrice
   opening?: {

@@ -7,6 +7,7 @@ import { getHotelRecommendations, hotelOptionMeta, hotelOptionReason } from './h
 import { cityRouteSpecs, getCityRouteZone } from './cityRouteSpecs'
 import { readVersioned, writeVersioned } from '../storage'
 import { parseGeneratedPlans, parseTripUnderstanding } from './schemas'
+import { amapPlaceSearchUrl, readRememberedAmapPlaces } from '../amap/placeRegistry'
 
 const genericKnowledgeAliases = new Set(['城市', '地区', '景区', '风景区', '风景名胜区', '公园', '博物馆', '美术馆', '历史街区', '文化街区', '步行街', '古镇', '老街', '广场', '市场', '菜市场', '早市', '夜市', '路线', '体验', '中心', '餐馆', '餐厅', '酒店', '小吃', '美食', '本地美食', '本地小吃', '饭店', '饭馆', '面馆', '粉店', '小馆', '菜馆', '食堂', '老店', '苍蝇馆子'])
 const genericKnowledgeAliasFragments = new Set([...genericKnowledgeAliases].flatMap((term) => {
@@ -51,6 +52,7 @@ export const TRIP_INPUT_STORAGE = 'zouzou-trip-input'
 export const TRIP_MEDIA_STORAGE = 'zouzou-trip-media'
 export const TRIP_UNDERSTANDING_STORAGE = 'zouzou-trip-understanding'
 export const TRIP_PLANS_STORAGE = 'zouzou-generated-plans-v3'
+export const TRIP_SAVED_PLANS_STORAGE = 'zouzou-saved-plans-v1'
 
 export type TripMedia = {
   id: string
@@ -206,6 +208,50 @@ const timeToMinutes = (value: string) => {
 
 const unique = (items: string[]) => [...new Set(items)]
 
+function knowledgeWithRememberedPlaces(city: string): CityKnowledge {
+  const base = getCityKnowledge(city)
+  const remembered = readRememberedAmapPlaces(city)
+  if (remembered.length === 0) return base
+  const rememberedItems: CityKnowledgeItem[] = remembered.map((place, index) => {
+    const category = place.category === 'restaurant' ? 'restaurant' : 'activity'
+    const source = {
+      label: `高德 POI：${place.canonicalName}`,
+      url: amapPlaceSearchUrl({ city, name: place.inputName, searchKeyword: place.searchKeyword }),
+      kind: 'amap' as const,
+      checkedAt: new Date(place.verifiedAt).toISOString().slice(0, 10),
+    }
+    return {
+      id: `${city}-amap-memory-${place.amapPoiId.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 60) || index}`,
+      name: place.canonicalName,
+      category,
+      area: place.district ?? city,
+      tags: category === 'restaurant' ? ['本地餐饮', '高德已定位'] : ['具体地点', '高德已定位'],
+      summary: category === 'restaurant'
+        ? `走走已在高德确认这家店：${place.canonicalName}。地址：${place.address || '以高德门店信息为准'}。`
+        : `走走已在高德确认这个地点：${place.canonicalName}。地址：${place.address || '以高德地点信息为准'}。`,
+      coordinates: [place.lng, place.lat],
+      coordinateSystem: 'gcj02',
+      venueName: place.canonicalName,
+      amapPoiId: place.amapPoiId,
+      address: place.address || undefined,
+      menuHighlights: category === 'restaurant' ? [place.inputName] : undefined,
+      searchKeyword: place.searchKeyword,
+      durationMinutes: category === 'restaurant' ? 75 : 60,
+      price: category === 'restaurant'
+        ? { min: 30, max: 120, unit: 'person' as const, note: '高德未提供菜单价格，按门店当天菜单为准。' }
+        : { min: 0, max: 0, unit: 'person' as const, note: '以现场规则为准。' },
+      source,
+      verified: true,
+    }
+  })
+  const rememberedNames = new Set(rememberedItems.flatMap((item) => [item.name, item.venueName ?? '']))
+  return {
+    ...base,
+    items: [...base.items.filter((item) => !rememberedNames.has(item.name) && !rememberedNames.has(item.venueName ?? '')), ...rememberedItems],
+    sources: [...base.sources, ...rememberedItems.map((item) => item.source)],
+  }
+}
+
 const cloneDays = (days: Record<string, PlannedStop[]>): Record<string, PlannedStop[]> => Object.fromEntries(
   Object.entries(days).map(([day, stops]) => [day, stops.map((stop) => ({
     ...stop,
@@ -315,7 +361,7 @@ export function understandTrip(request: TripRequest): TripUnderstanding {
   const times = unique([...textTimes, ...confirmedMediaTimes])
   const destination = cityNames.find((city) => combined.includes(city)) ?? '上海'
   const cityProfile = getCityProfile(destination)
-  const knowledge = getCityKnowledge(destination)
+  const knowledge = knowledgeWithRememberedPlaces(destination)
   const normalizeAnchorLocation = (value: string) => {
     if (/浦东机场/.test(value)) return '浦东机场'
     if (/虹桥机场/.test(value)) return '虹桥机场'
@@ -503,6 +549,11 @@ function knowledgeItemToStop(
     lng,
     lat,
     area: item.area,
+    ...(item.venueName ? { canonicalName: item.venueName } : {}),
+    ...(item.address ? { address: item.address } : {}),
+    ...(item.amapPoiId ? { poiId: item.amapPoiId, amapPoiId: item.amapPoiId } : {}),
+    ...(item.coordinateSystem ? { coordinateSystem: item.coordinateSystem } : {}),
+    ...(item.verified && item.coordinateSystem ? { mapStatus: 'resolved' as const } : {}),
     searchKeyword: item.searchKeyword ?? item.venueName ?? item.name,
     coordinateSource: item.verified ? '高德 POI · 已核验' : '高德 POI · 等待实时核验',
     verified: item.verified,
@@ -984,7 +1035,7 @@ function createPlan(
 }
 
 export function generatePlans(intent: TripIntent, guideContext?: GuideContext): GeneratedPlan[] {
-  const knowledge = getCityKnowledge(intent.destination)
+  const knowledge = knowledgeWithRememberedPlaces(intent.destination)
   const hotelRecommendations = getHotelRecommendations(knowledge, intent, guideContext)
   const selectedHotel = hotelRecommendations[0] ?? selectHotelOption(knowledge, intent.budget, intent.nights)
   const variants: Array<{ id: 'match' | 'easy' | 'rich'; label: string; density: 'easy' | 'match' | 'rich'; walking: string; difference: string }> = [
@@ -1131,10 +1182,21 @@ export function readStoredPlans() {
   return value && value.length > 0 ? value : null
 }
 
+export function readSavedPlans() {
+  const value = parseGeneratedPlans(readVersioned<unknown>(TRIP_SAVED_PLANS_STORAGE, 'local'))
+  return value && value.length > 0 ? value : null
+}
+
 export function writeStoredUnderstanding(value: TripUnderstanding) {
   writeVersioned(TRIP_UNDERSTANDING_STORAGE, value, 'session')
 }
 
 export function writeStoredPlans(value: GeneratedPlan[]) {
   writeVersioned(TRIP_PLANS_STORAGE, value, 'session')
+}
+
+export function writeSavedPlan(value: GeneratedPlan) {
+  const stored = readSavedPlans() ?? []
+  const next = [value, ...stored.filter((item) => item.id !== value.id || item.city !== value.city)].slice(0, 20)
+  writeVersioned(TRIP_SAVED_PLANS_STORAGE, next, 'local')
 }
