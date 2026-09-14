@@ -4,6 +4,12 @@
 
 > Local Interactive Product Prototype。默认使用本地结构化解析器；已提供可选的服务端 DeepSeek/OpenAI 文本理解接口。上海地点、交通、价格和营业时间仍需在后续接入实时数据后才可用于生产。
 
+## 云端手机版 / 2026-09-14
+
+当前生产适配使用现有Cloudflare Pages + Functions + D1，正式地址为 [走走](https://zouzou.ppx.wiki)。发布状态及实际验收见 [RELEASE](docs/RELEASE.md)、[ACCEPTANCE](docs/ACCEPTANCE.md)，手机安装和访客数据边界见 [MOBILE-GUIDE](docs/MOBILE-GUIDE.md)。下方本地原型说明保留供开发使用，不代表正式站点的架构或当前部署结果。
+
+正式构建使用 `npm run build:release`，显式读取 `vite.config.ts`，复制已提交的1178个运行资源，按城市从服务端读取版本化指南。不要把完整私有采集目录、独立WorkBuddy库、`.env`、数据库或本机备份提交到Git。生产文本模型为 `deepseek-flash`，服务端密钥只在Cloudflare Secret；生产远程失败不会静默冒充本地生成成功。
+
 ## 运行
 
 ```bash

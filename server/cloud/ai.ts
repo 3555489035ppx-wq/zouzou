@@ -84,7 +84,7 @@ function providerConfig(env: CloudAIEnv, vision: boolean) {
   if (vision && provider !== 'openai') throw new CloudAIError(422, 'VISION_UNSUPPORTED', '当前云端文本模型不支持截图识别，请配置 OpenAI 视觉模型。')
   const key = (provider === 'deepseek' ? env.DEEPSEEK_API_KEY : env.OPENAI_API_KEY)?.trim()
   if (!key) throw new CloudAIError(503, 'AI_NOT_CONFIGURED', '云端 AI 密钥尚未配置。')
-  const model = (provider === 'deepseek' ? env.DEEPSEEK_MODEL?.trim() : env.OPENAI_MODEL?.trim()) || (provider === 'deepseek' ? 'deepseek-v4-flash' : 'gpt-5.4')
+  const model = (provider === 'deepseek' ? env.DEEPSEEK_MODEL?.trim() : env.OPENAI_MODEL?.trim()) || (provider === 'deepseek' ? 'deepseek-flash' : 'gpt-5.4')
   return { provider, model, key, url: provider === 'deepseek' ? 'https://api.deepseek.com/chat/completions' : 'https://api.openai.com/v1/chat/completions' }
 }
 

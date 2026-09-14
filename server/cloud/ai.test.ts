@@ -58,6 +58,14 @@ describe('Cloud AI approval and protocol boundaries', () => {
 })
 
 describe('Cloud AI actual provider provenance and failures', () => {
+  test('DeepSeek defaults to the model verified by live acceptance', async () => {
+    const mock = vi.fn(async (_url: string, _options: RequestInit) => completion(intent, 'deepseek-flash'))
+    vi.stubGlobal('fetch', mock)
+    const response = await handleCloudAI(request('understand', { text: '上海3天' }), { ...env, DEEPSEEK_MODEL: undefined }, version)
+    expect(response.status).toBe(200)
+    expect(JSON.parse(String(mock.mock.calls[0][1].body)).model).toBe('deepseek-flash')
+    expect(await response.json()).toMatchObject({ provider: 'deepseek', model: 'deepseek-flash', requestedModel: 'deepseek-flash' })
+  })
   test('understand uses a provider request and reports returned model and injected version', async () => {
     const mock = vi.fn(async (_url: string, _options: RequestInit) => completion())
     vi.stubGlobal('fetch', mock)
