@@ -15,7 +15,8 @@
 | 本地隔离浏览器 | PASS，35检查 | 同目录browser/results.json，SQLite模拟D1，不等同线上 |
 | 双环境真实D1迁移 | PASS | 0001私人数据、0002社区、0003协作均执行成功 |
 | 本机handler→真实DeepSeek | PASS | understand约5782ms；直接generate约6593ms，deepseek-flash，3套校验通过；非Worker/D1验收 |
-| 预览API与UI闭环 | 待验证 | 将记录preview/results.json、preview/ui-results.json |
+| 预览UI闭环 | PASS，10检查 | preview/ui-results.json：真实模型、选用、D1保存/恢复、继续同Trip、分享创建/撤销、200%字体 |
+| 预览API/PWA扩展 | 48检查通过，离线导航修复待重验 | 权限、快照更新/撤销、协作邀请、3尺寸页面及可见图片通过；Cloudflare .html重定向导致离线响应失败 |
 | 生产SHA/知识版本/闭环 | 待验证 | 将记录production/results.json、production/ui-results.json |
 
 ## 回归修复依据
@@ -27,6 +28,7 @@
 - 五城旧来源不保证排前8；分别检查旧批次可召回、真实前后端检索一致、来源去重及三方案生成。
 - 半天时间和轻松密度修复；室内发布出口重新校验实际站点，待选或室外场所不能冒充可行室内方案。
 - 原535/571项失败报告保留为历史，不再代表当前全量结果；未通过删测试或补造数据取得PASS。
+- 云端特有离线问题：Pages将offline.html重定向至offline，缓存响应redirected=true不能用于导航。已先复现红色回归，再改为返回相同离线正文的新Response；定向36/36通过，等待下一次预览验证。
 
 ## 任务书剩余验收
 

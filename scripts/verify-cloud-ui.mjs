@@ -47,4 +47,4 @@ try {
   await page.screenshot({path:output+'/saved-trips-200.png',fullPage:true})
   check('UI runtime error free',errors.length===0,errors)
 }catch(cause){results.error=cause instanceof Error?cause.message:String(cause);await page.screenshot({path:output+'/ui-failure.png',fullPage:true}).catch(()=>{});process.exitCode=1}
-finally{if(shareUrl)await context.request.post(base+'/api/shares/'+new URL(shareUrl).pathname.split('/').at(-1)+'/revoke').catch(()=>{});await writeFile(output+'/ui-results.json',JSON.stringify(results,null,2));await browser.close();console.log(JSON.stringify({checks:results.checks.length,error:results.error??null,ai:results.ai}))}
+finally{if(shareUrl)await context.request.post(base+'/api/shares/'+new URL(shareUrl).pathname.split('/').at(-1)+'/revoke',{data:{}}).catch(()=>{});await writeFile(output+'/ui-results.json',JSON.stringify(results,null,2));await browser.close();console.log(JSON.stringify({checks:results.checks.length,error:results.error??null,ai:results.ai}))}

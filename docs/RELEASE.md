@@ -13,7 +13,7 @@
 | 发布提交 | 2322148整合、df8ba60合并、180ae08回归与构建输入 |
 | 唯一生产链路 | 现有Cloudflare Pages项目zouzou，Git集成，生产main |
 | 正式域名 | https://zouzou.ppx.wiki；项目域名 https://zouzou-etq.pages.dev |
-| 新预览 / 生产 | 4afcc997已触发预览构建；最终修复继续推送 / 生产未执行 |
+| 新预览 / 生产 | 88b58da7已成功，b4f6c42；离线修复继续推送 / 生产未执行 |
 | 旧生产参考 | c89cb80c-bb93-4473-865f-ef3639f8aefa，仅旧静态版 |
 
 ## 内容清单

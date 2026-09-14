@@ -20,7 +20,14 @@ self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET' || url.origin !== self.location.origin) return
   if (url.pathname.startsWith('/api/')) return
   if (event.request.mode === 'navigate') {
-    event.respondWith(fetch(event.request).catch(() => caches.match(OFFLINE)))
+    event.respondWith(fetch(event.request).catch(async () => {
+      const cached = await caches.match(OFFLINE)
+      if (!cached) return Response.error()
+      // Pages redirects .html to its extensionless URL. Navigation requests
+      // cannot consume that redirected cached response; return the same safe
+      // offline body as a fresh response, never cached private page content.
+      return new Response(cached.body, { status: cached.status, headers: cached.headers })
+    }))
     return
   }
   // Only Vite fingerprinted files are immutable. Brand/cover paths can change

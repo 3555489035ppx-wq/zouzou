@@ -34,7 +34,8 @@ try {
   check('A creates private-trip share',created.status()===201&&/^[a-f0-9]{64}$/.test(link.token),{status:created.status()});shareToken=link.token
   const snapshot=await b.request.get(base+'/api/shares/'+shareToken),snapshotData=await snapshot.json()
   check('B reads allowlisted shared snapshot',snapshot.ok()&&!('intent'in snapshotData)&&!('evidence'in snapshotData)&&snapshot.headers()['cache-control']==='no-store')
-  check('B cannot revoke A share',(await b.request.post(base+'/api/shares/'+shareToken+'/revoke')).status()===403)
+  const denied=await b.request.post(base+'/api/shares/'+shareToken+'/revoke',{data:{}})
+  check('B cannot revoke A share',denied.status()===403,{status:denied.status()})
   const page=await b.newPage(),errors=[];page.setDefaultTimeout(20000);page.on('pageerror',e=>errors.push(e.message))
   await page.goto(base+'/share/'+shareToken);await page.getByRole('heading',{level:1}).waitFor()
   check('B loads shared trip deep link',(await page.locator('.page-content').innerText()).includes('上海'))
@@ -45,7 +46,7 @@ try {
   const newer={...trip,revision:2,savedAt:new Date().toISOString()}
   check('A explicitly updates snapshot',(await a.request.post(base+'/api/shares/'+shareToken+'/update',{data:newer})).ok())
   check('B sees updated snapshot',(await(await b.request.get(base+'/api/shares/'+shareToken)).json()).revision===2)
-  check('A revokes share',(await a.request.post(base+'/api/shares/'+shareToken+'/revoke')).ok())
+  check('A revokes share',(await a.request.post(base+'/api/shares/'+shareToken+'/revoke',{data:{}})).ok())
   await page.reload();await page.getByRole('alert').waitFor();check('B sees revoked link failure',(await b.request.get(base+'/api/shares/'+shareToken)).status()===404)
   await page.screenshot({path:output+'/share-revoked.png',fullPage:true})
   if(label==='preview') {
@@ -68,6 +69,12 @@ try {
     for(const route of ['/home','/trips','/travel/new','/discover','/profile','/settings/install']) {
       await page.goto(base+route);await page.locator('main,.page-content').first().waitFor()
       check('no horizontal overflow '+width+' '+route,await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth))
+      if(width===390&&['/home','/discover'].includes(route)) {
+        await page.waitForFunction(()=>Array.from(document.images).filter(i=>{const r=i.getBoundingClientRect();return r.width>0&&r.top<innerHeight&&r.bottom>0}).every(i=>i.complete),{},{timeout:20000})
+        const broken=await page.evaluate(()=>Array.from(document.images).filter(i=>{const r=i.getBoundingClientRect();return r.width>0&&r.top<innerHeight&&r.bottom>0&&i.naturalWidth===0}).map(i=>new URL(i.src).pathname))
+        check('visible hosted images load '+route,broken.length===0,broken)
+        await page.screenshot({path:output+'/'+route.slice(1)+'-390.png',fullPage:true})
+      }
     }
   }
   const cacheUrls=await page.evaluate(async()=>{const urls=[];for(const name of await caches.keys())for(const r of await(await caches.open(name)).keys())urls.push(r.url);return urls})
@@ -77,4 +84,4 @@ try {
   await page.screenshot({path:output+'/offline.png',fullPage:true});await b.setOffline(false)
   check('browser runtime error free',errors.length===0,errors)
 } catch(cause) {results.error=cause instanceof Error?cause.message:String(cause);process.exitCode=1}
-finally {if(shareToken)await a.request.post(base+'/api/shares/'+shareToken+'/revoke').catch(()=>{});await writeFile(output+'/results.json',JSON.stringify(results,null,2));await browser.close();console.log(JSON.stringify({environment:label,checks:results.checks.length,error:results.error??null}))}
+finally {if(shareToken)await a.request.post(base+'/api/shares/'+shareToken+'/revoke',{data:{}}).catch(()=>{});await writeFile(output+'/results.json',JSON.stringify(results,null,2));await browser.close();console.log(JSON.stringify({environment:label,checks:results.checks.length,error:results.error??null}))}
