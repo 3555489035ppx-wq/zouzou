@@ -13,12 +13,12 @@ const interpolateRoute = (places: Place[], progress: number) => {
   const local = scaled - index
   const from = places[index]
   const to = places[Math.min(index + 1, places.length - 1)]
-  return new THREE.Vector3(THREE.MathUtils.lerp(from.x, to.x, local), 0.31, THREE.MathUtils.lerp(from.z, to.z, local))
+  return new THREE.Vector3(THREE.MathUtils.lerp(from.x ?? 0, to.x ?? 0, local), 0.31, THREE.MathUtils.lerp(from.z ?? 0, to.z ?? 0, local))
 }
 
 const Landmark = ({ place, index, active }: { place: Place; index: number; active: boolean }) => {
   const shape = index % 4
-  return <group position={[place.x, 0, place.z]} scale={active ? 1.15 : 1}>
+  return <group position={[place.x ?? 0, 0, place.z ?? 0]} scale={active ? 1.15 : 1}>
     {shape === 0 ? <><mesh position={[0, 0.24, 0]}><boxGeometry args={[0.62, 0.48, 0.5]} /><meshStandardMaterial color={active ? sceneColors.ink : sceneColors.landmark} /></mesh><mesh position={[0, 0.56, 0]} rotation={[0, 0, Math.PI / 4]}><boxGeometry args={[0.48, 0.48, 0.48]} /><meshStandardMaterial color={sceneColors.highlight} /></mesh></> : null}
     {shape === 1 ? <><mesh position={[0, 0.26, 0]}><cylinderGeometry args={[0.18, 0.25, 0.52, 8]} /><meshStandardMaterial color={active ? sceneColors.landmarkActive : sceneColors.landmarkAlt} /></mesh><mesh position={[0, 0.63, 0]}><coneGeometry args={[0.44, 0.72, 8]} /><meshStandardMaterial color={sceneColors.highlightSoft} /></mesh></> : null}
     {shape === 2 ? <><mesh position={[0, 0.22, 0]}><boxGeometry args={[0.76, 0.44, 0.58]} /><meshStandardMaterial color={active ? sceneColors.landmarkActiveAlt : sceneColors.landmarkSoft} /></mesh><mesh position={[0, 0.52, 0]}><boxGeometry args={[0.52, 0.18, 0.43]} /><meshStandardMaterial color={sceneColors.highlightRaised} /></mesh></> : null}
@@ -54,7 +54,7 @@ const Character = ({ places, progress, paused, state }: { places: Place[]; progr
 
 const TripWorld = ({ places, progress, paused, state }: { places: Place[]; progress: number; paused: boolean; state: TripSceneState }) => {
   const line = useMemo(() => {
-    const geometry = new THREE.BufferGeometry().setFromPoints(places.map((place) => new THREE.Vector3(place.x, 0.035, place.z)))
+    const geometry = new THREE.BufferGeometry().setFromPoints(places.map((place) => new THREE.Vector3(place.x ?? 0, 0.035, place.z ?? 0)))
     return new THREE.Line(geometry, new THREE.LineBasicMaterial({ color: sceneColors.route, linewidth: 2 }))
   }, [places])
   const activeIndex = Math.min(places.length - 1, Math.round(progress * (places.length - 1)))

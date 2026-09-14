@@ -1,0 +1,57 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "zouzou",
+  "pages_build_output_dir": "dist",
+  "compatibility_date": "2026-09-14",
+  "vars": {
+    "PUBLIC_APP_ORIGIN": "https://zouzou.ppx.wiki",
+    "KNOWLEDGE_RELEASE_APPROVED": "true",
+    "AI_PROVIDER": "deepseek",
+    "KNOWLEDGE_VERSION": "travel-20260914-72591dbecea55e65",
+    "DEEPSEEK_MODEL": "deepseek-flash"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "zouzou-preview",
+      "database_id": "55bf70c1-9248-4927-a332-8d115113fbee",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "env": {
+    "preview": {
+      "vars": {
+        "PUBLIC_APP_ORIGIN": "https://zouzou.ppx.wiki",
+        "KNOWLEDGE_RELEASE_APPROVED": "true",
+        "AI_PROVIDER": "deepseek",
+        "KNOWLEDGE_VERSION": "travel-20260914-72591dbecea55e65",
+        "DEEPSEEK_MODEL": "deepseek-flash"
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "zouzou-preview",
+          "database_id": "55bf70c1-9248-4927-a332-8d115113fbee",
+          "migrations_dir": "migrations"
+        }
+      ]
+    },
+    "production": {
+      "vars": {
+        "PUBLIC_APP_ORIGIN": "https://zouzou.ppx.wiki",
+        "KNOWLEDGE_RELEASE_APPROVED": "true",
+        "AI_PROVIDER": "deepseek",
+        "KNOWLEDGE_VERSION": "travel-20260914-72591dbecea55e65",
+        "DEEPSEEK_MODEL": "deepseek-flash"
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "zouzou-production",
+          "database_id": "a006a1c1-0c82-4fab-96ef-e9d618d851c0",
+          "migrations_dir": "migrations"
+        }
+      ]
+    }
+  }
+}

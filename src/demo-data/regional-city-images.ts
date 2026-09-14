@@ -1,4 +1,5 @@
 import type { CityImage } from './city-images'
+import { moreCityImages } from './more-city-images'
 
 const commonsFile = (title: string) => `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(title)}?width=1280`
 const ccBy = 'https://creativecommons.org/licenses/by/3.0/'
@@ -91,4 +92,5 @@ export const regionalCityImages: Record<string, CityImage> = {
     src: '/assets/cities/nyingchi-bayi.jpg', alt: '林芝八一镇与山地景色', landmark: '林芝八一镇',
     sourceUrl: 'https://commons.wikimedia.org/wiki/File:Bayi,_Nyingchi,_Tibet,_China_-_panoramio_(26).jpg', credit: 'ping lin', license: 'CC BY-SA 3.0', licenseUrl: ccBySa30, downloadUrl: commonsFile('Bayi, Nyingchi, Tibet, China - panoramio (26).jpg'),
   },
+  ...moreCityImages,
 }

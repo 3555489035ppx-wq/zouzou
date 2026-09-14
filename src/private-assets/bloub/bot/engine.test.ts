@@ -200,12 +200,12 @@ describe('etats', () => {
 
   it('tient les transitions d interface hors du catalogue', () => {
     const horsSequence = STATES.filter((s) => !SEQUENCE.includes(s.id)).map((s) => s.id)
-    expect(horsSequence).toEqual(['swirl'])
+    expect(horsSequence).toEqual(['quatrefoil', 'swirl'])
   })
 
   it('montre le visage sur les etats a visage, le cache sur les autres', () => {
-    const avec: StateId[] = ['idle', 'wink', 'wide', 'notify', 'egg', 'hexagon']
-    const sans: StateId[] = ['thinking', 'alert', 'exclaim', 'sleep']
+    const avec: StateId[] = ['idle', 'thinking', 'wink', 'wide', 'notify', 'egg', 'hexagon', 'quatrefoil']
+    const sans: StateId[] = ['alert', 'exclaim', 'sleep']
     for (const id of avec) expect(new BotEngine(100, id).sample(0.9).eyes.length).toBe(2)
     for (const id of sans) expect(new BotEngine(100, id).sample(0.9).eyes.length).toBe(0)
   })

@@ -1,4 +1,5 @@
 import rawKnowledge from '../../../data/gooh-knowledge.json'
+import { isRuntimeCityAllowed } from './runtimeKnowledgePolicy'
 
 export type KnowledgeResearchSource = {
   type: 'competitor-research'
@@ -48,7 +49,7 @@ type KnowledgePayload = { journeys: JourneyKnowledge[]; places: PlaceKnowledge[]
 
 const knowledgePayload = rawKnowledge as unknown as KnowledgePayload
 
-export const journeyKnowledge = knowledgePayload.journeys
+export const journeyKnowledge = knowledgePayload.journeys.filter((item) => isRuntimeCityAllowed(item.city))
 
 const knowledgeKey = (item: Pick<PlaceKnowledge, 'city' | 'name'>) => `${item.city.trim().toLocaleLowerCase()}::${item.name.trim().toLocaleLowerCase()}`
 
@@ -73,9 +74,10 @@ export function dedupeKnowledgePlaces(items: PlaceKnowledge[]) {
   return [...byKey.values()]
 }
 
-export const placeKnowledge = dedupeKnowledgePlaces(knowledgePayload.places)
+export const placeKnowledge = dedupeKnowledgePlaces(knowledgePayload.places.filter((item) => isRuntimeCityAllowed(item.city)))
 
 export function getPlaceKnowledge(name: string, city: string) {
+  if (!isRuntimeCityAllowed(city)) return undefined
   const normalizedName = name.trim().toLocaleLowerCase()
   const normalizedCity = city.trim().toLocaleLowerCase()
   return placeKnowledge.find((item) => item.city.toLocaleLowerCase() === normalizedCity && item.name.toLocaleLowerCase() === normalizedName)

@@ -16,4 +16,9 @@ describe('travel guide knowledge base', () => {
     expect(inferGuideCity('计划去杭州三天')).toBe('杭州')
     expect(getGuideStats().total).toBeGreaterThanOrEqual(40)
   })
+
+  it('keeps removed Datong knowledge out of local guide runtime', () => {
+    expect(searchTravelGuides('大同', '云冈石窟', 12).candidates).toEqual([])
+    expect(getGuideStats().byCity['大同']).toBeUndefined()
+  })
 })

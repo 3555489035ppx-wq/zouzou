@@ -78,7 +78,7 @@ export function foodCompatibilityIssues(text: string, profile: DietaryProfile, e
   const risks = new Set([...inferFoodTags(text), ...explicitTags])
   const issues: string[] = []
   if (profile.avoidSpicy && risks.has('spicy')) issues.push('含辣或重口味线索')
-  if (profile.avoidSeafood && risks.has('seafood')) issues.push('含海鲜或水产线索')
+  if ((profile.avoidSeafood || profile.vegetarian) && risks.has('seafood')) issues.push('含海鲜或水产线索')
   if (profile.vegetarian && risks.has('meat')) issues.push('含肉类线索')
   if (profile.halal && (risks.has('pork') || risks.has('alcohol'))) issues.push('可能含猪肉或酒精')
   profile.allergies.forEach((allergy) => {

@@ -1,0 +1,1546 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-14T10:17:39.994Z",
+  "entries": [
+    {
+      "id": "named-杭州-e8a5bfe6baaae6b0b4",
+      "city": "杭州",
+      "name": "西溪水族公园",
+      "category": "attraction",
+      "area": "杭州 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "西溪水族公园在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "douyin",
+          "author": "福来哟探杭州",
+          "url": "https://www.douyin.com/video/7677472268235123427",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-合肥-e5ae89e5bebde59088",
+      "city": "合肥",
+      "name": "安徽合肥曙光路早市",
+      "category": "attraction",
+      "area": "合肥 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "安徽合肥曙光路早市在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "bilibili",
+          "author": "宝玉38度",
+          "url": "https://www.bilibili.com/video/BV1DQDHYLE1L",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-合肥-e5ae89e5869ce5a4a7",
+      "city": "合肥",
+      "name": "安农大夜市",
+      "category": "attraction",
+      "area": "合肥 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "安农大夜市在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "bilibili",
+          "author": "张一曼曼",
+          "url": "https://www.bilibili.com/video/BV1pV3M6dEn2",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-合肥-e59b9be6b9bee88f9c",
+      "city": "合肥",
+      "name": "四湾菜市场",
+      "category": "attraction",
+      "area": "合肥 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "四湾菜市场在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "bilibili",
+          "author": "艾伦美食探索",
+          "url": "https://www.bilibili.com/video/BV1dyVh6DE9Q",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-呼和浩特-e887b3e4ba94e58fb0",
+      "city": "呼和浩特",
+      "name": "至五台山",
+      "category": "attraction",
+      "area": "呼和浩特 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "至五台山在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "bilibili",
+          "author": "鋈鸢",
+          "url": "https://www.bilibili.com/video/BV1L1v4eDEXv",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-济南-e4b8ade59bbde5b1b1",
+      "city": "济南",
+      "name": "中国山东济南超级大夜市",
+      "category": "attraction",
+      "area": "济南 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "中国山东济南超级大夜市在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "bilibili",
+          "author": "小辛美食",
+          "url": "https://www.bilibili.com/video/BV1hLE1zyEqP",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-康定-e79498e5ad9ce8978f",
+      "city": "康定",
+      "name": "甘孜藏族自治州博物馆",
+      "category": "attraction",
+      "area": "康定 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "甘孜藏族自治州博物馆在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "douyin",
+          "author": "陈静",
+          "url": "https://www.douyin.com/video/7394672466926341376",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-拉萨-e5a49ce6b8b8e68b89",
+      "city": "拉萨",
+      "name": "夜游拉萨南山公园",
+      "category": "attraction",
+      "area": "拉萨 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "夜游拉萨南山公园在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "bilibili",
+          "author": "罗磊-旅行日记",
+          "url": "https://www.bilibili.com/video/BV1mq4y137m6",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-拉萨-e591a8e8beb9e5b08f",
+      "city": "拉萨",
+      "name": "周边小众古寺",
+      "category": "attraction",
+      "area": "拉萨 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "周边小众古寺在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "douyin",
+          "author": "霂子爱生活",
+          "url": "https://www.douyin.com/video/7656432336611731385",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-兰州-e79498e88283e585b0",
+      "city": "兰州",
+      "name": "甘肃兰州超级热闹的早市",
+      "category": "attraction",
+      "area": "兰州 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "甘肃兰州超级热闹的早市在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "bilibili",
+          "author": "大胡的美食之旅",
+          "url": "https://www.bilibili.com/video/BV1wUtRzjENr",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-兰州-e79498e88283e585b0",
+      "city": "兰州",
+      "name": "甘肃兰州大早市",
+      "category": "attraction",
+      "area": "兰州 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "甘肃兰州大早市在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "bilibili",
+          "author": "寻味环游记",
+          "url": "https://www.bilibili.com/video/BV1bR4UeyEF3",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-兰州-e5ae9ee68b8de585b0",
+      "city": "兰州",
+      "name": "实拍兰州五泉早市",
+      "category": "attraction",
+      "area": "兰州 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "实拍兰州五泉早市在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "bilibili",
+          "author": "晓忠Vlogs",
+          "url": "https://www.bilibili.com/video/BV131bqzEE9e",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-兰州-e4b8ade59bbde8a5bf",
+      "city": "兰州",
+      "name": "中国西北腹地兰州夜市",
+      "category": "attraction",
+      "area": "兰州 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "中国西北腹地兰州夜市在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "bilibili",
+          "author": "求仁食刻",
+          "url": "https://www.bilibili.com/video/BV1o7oPB1E8w",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-丽江-e4bb8ae5a4a9e68993",
+      "city": "丽江",
+      "name": "今天打卡丽江中济海公园",
+      "category": "attraction",
+      "area": "丽江 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "今天打卡丽江中济海公园在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "douyin",
+          "author": "凡*夫俗子",
+          "url": "https://www.douyin.com/video/7596265835708027610",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-丽水-e5ada6e999a2e5a496",
+      "city": "丽水",
+      "name": "学院外的人气夜市",
+      "category": "attraction",
+      "area": "丽水 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "学院外的人气夜市在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "douyin",
+          "author": "暴走五花肉",
+          "url": "https://www.douyin.com/video/7654417862736421477",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-漠河-e5be90e4ba91e588b0",
+      "city": "漠河",
+      "name": "徐云到达盘古镇",
+      "category": "attraction",
+      "area": "漠河 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "徐云到达盘古镇在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "bilibili",
+          "author": "墨染燕赵",
+          "url": "https://www.bilibili.com/video/BV1y84y1K7UF",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-南宁-35e5a4a93130e5aeb6",
+      "city": "南宁",
+      "name": "5天10家咖啡馆",
+      "category": "restaurant",
+      "area": "南宁 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "餐饮",
+        "需地图核验"
+      ],
+      "durationMinutes": 60,
+      "summary": "5天10家咖啡馆在公开视频标题中被明确提及，可作为餐饮候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "bilibili",
+          "author": "一杯小杯子",
+          "url": "https://www.bilibili.com/video/BV1Fh411q7jR",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-南宁-e58f8ce5ad96e4ba95",
+      "city": "南宁",
+      "name": "双孖井早市",
+      "category": "attraction",
+      "area": "南宁 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "双孖井早市在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "bilibili",
+          "author": "阿树旅拍100个乡村",
+          "url": "https://www.bilibili.com/video/BV1SuaGz2E6g",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-南宁-e5b08fe59083e999a4",
+      "city": "南宁",
+      "name": "小吃除了各种夜市",
+      "category": "attraction",
+      "area": "南宁 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "小吃除了各种夜市在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "douyin",
+          "author": "Wz一直自在",
+          "url": "https://www.douyin.com/video/7620076401379392741",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-宁波-e69c89e887aae5b7b1",
+      "city": "宁波",
+      "name": "有自己的小小小小赛里木湖",
+      "category": "attraction",
+      "area": "宁波 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "有自己的小小小小赛里木湖在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "bilibili",
+          "author": "阿星去玩了",
+          "url": "https://www.bilibili.com/video/BV1F3ebeZEtV",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-泉州-e5878ce699a83132e9",
+      "city": "泉州",
+      "name": "凌晨12點的泉州夜市",
+      "category": "attraction",
+      "area": "泉州 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "凌晨12點的泉州夜市在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "bilibili",
+          "author": "简伯廷",
+          "url": "https://www.bilibili.com/video/BV14J4m147rP",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-三亚-e6a4b0e5ad90e6b4b2",
+      "city": "三亚",
+      "name": "椰子洲岛",
+      "category": "attraction",
+      "area": "三亚 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "椰子洲岛在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "douyin",
+          "author": "领航员列奥",
+          "url": "https://www.douyin.com/video/7598494082999502257",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-沈阳-e5b8a6e5a4a7e5aeb6",
+      "city": "沈阳",
+      "name": "带大家晚上转一转沈阳西塔",
+      "category": "attraction",
+      "area": "沈阳 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "带大家晚上转一转沈阳西塔在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "bilibili",
+          "author": "突跳的欢sir",
+          "url": "https://www.bilibili.com/video/BV1Xtjq6iECQ",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-沈阳-e99c80e8a681e4b9b0",
+      "city": "沈阳",
+      "name": "需要买门票才能进入的公园",
+      "category": "attraction",
+      "area": "沈阳 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "需要买门票才能进入的公园在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "bilibili",
+          "author": "梧桐鹤在奉天",
+          "url": "https://www.bilibili.com/video/BV1JL5m6BEfk",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-沈阳-e4b8ade59bbde6b288",
+      "city": "沈阳",
+      "name": "中国沈阳早市",
+      "category": "attraction",
+      "area": "沈阳 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "中国沈阳早市在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "bilibili",
+          "author": "中国街头美食vlogs",
+          "url": "https://www.bilibili.com/video/BV1iEg3zKEc4",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-苏州-e98791e9b8a1e6b996",
+      "city": "苏州",
+      "name": "金鸡湖环湖",
+      "category": "attraction",
+      "area": "苏州 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "金鸡湖环湖在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "douyin",
+          "author": "快乐存档中",
+          "url": "https://www.douyin.com/video/7664846237070390897",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-太原-e5b1b1e8a5bfe79a84",
+      "city": "太原",
+      "name": "山西的夜市",
+      "category": "attraction",
+      "area": "太原 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "山西的夜市在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "douyin",
+          "author": "太原发现哥",
+          "url": "https://www.douyin.com/video/7669309643453857637",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-太原-e5b1b1e8a5bfe79c81",
+      "city": "太原",
+      "name": "山西省科技馆",
+      "category": "attraction",
+      "area": "太原 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "山西省科技馆在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "douyin",
+          "author": "博仔嘻游记｜太原",
+          "url": "https://www.douyin.com/video/7652403059759469947",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-太原-e5b1b1e8a5bfe5a4aa",
+      "city": "太原",
+      "name": "山西太原清真寺",
+      "category": "attraction",
+      "area": "太原 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "山西太原清真寺在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "douyin",
+          "author": "马清清",
+          "url": "https://www.douyin.com/video/7656082076068838118",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-太原-e5a49ce788ace5b49b",
+      "city": "太原",
+      "name": "夜爬崛围山",
+      "category": "attraction",
+      "area": "太原 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "夜爬崛围山在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "douyin",
+          "author": "大老王",
+          "url": "https://www.douyin.com/video/7379822885642243338",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-太原-e887aae9a9bee4b880",
+      "city": "太原",
+      "name": "自驾一个小时到达忻州古城",
+      "category": "attraction",
+      "area": "太原 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "自驾一个小时到达忻州古城在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "douyin",
+          "author": "顺薪如亿💙（互）",
+          "url": "https://www.douyin.com/video/7677181726457102513",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        },
+        {
+          "platform": "douyin",
+          "author": "顺薪如亿💙（互）",
+          "url": "https://www.douyin.com/video/7677229947668970225",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-腾冲-e8b5b0e8bf9be58d9a",
+      "city": "腾冲",
+      "name": "走进博物馆之腾冲博物馆",
+      "category": "attraction",
+      "area": "腾冲 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "走进博物馆之腾冲博物馆在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "bilibili",
+          "author": "alazybird",
+          "url": "https://www.bilibili.com/video/BV1ga4y1P7EQ",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-天津-e79baee5898de5a4a9",
+      "city": "天津",
+      "name": "目前天津最火的一家咖啡馆",
+      "category": "restaurant",
+      "area": "天津 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "餐饮",
+        "需地图核验"
+      ],
+      "durationMinutes": 60,
+      "summary": "目前天津最火的一家咖啡馆在公开视频标题中被明确提及，可作为餐饮候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "douyin",
+          "author": "诺言虞世",
+          "url": "https://www.douyin.com/video/7627130668258586856",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-天津-e887aae9a9bee79bb4",
+      "city": "天津",
+      "name": "自驾直达牛奶湖",
+      "category": "attraction",
+      "area": "天津 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "自驾直达牛奶湖在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "douyin",
+          "author": "银兔起飞",
+          "url": "https://www.douyin.com/video/7659001654054549986",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-威海-e5878ce699a8e4b88a",
+      "city": "威海",
+      "name": "凌晨上山",
+      "category": "attraction",
+      "area": "威海 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "凌晨上山在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "bilibili",
+          "author": "西西弗斯-__-",
+          "url": "https://www.bilibili.com/video/BV15H4y1Z7Xt",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-温州-e588abe6898ee5a086",
+      "city": "温州",
+      "name": "别扎堆去海岛",
+      "category": "attraction",
+      "area": "温州 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "别扎堆去海岛在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "douyin",
+          "author": "Michelle和米团子",
+          "url": "https://www.douyin.com/video/7669997510865889254",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-温州-e6b585e8b088e6b8a9",
+      "city": "温州",
+      "name": "浅谈温州夜市",
+      "category": "attraction",
+      "area": "温州 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "浅谈温州夜市在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "bilibili",
+          "author": "show秀爷",
+          "url": "https://www.bilibili.com/video/BV18t4y1G7Vj",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-温州-e5b08fe4bc97e6b5b7",
+      "city": "温州",
+      "name": "小众海岛",
+      "category": "attraction",
+      "area": "温州 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "小众海岛在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "douyin",
+          "author": "乔葛里风",
+          "url": "https://www.douyin.com/video/7647915066213889363",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-温州-e69c89e4b880e5aeb6",
+      "city": "温州",
+      "name": "有一家教科书般存在的餐厅",
+      "category": "restaurant",
+      "area": "温州 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "餐饮",
+        "需地图核验"
+      ],
+      "durationMinutes": 60,
+      "summary": "有一家教科书般存在的餐厅在公开视频标题中被明确提及，可作为餐饮候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "bilibili",
+          "author": "show秀爷",
+          "url": "https://www.bilibili.com/video/BV1hS4y117oy",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-乌鲁木齐-e5a4a9e5b1b1e58cba",
+      "city": "乌鲁木齐",
+      "name": "天山区和平南路夜市",
+      "category": "attraction",
+      "area": "乌鲁木齐 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "天山区和平南路夜市在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "bilibili",
+          "author": "包子在新疆",
+          "url": "https://www.bilibili.com/video/BV1gr421E7Y2",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-无锡-e4b89ce983a8e7ab9f",
+      "city": "无锡",
+      "name": "东部竟然藏着好几条老街",
+      "category": "attraction",
+      "area": "无锡 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "东部竟然藏着好几条老街在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "bilibili",
+          "author": "刘羽的旅行",
+          "url": "https://www.bilibili.com/video/BV1WowgeaE45",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-西安-e888aae5a4a9e59f8e",
+      "city": "西安",
+      "name": "航天城水生态循环公园",
+      "category": "attraction",
+      "area": "西安 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "航天城水生态循环公园在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "douyin",
+          "author": "天天吃好价",
+          "url": "https://www.douyin.com/video/7621556101600285041",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-西宁-e88081e78e8be4b880",
+      "city": "西宁",
+      "name": "老王一个人在西宁湿地公园",
+      "category": "attraction",
+      "area": "西宁 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "老王一个人在西宁湿地公园在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "bilibili",
+          "author": "老王Restart",
+          "url": "https://www.bilibili.com/video/BV1mb3F6kEqr",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-西宁-e68ea2e7a798e8a5bf",
+      "city": "西宁",
+      "name": "探秘西宁博物馆",
+      "category": "attraction",
+      "area": "西宁 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "探秘西宁博物馆在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "bilibili",
+          "author": "课说说",
+          "url": "https://www.bilibili.com/video/BV1nZtR6FEdk",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-香格里拉-e99ba8e5b4a9e59b9e",
+      "city": "香格里拉",
+      "name": "雨崩回到香格里拉古城",
+      "category": "attraction",
+      "area": "香格里拉 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "雨崩回到香格里拉古城在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "bilibili",
+          "author": "轩子Xuanz",
+          "url": "https://www.bilibili.com/video/BV1NStR6iEYu",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-宜昌-e5868de8aebfe5ae9c",
+      "city": "宜昌",
+      "name": "再访宜昌中央公园",
+      "category": "attraction",
+      "area": "宜昌 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "再访宜昌中央公园在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "bilibili",
+          "author": "爱骑行的阿伦",
+          "url": "https://www.bilibili.com/video/BV1VGtd6SENB",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-长春-e58c97e6b996e6b9bf",
+      "city": "长春",
+      "name": "北湖湿地公园",
+      "category": "attraction",
+      "area": "长春 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "北湖湿地公园在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "bilibili",
+          "author": "82年的龙叔",
+          "url": "https://www.bilibili.com/video/BV18F411r7i7",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-长春-e58c97e78eafe59f8e",
+      "city": "长春",
+      "name": "北环城路附近的夜市",
+      "category": "attraction",
+      "area": "长春 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "北环城路附近的夜市在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "bilibili",
+          "author": "步走寻尝路",
+          "url": "https://www.bilibili.com/video/BV1hM4y1q7px",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-长春-e6b996e8a5bfe8b7af",
+      "city": "长春",
+      "name": "湖西路市场",
+      "category": "attraction",
+      "area": "长春 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "湖西路市场在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "bilibili",
+          "author": "食小天",
+          "url": "https://www.bilibili.com/video/BV15k4y1p74a",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-长春-e59089e69e97e995bf",
+      "city": "长春",
+      "name": "吉林长春最火最有名的早市",
+      "category": "attraction",
+      "area": "长春 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "吉林长春最火最有名的早市在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "bilibili",
+          "author": "胖虎老刘",
+          "url": "https://www.bilibili.com/video/BV1mr99BaEPX",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-长春-e8bebde998b3e8a197",
+      "city": "长春",
+      "name": "辽阳街早市",
+      "category": "attraction",
+      "area": "长春 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "辽阳街早市在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "bilibili",
+          "author": "食小天",
+          "url": "https://www.bilibili.com/video/BV1hh4y147Xm",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-长春-e4b896e7baaae5b9bf",
+      "city": "长春",
+      "name": "世纪广场农贸市场",
+      "category": "attraction",
+      "area": "长春 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "世纪广场农贸市场在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "bilibili",
+          "author": "步走寻尝路",
+          "url": "https://www.bilibili.com/video/BV14k4y1h79i",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-长春-e4ba94e6989fe7baa7",
+      "city": "长春",
+      "name": "五星级温泉的国信南山",
+      "category": "attraction",
+      "area": "长春 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "五星级温泉的国信南山在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "bilibili",
+          "author": "82年的龙叔",
+          "url": "https://www.bilibili.com/video/BV1Qx421r7Sa",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-长春-e4b88be58d8834e782",
+      "city": "长春",
+      "name": "下午4点的长春吉柴夜市",
+      "category": "attraction",
+      "area": "长春 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "下午4点的长春吉柴夜市在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "bilibili",
+          "author": "步走寻尝路",
+          "url": "https://www.bilibili.com/video/BV1na4y1u79f",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-长春-e696b0e7abb9e8b7af",
+      "city": "长春",
+      "name": "新竹路早市",
+      "category": "attraction",
+      "area": "长春 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "新竹路早市在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "bilibili",
+          "author": "食小天",
+          "url": "https://www.bilibili.com/video/BV1jV4y1z751",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-郑州-e783ade997b9e5a4a7",
+      "city": "郑州",
+      "name": "热闹大早市",
+      "category": "attraction",
+      "area": "郑州 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "热闹大早市在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "bilibili",
+          "author": "小辛美食",
+          "url": "https://www.bilibili.com/video/BV1tan8zvEJH",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-郑州-e7b4a2e6b2b3e9838a",
+      "city": "郑州",
+      "name": "索河郊野公园",
+      "category": "attraction",
+      "area": "郑州 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "索河郊野公园在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "douyin",
+          "author": "郑州摄影摄像航拍录课",
+          "url": "https://www.douyin.com/video/7669441033248486735",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-珠海-e68ea2e5afbbe78fa0",
+      "city": "珠海",
+      "name": "探寻珠海最北端的海岛",
+      "category": "attraction",
+      "area": "珠海 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "探寻珠海最北端的海岛在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "bilibili",
+          "author": "城中村里看日落",
+          "url": "https://www.bilibili.com/video/BV1uwMd6fEfD",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    },
+    {
+      "id": "named-珠海-e69c80e781abe5a48f",
+      "city": "珠海",
+      "name": "最火夏湾夜市",
+      "category": "attraction",
+      "area": "珠海 / 具体片区待核验",
+      "address": "具体门牌与入口出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": [
+        "社区具名线索",
+        "游览",
+        "需地图核验"
+      ],
+      "durationMinutes": 90,
+      "summary": "最火夏湾夜市在公开视频标题中被明确提及，可作为游览候选；具体位置、开放或营业、票务、预约及实际转场须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "bilibili",
+          "author": "每每游记澳门篇更新中",
+          "url": "https://www.bilibili.com/video/BV1XA4m1P7uM",
+          "locator": "公开视频标题中的具名地点；地址、营业、票务和当前状态未核验"
+        }
+      ]
+    }
+  ]
+}

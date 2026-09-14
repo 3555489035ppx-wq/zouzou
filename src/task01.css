@@ -1,0 +1,9 @@
+/* Task 01 interaction geometry; visual design remains with Task 03. */
+.zou-nav button { min-height:44px; min-width:44px; }
+.understanding-page fieldset { min-width:0; margin-block:12px; }
+.understanding-page fieldset button { display:block; width:100%; min-height:44px; white-space:normal; text-align:left; padding:10px; margin-block:8px; }
+.travel-new .upload-section button, .plan-edit-actions button, [aria-label="出发准备与当天备选"] button, [aria-label="分享内容预览"] button { min-height:44px; white-space:normal; padding:10px; }
+[aria-label="分享内容预览"] { overflow-wrap:anywhere; }
+[aria-label="截图预览"] { position:fixed; inset:0; z-index:200; overflow:auto; padding:16px; background:var(--color-paper); }
+[aria-label="截图预览"] button { position:sticky; top:0; min-height:44px; }
+.plan-comparison { padding:12px 20px; white-space:normal; color:var(--color-neutral); }

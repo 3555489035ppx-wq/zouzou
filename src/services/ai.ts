@@ -1,5 +1,6 @@
 import {
   generatePlans,
+  completePlanOptions,
   replacePlanPlace,
   understandTrip,
   type GeneratedPlan,
@@ -7,22 +8,22 @@ import {
   type TripRequest,
   type TripUnderstanding,
 } from './trip/planner'
-import { getLocalGuideContext } from './trip/localGuides'
+import { getLocalGuideContext, primeClientGuideContext } from './trip/localGuides'
 import { ServiceError } from './asyncState'
 import { trackPerformance } from './analytics'
-import { parseTripUnderstanding } from './trip/schemas'
+import { parseGeneratedPlans, parseTripUnderstanding } from './trip/schemas'
+import { extractExperiencePreferences } from './trip/experiencePolicy'
 
 export type AIStage = 'listening' | 'reading' | 'thinking' | 'planning' | 'updating' | 'done' | 'success' | 'error'
 export type StageListener = (stage: AIStage, label: string) => void
 
 const wait = (ms: number) => new Promise((resolve) => globalThis.setTimeout(resolve, ms))
-const remoteAIEnabled = import.meta.env.VITE_REMOTE_AI === '1'
+const UNDERSTANDING_STAGE_DELAY = 0
+const remoteAIEnabled = import.meta.env.VITE_REMOTE_AI === '1' || (import.meta.env.PROD && import.meta.env.VITE_REMOTE_AI !== '0')
 const apiBase = (import.meta.env.VITE_API_BASE_URL ?? '').trim().replace(/\/$/, '')
-// The local parser is the reliable path for this private prototype. Keep a
-// remote provider from holding the first-run flow open when a key, model, or
-// network is unavailable.
-const REMOTE_AI_TIMEOUT_MS = 1_500
-const REMOTE_VISION_TIMEOUT_MS = 1_500
+// Cloud failures remain visible. Local planning is an explicitly selected mode.
+const REMOTE_AI_TIMEOUT_MS = 25_000
+const REMOTE_VISION_TIMEOUT_MS = 30_000
 const MAX_VISION_MEDIA_COUNT = 6
 const MAX_VISION_IMAGE_BYTES = 3_500_000
 
@@ -37,6 +38,17 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs: number, onTimeout?: () =
       (reason) => { globalThis.clearTimeout(timeout); reject(reason) },
     )
   })
+}
+
+function remoteServiceError(payload: unknown, status: number, fallback: string) {
+  const value = payload && typeof payload === 'object' ? payload as { message?: unknown; code?: unknown } : {}
+  const message = typeof value.message === 'string' ? value.message : `${fallback}（${status}）`
+  const code = value.code === 'TIMEOUT' || status === 504 ? 'TIMEOUT'
+    : value.code === 'CANCELLED' || status === 499 ? 'CANCELLED'
+    : status === 401 || status === 403 ? 'UNAUTHORIZED'
+    : status === 429 ? 'RATE_LIMITED'
+    : value.code === 'AI_INVALID_RESPONSE' ? 'INVALID_RESPONSE' : 'UNKNOWN'
+  return new ServiceError(message, code)
 }
 
 type MediaAnalysisResponse = {
@@ -61,9 +73,11 @@ function readBlobAsDataUrl(blob: Blob) {
   })
 }
 
-async function mediaSourceToDataUrl(source: string) {
+async function mediaSourceToDataUrl(source: string, signal?: AbortSignal) {
+  signal?.throwIfAborted()
   if (source.startsWith('data:image/')) return source
-  const response = await fetch(source)
+  const deadline = AbortSignal.timeout(REMOTE_VISION_TIMEOUT_MS)
+  const response = await fetch(source, { signal: signal ? AbortSignal.any([signal, deadline]) : deadline })
   if (!response.ok) throw new ServiceError(`图片读取失败（${response.status}）`, response.status === 401 || response.status === 403 ? 'UNAUTHORIZED' : 'UNKNOWN')
   const blob = await response.blob()
   if (!blob.type.startsWith('image/')) return null
@@ -95,7 +109,7 @@ type PlanningAIAdapterOptions = {
 function remoteRequestKey(request: TripRequest) {
   return JSON.stringify({
     text: request.text,
-    media: request.media.map(({ id, name, category }) => ({ id, name, category })),
+    media: request.media.map(({ id, name, category, src }) => ({ id, name, category, src })),
     mediaFacts: request.mediaFacts ?? [],
   })
 }
@@ -103,9 +117,7 @@ function remoteRequestKey(request: TripRequest) {
 function isUsableRemoteUnderstanding(value: TripUnderstanding) {
   const intent = value.intent
   if (!intent || typeof intent !== 'object') return false
-  // A provider response that contains only defaults is structurally valid but
-  // cannot drive the planner. Treat it as a failed provider response and use
-  // the deterministic local parser instead.
+  // A provider response that contains only defaults cannot drive the planner.
   if (intent.destination === '未确定') return false
   if (intent.durationDays < 1 || intent.partySize < 1) return false
   return Boolean(
@@ -120,8 +132,8 @@ function isUsableRemoteUnderstanding(value: TripUnderstanding) {
 }
 
 export interface AIService {
-  understandTrip(request: TripRequest, onStage: StageListener): Promise<TripUnderstanding>
-  generatePlans(understanding: TripUnderstanding, onStage: StageListener): Promise<GeneratedPlan[]>
+  understandTrip(request: TripRequest, onStage: StageListener, signal?: AbortSignal): Promise<TripUnderstanding>
+  generatePlans(understanding: TripUnderstanding, onStage: StageListener, signal?: AbortSignal): Promise<GeneratedPlan[]>
   replacePlace(plan: GeneratedPlan, placeId: string, replacementName: string, onStage: StageListener): Promise<GeneratedPlan>
   personalizeTrip(postId: string, mode: 'keep' | 'optimize'): Promise<{ tripId: string; mode: string }>
 }
@@ -132,18 +144,22 @@ export interface AIService {
  * keeping the provider boundary ready for a server-backed AI adapter later.
  */
 class LocalPlanningAIAdapter implements AIService {
-  async understandTrip(request: TripRequest, onStage: StageListener) {
+  async understandTrip(request: TripRequest, onStage: StageListener, signal?: AbortSignal) {
+    signal?.throwIfAborted()
     if (!request.text.trim()) throw new Error('请先写下你的旅行想法。')
     onStage('listening', '正在提取日期、预算和必去地点')
-    await wait(180)
-    onStage('reading', `正在读取 ${request.media.length} 张截图线索`)
-    await wait(180)
+    await wait(UNDERSTANDING_STAGE_DELAY)
+    if (request.media.length > 0) {
+      onStage('reading', `正在读取 ${request.media.length} 张截图线索`)
+      await wait(UNDERSTANDING_STAGE_DELAY)
+    }
     const result = understandTrip(request)
+    signal?.throwIfAborted()
     const guideContext = getLocalGuideContext(result.intent.destination, request.text)
     onStage('thinking', result.intent.missing.length > 0 ? '已识别需求，正在标记待确认信息' : '已识别需求和固定行程锚点')
-    await wait(180)
-    onStage('planning', '检查地点、时间窗口与预算')
-    await wait(180)
+    await wait(UNDERSTANDING_STAGE_DELAY)
+    onStage('thinking', '整理已提取条件与待确认项')
+    await wait(UNDERSTANDING_STAGE_DELAY)
     onStage('success', '理解完成')
     return {
       ...result,
@@ -151,13 +167,14 @@ class LocalPlanningAIAdapter implements AIService {
     }
   }
 
-  async generatePlans(understanding: TripUnderstanding, onStage: StageListener) {
-    for (const label of ['整理真实地点', '安排固定到达与返程', '计算片区移动', '校验营业时间', '平衡预算与缓冲']) {
-      onStage('planning', label)
-      await wait(140)
-    }
-    const result = generatePlans(understanding.intent, understanding.guideContext)
-    onStage('success', result.every((plan) => plan.validation.passed) ? '3 套可执行方案已准备好' : '方案已生成，还有信息需要确认')
+  async generatePlans(understanding: TripUnderstanding, onStage: StageListener, signal?: AbortSignal) {
+    signal?.throwIfAborted()
+    onStage('planning', '正在按当前资料排程并检查时间与预算')
+    await wait(0)
+    signal?.throwIfAborted()
+    onStage('planning', '正在配齐每天的餐厅、住宿与游览安排')
+    const result = completePlanOptions(generatePlans(understanding.intent, understanding.guideContext))
+    onStage('success', result.every((plan) => plan.validation.passed) ? '方案算术检查完成；营业与交通仍需确认' : '方案已生成，还有信息需要确认')
     return result
   }
 
@@ -167,7 +184,7 @@ class LocalPlanningAIAdapter implements AIService {
     onStage('updating', '重新检查前后路程与营业时间')
     await wait(180)
     const nextPlan = replacePlanPlace(plan, placeId, replacementName)
-    onStage('success', nextPlan.validation.passed ? '已局部更新，路线仍然可执行' : '已更新，但需要重新确认行程条件')
+    onStage('success', nextPlan.validation.passed ? '已局部更新，请复核受影响的安排' : '已更新，但需要重新确认行程条件')
     return nextPlan
   }
 
@@ -190,26 +207,34 @@ export class PlanningAIAdapter implements AIService {
     this.apiBase = options.apiBase ?? apiBase
   }
 
-  private fetchRemoteMediaFacts(request: TripRequest) {
+  private fetchRemoteMediaFacts(request: TripRequest, signal?: AbortSignal) {
     const key = JSON.stringify({
       text: request.text,
-      media: request.media.slice(0, MAX_VISION_MEDIA_COUNT).map(({ id, name, category }) => ({ id, name, category })),
+      media: request.media.slice(0, MAX_VISION_MEDIA_COUNT).map(({ id, name, category, src }) => ({ id, name, category, src })),
     })
     const existing = this.mediaInFlight.get(key)
-    if (existing) return existing
+    if (existing && !signal) return existing
 
     const requestPromise = (async () => {
+      if (this.remoteAIEnabled && request.media.length > MAX_VISION_MEDIA_COUNT) throw new ServiceError('每次最多识别 6 张截图。', 'INVALID_RESPONSE')
       const media = (await Promise.all(request.media.slice(0, MAX_VISION_MEDIA_COUNT).map(async (item) => {
-        if (!item.src) return null
+        if (!item.src) {
+          if (this.remoteAIEnabled) throw new ServiceError('截图无法读取，请重新上传。', 'INVALID_RESPONSE')
+          return null
+        }
         try {
-          const dataUrl = await mediaSourceToDataUrl(item.src)
+          const dataUrl = await mediaSourceToDataUrl(item.src, signal)
+          if (!dataUrl && this.remoteAIEnabled) throw new ServiceError('截图格式无法识别，请重新上传。', 'INVALID_RESPONSE')
           return dataUrl ? { id: item.id, name: item.name, category: item.category, dataUrl } : null
-        } catch {
+        } catch (error) {
+          signal?.throwIfAborted()
+          if (this.remoteAIEnabled) throw error
           return null
         }
       }))).filter((item): item is { id: string; name: string; category: string | undefined; dataUrl: string } => Boolean(item))
 
       if (media.length === 0) {
+        if (this.remoteAIEnabled) throw new ServiceError('截图无法读取，请重新上传。', 'INVALID_RESPONSE')
         return { mediaFacts: [], provider: 'local', warnings: ['截图无法从当前页面读取，已继续使用文字理解。'] }
       }
 
@@ -218,18 +243,17 @@ export class PlanningAIAdapter implements AIService {
         return await withTimeout((async () => {
           const response = await fetch(`${this.apiBase}/api/trips/media/analyze`, {
             method: 'POST',
+            credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
-            signal: controller.signal,
+            signal: signal ? AbortSignal.any([signal,controller.signal]) : controller.signal,
             body: JSON.stringify({ text: request.text, media }),
           })
           const payload: unknown = await response.json().catch(() => null)
           if (!response.ok) {
-            const message = payload && typeof payload === 'object' && 'message' in payload && typeof payload.message === 'string'
-              ? payload.message
-              : `截图理解服务返回 ${response.status}`
-            throw new ServiceError(message, response.status === 401 || response.status === 403 ? 'UNAUTHORIZED' : response.status === 429 ? 'RATE_LIMITED' : 'UNKNOWN')
+            throw remoteServiceError(payload, response.status, '截图理解服务失败')
           }
           if (!isMediaAnalysisResponse(payload)) throw new ServiceError('截图理解服务没有返回结构化事实。', 'INVALID_RESPONSE')
+          if (this.remoteAIEnabled && payload.provider === 'local') throw new ServiceError('云端没有执行截图识别。', 'INVALID_RESPONSE')
           return payload
         })(), REMOTE_VISION_TIMEOUT_MS, () => controller.abort())
       } finally {
@@ -237,7 +261,7 @@ export class PlanningAIAdapter implements AIService {
       }
     })()
 
-    this.mediaInFlight.set(key, requestPromise)
+    if (!signal) this.mediaInFlight.set(key, requestPromise)
     void requestPromise.then(
       () => { if (this.mediaInFlight.get(key) === requestPromise) this.mediaInFlight.delete(key) },
       () => { if (this.mediaInFlight.get(key) === requestPromise) this.mediaInFlight.delete(key) },
@@ -245,10 +269,10 @@ export class PlanningAIAdapter implements AIService {
     return requestPromise
   }
 
-  private fetchRemoteUnderstanding(request: TripRequest) {
+  private fetchRemoteUnderstanding(request: TripRequest, signal?: AbortSignal) {
     const key = remoteRequestKey(request)
     const existing = this.inFlight.get(key)
-    if (existing) return existing
+    if (existing && !signal) return existing
 
     const requestPromise = (async () => {
       const controller = new AbortController()
@@ -256,8 +280,9 @@ export class PlanningAIAdapter implements AIService {
         return await withTimeout((async () => {
           const response = await fetch(`${this.apiBase}/api/trips/understand`, {
             method: 'POST',
+            credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
-            signal: controller.signal,
+            signal: signal ? AbortSignal.any([signal,controller.signal]) : controller.signal,
             body: JSON.stringify({
               text: request.text,
               media: request.media.map(({ id, name, category }) => ({ id, name, category })),
@@ -266,15 +291,14 @@ export class PlanningAIAdapter implements AIService {
           })
           const payload: unknown = await response.json().catch(() => null)
           if (!response.ok) {
-            const message = payload && typeof payload === 'object' && 'message' in payload && typeof payload.message === 'string'
-              ? payload.message
-              : `文本理解服务返回 ${response.status}`
-            throw new ServiceError(message, response.status === 401 || response.status === 403 ? 'UNAUTHORIZED' : response.status === 429 ? 'RATE_LIMITED' : 'UNKNOWN')
+            throw remoteServiceError(payload, response.status, '文本理解服务失败')
           }
           const understanding = parseTripUnderstanding(payload)
+          if (payload && typeof payload === 'object' && 'provider' in payload && payload.provider === 'local') throw new ServiceError('云端没有执行模型理解。', 'INVALID_RESPONSE')
           if (!understanding || !isUsableRemoteUnderstanding(understanding)) {
             throw new ServiceError('文本理解服务没有返回可用于排程的旅行意图。', 'INVALID_RESPONSE')
           }
+          primeClientGuideContext(understanding.guideContext, request.text)
           return understanding
         })(), REMOTE_AI_TIMEOUT_MS, () => controller.abort())
       } finally {
@@ -282,7 +306,7 @@ export class PlanningAIAdapter implements AIService {
       }
     })()
 
-    this.inFlight.set(key, requestPromise)
+    if (!signal) this.inFlight.set(key, requestPromise)
     void requestPromise.then(
       () => { if (this.inFlight.get(key) === requestPromise) this.inFlight.delete(key) },
       () => { if (this.inFlight.get(key) === requestPromise) this.inFlight.delete(key) },
@@ -290,7 +314,8 @@ export class PlanningAIAdapter implements AIService {
     return requestPromise
   }
 
-  private async runRemoteUnderstanding(request: TripRequest, onStage: StageListener) {
+  private async runRemoteUnderstanding(request: TripRequest, onStage: StageListener, signal?: AbortSignal) {
+    signal?.throwIfAborted()
     if (!request.text.trim()) throw new Error('请先写下你的旅行想法。')
     onStage('listening', '正在连接文本理解服务')
 
@@ -298,7 +323,7 @@ export class PlanningAIAdapter implements AIService {
     if (request.media.length > 0) {
       onStage('reading', `正在识别 ${request.media.length} 张截图中的日期、时间和地点`)
       try {
-        const mediaResult = await this.fetchRemoteMediaFacts(request)
+        const mediaResult = await this.fetchRemoteMediaFacts(request,signal)
         if (mediaResult.mediaFacts.length > 0) {
           enrichedRequest = { ...request, mediaFacts: mediaResult.mediaFacts }
           const uncertainCount = mediaResult.mediaFacts.filter((fact) => fact.needsConfirmation).length
@@ -306,38 +331,57 @@ export class PlanningAIAdapter implements AIService {
         } else {
           onStage('thinking', '截图没有得到确定事实，正在结合旅行描述')
         }
-      } catch {
+      } catch (error) {
+        signal?.throwIfAborted()
+        if (this.remoteAIEnabled) { onStage('error', '截图识别失败，请重试'); throw error }
         onStage('thinking', '截图识别暂不可用，先根据文字继续理解')
       }
     }
 
+    if (request.media.length && !enrichedRequest.mediaFacts?.length) {
+      enrichedRequest = {...request, mediaFacts: request.media.map(item => ({mediaId:item.id, name:item.name, kind:'other', rawText:'', facts:{dates:null,times:[],locations:[],arrivalLocation:null,departureLocation:null,hotel:null,placeNames:[],budget:null,notes:[]}, confidence:0, needsConfirmation:true, warnings:['截图暂未识别，请核对或重新上传。'], provider:'local'}))}
+    }
+    if (!this.remoteAIEnabled) return this.local.understandTrip(enrichedRequest, onStage, signal)
+
     try {
-      const payload = await this.fetchRemoteUnderstanding(enrichedRequest)
+      let payload = await this.fetchRemoteUnderstanding(enrichedRequest,signal)
+      signal?.throwIfAborted()
+      // Keep explicit scenario constraints even with an older deployed intent API.
+      const explicit = extractExperiencePreferences(enrichedRequest.text)
+      const localIntent = understandTrip(enrichedRequest).intent
+      if (explicit.length || localIntent.pace === 'relaxed' || localIntent.lowMobility) {
+        payload = {...payload,intent:{...payload.intent,
+          preferences:[...new Set([...payload.intent.preferences,...explicit])],
+          ...(localIntent.pace === 'relaxed' ? {pace:'relaxed' as const} : {}),
+          ...(localIntent.lowMobility ? {lowMobility:true} : {}),
+        }}
+      }
       onStage('success', '已完成结构化理解')
       return payload
-    } catch {
-      // Local fallback keeps the prototype usable before a server or API key is configured.
-      onStage('reading', '服务端暂不可用，切换本地解析')
-      return this.local.understandTrip(enrichedRequest, onStage)
+    } catch (error) {
+      signal?.throwIfAborted()
+      onStage('error', error instanceof Error ? error.message : '云端理解失败，请重试')
+      throw error
     }
   }
 
-  async understandTrip(request: TripRequest, onStage: StageListener) {
+  async understandTrip(request: TripRequest, onStage: StageListener, signal?: AbortSignal) {
+    signal?.throwIfAborted()
     const startedAt = typeof performance === 'undefined' ? Date.now() : performance.now()
-    if (!this.remoteAIEnabled) {
+    if (!this.remoteAIEnabled && request.media.length === 0) {
       try {
-        return await this.local.understandTrip(request, onStage)
+        return await this.local.understandTrip(request, onStage,signal)
       } finally {
         trackPerformance('trip_understanding', (typeof performance === 'undefined' ? Date.now() : performance.now()) - startedAt)
       }
     }
     const key = remoteRequestKey(request)
     const existing = this.understandingInFlight.get(key)
-    if (existing) return existing
-    const requestPromise = this.runRemoteUnderstanding(request, onStage).finally(() => {
+    if (existing && !signal) return existing
+    const requestPromise = this.runRemoteUnderstanding(request, onStage,signal).finally(() => {
       trackPerformance('trip_understanding', (typeof performance === 'undefined' ? Date.now() : performance.now()) - startedAt)
     })
-    this.understandingInFlight.set(key, requestPromise)
+    if (!signal) this.understandingInFlight.set(key, requestPromise)
     void requestPromise.then(
       () => { if (this.understandingInFlight.get(key) === requestPromise) this.understandingInFlight.delete(key) },
       () => { if (this.understandingInFlight.get(key) === requestPromise) this.understandingInFlight.delete(key) },
@@ -345,8 +389,34 @@ export class PlanningAIAdapter implements AIService {
     return requestPromise
   }
 
-  generatePlans(understanding: TripUnderstanding, onStage: StageListener) {
-    return this.local.generatePlans(understanding, onStage)
+  async generatePlans(understanding: TripUnderstanding, onStage: StageListener, signal?: AbortSignal) {
+    signal?.throwIfAborted()
+    if (!this.remoteAIEnabled) return this.local.generatePlans(understanding, onStage, signal)
+    const controller = new AbortController()
+    onStage('planning', '正在由云端按已确认条件和知识资料排程')
+    try {
+      const plans = await withTimeout((async () => {
+        const response = await fetch(`${this.apiBase}/api/trips/generate`, {
+          method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
+          signal: signal ? AbortSignal.any([signal, controller.signal]) : controller.signal,
+          body: JSON.stringify({ understanding: { intent: understanding.intent } }),
+        })
+        const payload: unknown = await response.json().catch(() => null)
+        if (!response.ok) throw remoteServiceError(payload, response.status, '云端行程生成失败')
+        // Accept the legacy array envelope as well as the cloud metadata envelope.
+        const values = Array.isArray(payload) ? payload : payload && typeof payload === 'object' && 'plans' in payload ? payload.plans : null
+        const result = parseGeneratedPlans(values)
+        if (!result?.length) throw new ServiceError('云端未返回有效行程。', 'INVALID_RESPONSE')
+        return result
+      })(), REMOTE_AI_TIMEOUT_MS, () => controller.abort())
+      signal?.throwIfAborted()
+      onStage('success', plans.every(plan => plan.validation.passed) ? '云端排程完成；营业与交通仍需确认' : '云端方案已生成，还有信息需要确认')
+      return plans
+    } catch (error) {
+      signal?.throwIfAborted()
+      onStage('error', error instanceof Error ? error.message : '云端行程生成失败')
+      throw error
+    } finally { controller.abort() }
   }
 
   replacePlace(plan: GeneratedPlan, placeId: string, replacementName: string, onStage: StageListener) {

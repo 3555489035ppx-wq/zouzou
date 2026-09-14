@@ -152,7 +152,7 @@ function communityHotelOptions(city: string, guides: GuideCandidate[]): HotelOpt
       communityEvidence: matches.length,
       communitySources: sources,
       anchorTerms,
-      mapUrl: `https://ditu.amap.com/search?query=${encodeURIComponent(`${city} ${name}`)}`,
+      mapUrl: `https://uri.amap.com/search?keyword=${encodeURIComponent(`${city} ${name}`)}&city=${encodeURIComponent(city)}&src=zouzou&callnative=0`,
       bookingUrl: `https://hotels.ctrip.com/hotels/list?keyword=${encodeURIComponent(`${city} ${name}`)}`,
     }
   })
@@ -176,7 +176,7 @@ function enrichBaseOption(city: string, option: HotelOption, signals: HotelCommu
     communityEvidence: signals.reduce((total, signal) => total + signal.evidenceCount, 0) || option.communityEvidence,
     communitySources: communitySources.length > 0 ? communitySources : option.communitySources,
     anchorTerms: unique([...(option.anchorTerms ?? []), ...signals.flatMap((signal) => signal.anchorTerms)]).slice(0, 6),
-    mapUrl: option.mapUrl ?? `https://ditu.amap.com/search?query=${encodeURIComponent(`${city} ${option.name}`)}`,
+    mapUrl: option.mapUrl ?? `https://uri.amap.com/search?keyword=${encodeURIComponent(`${city} ${option.name}`)}&city=${encodeURIComponent(city)}&src=zouzou&callnative=0`,
     bookingUrl: option.bookingUrl ?? `https://hotels.ctrip.com/hotels/list?keyword=${encodeURIComponent(`${city} ${option.name}`)}`,
   }
 }

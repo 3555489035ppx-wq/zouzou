@@ -1,0 +1,22 @@
+[
+  {
+    "source_id": "zouzou-legacy-research", "product": "Zouzou legacy knowledge (not Gooh)",
+    "entry": "data/gooh-knowledge.json", "access": "local",
+    "scope": "Existing journeys explicitly described by the file as ZouZou knowledge; internal normalization only",
+    "usage": { "read": "approved", "export": "approved", "external_model": "unknown", "runtime": "unknown" },
+    "revoked": false, "allowed_urls": [], "local_paths": ["data/gooh-knowledge.json"], "origin": "user_provided"
+  },
+  {
+    "source_id": "zouzou-authored-rules", "product": "Zouzou authored planning rules",
+    "entry": "tools/travel-kb/config/project-rules.json", "access": "local",
+    "scope": "Deterministic planning rules authored for this task; no third-party travel prose or current venue facts",
+    "usage": { "read": "approved", "export": "approved", "external_model": "denied", "runtime": "approved" },
+    "revoked": false, "allowed_urls": [], "local_paths": ["tools/travel-kb/config/project-rules.json"], "origin": "user_provided"
+  },
+  {
+    "source_id": "gooh-visible-guides", "product": "Gooh", "entry": "No reachable content entry observed",
+    "access": "web", "scope": "Public travel guide content when a normal entry is actually observed",
+    "usage": { "read": "approved", "export": "unknown", "external_model": "unknown", "runtime": "unknown" },
+    "revoked": false, "allowed_urls": [], "local_paths": [], "origin": "source_extraction"
+  }
+]

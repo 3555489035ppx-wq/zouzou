@@ -14,6 +14,10 @@ TravelNewPage
 
 ## 本地启动
 
+### 场景范围更新（2026-09-14）
+
+新建场景仅保留旅行。`POST /api/group-plans` 的 `type` 为 `weekend`、`date` 或 `dining` 时返回 HTTP 410、`error: FEATURE_REMOVED`，不生成新记录。`travel` 创建与原有旅行协作接口保持不变；已保存的 Trip 和历史群体计划不清除。前端三个旧创建地址统一跳转到 `/travel/new`。
+
 在项目根目录复制环境变量文件：
 
 ```powershell

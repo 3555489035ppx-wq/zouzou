@@ -1,0 +1,8 @@
+{
+  "version": "2.0", "authorization_basis": "user_statement", "identity_independently_verified": false,
+  "auto_commit": false, "auto_push": false, "auto_deploy": false, "background_scheduler": false,
+  "allowed_hosts": [], "model_budget": null, "external_model_default": "unknown",
+  "collection": { "pilot": 30, "intermediate": 300, "max_details": 1000, "max_requests": 4000, "concurrency": 1, "interval_ms": 2000, "timeout_ms": 30000, "retries": 3, "max_raw_growth_bytes": 1073741824 },
+  "model": { "enabled": false, "context_tokens": 16000, "output_reserve_fraction": 0.3, "repair_attempts": 1, "prompt_version": "extract-1", "unavailable_status": "PENDING_MODEL" },
+  "release": { "default_feature_enabled": false, "fixture_runtime_allowed": false, "require_verified_facts": true }
+}

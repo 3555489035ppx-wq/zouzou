@@ -87,6 +87,11 @@ describe('server text intent integration', () => {
     expect(result.intent.destination).toBe('上海')
     expect(result.intent.partySize).toBe(2)
   })
+  test('does not turn unspecified interests into required missing fields or expose an English budget code',()=>{
+    const intent=normalizeTripIntent({destination:'南京',dates:{start:'2026-09-18',end:'2026-09-18'},durationDays:1,partySize:1,budget:3000,budgetScope:'full trip',missing:['用户想看展但未指定具体展览或展馆，排程器无法安排具体活动。']})
+    expect(intent.missing.some(item=>item.includes('排程器'))).toBe(false)
+    expect(intent.budgetScope).toBe('范围待确认')
+  })
 
   test('selects DeepSeek without exposing the key', () => {
     process.env.AI_PROVIDER = 'deepseek'
@@ -168,9 +173,11 @@ describe('server text intent integration', () => {
       }),
     })
 
-    const result = await understandTripWithProvider({ text: '武汉三天，两个人，预算3000元，不吃辣，海鲜过敏。', media: [] })
+    const result = await understandTripWithProvider({ text: '武汉三天，两个人，情侣，睡到自然醒，不想太累，预算3000元，不吃辣，海鲜过敏。', media: [] })
 
     expect(result.intent.dietary).toMatchObject({ avoidSpicy: true, avoidSeafood: true })
+    expect(result.intent.preferences).toEqual(expect.arrayContaining(['情侣', '晚起']))
+    expect(result.intent.pace).toBe('relaxed')
     expect(result.intent.constraints.some((item) => item.startsWith('饮食限制'))).toBe(true)
   })
 })

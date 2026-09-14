@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "checkedAt": "2026-09-14",
+  "entries": [
+    {
+      "city": "成都", "name": "甘食记成都肥肠粉", "venueName": "甘食记成都肥肠粉", "category": "restaurant", "area": "成都市区", "address": "",
+      "menu": ["肥肠粉", "锅盔"], "dietaryTags": ["meat", "pork", "spicy", "wheat"],
+      "tags": ["本地餐馆", "本地美食", "早餐", "早餐专用"], "durationMinutes": 35,
+      "summary": "早餐安排肥肠粉，可按食量搭配锅盔。分店和当日营业请在地图中确认。",
+      "sources": [{"url": "https://www.ganshiji.com.cn/news-1147.html", "label": "甘食记门店餐食介绍", "kind": "official", "checkedAt": "2026-09-14"}]
+    },
+    {
+      "city": "长沙", "name": "公交新村粉店", "venueName": "公交新村粉店", "category": "restaurant", "area": "曙光中路", "address": "",
+      "menu": ["雪里蕻肉泥粉", "豆角蒸肉粉"], "dietaryTags": ["meat", "pork"],
+      "tags": ["本地餐馆", "本地美食", "早餐", "早餐专用"], "durationMinutes": 35,
+      "summary": "早餐嗦一碗米粉，按喜好选择码子。不同资料的营业时间不一致，出发前查看所选分店当天信息。",
+      "sources": [{"url": "https://www.cityhui.com/shop/21008.html", "label": "公交新村粉店早餐介绍", "kind": "community", "checkedAt": "2026-09-14"}]
+    },
+    {
+      "city": "长沙", "name": "肆姐面粉馆（坡子街店）", "venueName": "肆姐面馆", "category": "restaurant", "area": "坡子街", "address": "",
+      "menu": ["牛肉粉"], "dietaryTags": ["meat", "spicy"],
+      "tags": ["本地餐馆", "本地美食", "早餐", "早餐专用"], "durationMinutes": 35,
+      "summary": "在坡子街吃一碗牛肉粉，再接附近的步行安排。分店营业和排队情况以当天为准。",
+      "sources": [{"url": "https://gs.ctrip.com/html5/you/foods/fooddetail/148/359230.html", "label": "门店页与早餐用餐记录", "kind": "community", "checkedAt": "2026-09-14"}]
+    }
+  ]
+}

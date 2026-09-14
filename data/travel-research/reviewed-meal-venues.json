@@ -1,0 +1,403 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-14",
+  "entries": [
+    {
+      "city": "武汉",
+      "name": "大宅门（吉庆街）",
+      "venueName": "大宅门",
+      "category": "restaurant",
+      "area": "吉庆街",
+      "address": "",
+      "menu": [
+        "排骨藕汤",
+        "鱼香肉丝",
+        "干煸藕条"
+      ],
+      "dietaryTags": [
+        "meat",
+        "pork"
+      ],
+      "tags": [
+        "本地餐馆",
+        "本地美食",
+        "午餐",
+        "晚餐"
+      ],
+      "durationMinutes": 60,
+      "summary": "正文明确提到吉庆街的大宅门和排骨藕汤，可与江汉路、咸安坊同片区安排。 门店营业、具体门牌、菜单价格和过敏原尚未核验，请在地图中确认。",
+      "sources": [
+        {
+          "url": "https://www.bilibili.com/video/BV1rc2NY6EUv",
+          "label": "武汉本地餐饮视频正文",
+          "kind": "community",
+          "checkedAt": "2026-09-14"
+        }
+      ],
+      "checkedAt": "2026-09-14"
+    },
+    {
+      "city": "武汉",
+      "name": "土大炮焖烤",
+      "venueName": "土大炮焖烤",
+      "category": "restaurant",
+      "area": "武昌区四美塘路",
+      "address": "",
+      "menu": [
+        "烤鸡爪",
+        "牛肉串",
+        "羊肉串"
+      ],
+      "dietaryTags": [
+        "meat",
+        "pork"
+      ],
+      "tags": [
+        "本地餐馆",
+        "本地美食",
+        "午餐",
+        "晚餐"
+      ],
+      "durationMinutes": 60,
+      "summary": "正文明确提到武昌区四美塘路的焖烤店；适合作为武昌一侧的用餐候选。 门店营业、具体门牌、菜单价格和过敏原尚未核验，请在地图中确认。",
+      "sources": [
+        {
+          "url": "https://www.bilibili.com/video/BV1rc2NY6EUv",
+          "label": "武汉本地餐饮视频正文",
+          "kind": "community",
+          "checkedAt": "2026-09-14"
+        }
+      ],
+      "checkedAt": "2026-09-14"
+    },
+    {
+      "city": "武汉",
+      "name": "海燕（惠济路）",
+      "venueName": "海燕",
+      "category": "restaurant",
+      "area": "汉口惠济路",
+      "address": "",
+      "menu": [
+        "红烧肉"
+      ],
+      "dietaryTags": [
+        "meat",
+        "pork"
+      ],
+      "tags": [
+        "本地餐馆",
+        "本地美食",
+        "午餐",
+        "晚餐"
+      ],
+      "durationMinutes": 60,
+      "summary": "正文明确提到汉口惠济路的海燕餐馆及红烧肉；优先结合汉口路线安排。 门店营业、具体门牌、菜单价格和过敏原尚未核验，请在地图中确认。",
+      "sources": [
+        {
+          "url": "https://www.bilibili.com/video/BV1rc2NY6EUv",
+          "label": "武汉本地餐饮视频正文",
+          "kind": "community",
+          "checkedAt": "2026-09-14"
+        }
+      ],
+      "checkedAt": "2026-09-14"
+    },
+    {
+      "city": "呼和浩特",
+      "name": "德顺源",
+      "venueName": "德顺源",
+      "category": "restaurant",
+      "area": "玉泉区稍麦一条街",
+      "address": "",
+      "menu": [
+        "沙葱稍麦",
+        "油煎稍麦"
+      ],
+      "dietaryTags": [
+        "meat",
+        "wheat"
+      ],
+      "tags": [
+        "本地餐馆",
+        "本地美食",
+        "早餐",
+        "早餐专用"
+      ],
+      "durationMinutes": 35,
+      "summary": "老城人文线前吃稍麦；按人数少量点，油煎和蒸制可以分着尝。 门店、营业和菜单价格请在地图中确认。",
+      "sources": [
+        {
+          "url": "https://www.xiaohongshu.com/explore/695a79a3000000002202e294",
+          "label": "三日路线及餐饮正文",
+          "kind": "community",
+          "checkedAt": "2026-09-14"
+        }
+      ],
+      "checkedAt": "2026-09-14"
+    },
+    {
+      "city": "呼和浩特",
+      "name": "贵宾纯羊杂碎",
+      "venueName": "贵宾纯羊杂碎",
+      "category": "restaurant",
+      "area": "玉泉区稍麦一条街",
+      "address": "",
+      "menu": [
+        "羊杂碎"
+      ],
+      "dietaryTags": [
+        "meat"
+      ],
+      "tags": [
+        "本地餐馆",
+        "本地美食",
+        "早餐",
+        "早餐专用"
+      ],
+      "durationMinutes": 35,
+      "summary": "老城早餐选择，喜欢内脏口感再点羊杂碎；不吃内脏可换稍麦。 门店、营业和菜单价格请在地图中确认。",
+      "sources": [
+        {
+          "url": "https://www.xiaohongshu.com/explore/695a79a3000000002202e294",
+          "label": "三日路线及餐饮正文",
+          "kind": "community",
+          "checkedAt": "2026-09-14"
+        }
+      ],
+      "checkedAt": "2026-09-14"
+    },
+    {
+      "city": "呼和浩特",
+      "name": "塞伊德蒙餐（兴安南路店）",
+      "venueName": "塞伊德蒙餐",
+      "category": "restaurant",
+      "area": "兴安南路",
+      "address": "",
+      "menu": [
+        "蒙古锅茶",
+        "奶嚼口"
+      ],
+      "dietaryTags": [
+        "meat",
+        "dairy"
+      ],
+      "tags": [
+        "本地餐馆",
+        "本地美食",
+        "早餐",
+        "早餐专用"
+      ],
+      "durationMinutes": 35,
+      "summary": "作为蒙式早餐体验，与稍麦和杂碎错开；奶食建议少量分享。 门店、营业和菜单价格请在地图中确认。",
+      "sources": [
+        {
+          "url": "https://www.xiaohongshu.com/explore/695a79a3000000002202e294",
+          "label": "三日路线及餐饮正文",
+          "kind": "community",
+          "checkedAt": "2026-09-14"
+        }
+      ],
+      "checkedAt": "2026-09-14"
+    },
+    {
+      "city": "呼和浩特",
+      "name": "老霍家巴盟焖面烩菜",
+      "venueName": "老霍家巴盟焖面烩菜",
+      "category": "restaurant",
+      "area": "呼和浩特市区",
+      "address": "",
+      "menu": [
+        "排骨红烧肉焖面"
+      ],
+      "dietaryTags": [
+        "meat",
+        "pork",
+        "wheat"
+      ],
+      "tags": [
+        "本地餐馆",
+        "本地美食",
+        "午餐",
+        "晚餐"
+      ],
+      "durationMinutes": 60,
+      "summary": "地方焖面正餐，主食和肉菜合在一锅，按人数控制分量。 门店、营业和菜单价格请在地图中确认。",
+      "sources": [
+        {
+          "url": "https://www.xiaohongshu.com/explore/695a79a3000000002202e294",
+          "label": "三日路线及餐饮正文",
+          "kind": "community",
+          "checkedAt": "2026-09-14"
+        }
+      ],
+      "checkedAt": "2026-09-14"
+    },
+    {
+      "city": "呼和浩特",
+      "name": "巴音陶日故德烩菜馆",
+      "venueName": "巴音陶日故德烩菜馆",
+      "category": "restaurant",
+      "area": "呼和浩特市区",
+      "address": "",
+      "menu": [
+        "鲜牛肉烩菜",
+        "酸奶饼"
+      ],
+      "dietaryTags": [
+        "meat",
+        "dairy"
+      ],
+      "tags": [
+        "本地餐馆",
+        "本地美食",
+        "午餐",
+        "晚餐"
+      ],
+      "durationMinutes": 60,
+      "summary": "一餐换成烩菜配酸奶饼，避免整趟行程只吃涮羊肉。 门店、营业和菜单价格请在地图中确认。",
+      "sources": [
+        {
+          "url": "https://www.xiaohongshu.com/explore/695a79a3000000002202e294",
+          "label": "三日路线及餐饮正文",
+          "kind": "community",
+          "checkedAt": "2026-09-14"
+        }
+      ],
+      "checkedAt": "2026-09-14"
+    },
+    {
+      "city": "呼和浩特",
+      "name": "泽成冰煮羊",
+      "venueName": "泽成冰煮羊",
+      "category": "restaurant",
+      "area": "万象城",
+      "address": "",
+      "menu": [
+        "冰煮羊"
+      ],
+      "dietaryTags": [
+        "meat"
+      ],
+      "tags": [
+        "本地餐馆",
+        "本地美食",
+        "午餐",
+        "晚餐"
+      ],
+      "durationMinutes": 60,
+      "summary": "新城游览后尝冰煮羊；先确认分店和排队，再决定是否前往。 门店、营业和菜单价格请在地图中确认。",
+      "sources": [
+        {
+          "url": "https://www.xiaohongshu.com/explore/695a79a3000000002202e294",
+          "label": "三日路线及餐饮正文",
+          "kind": "community",
+          "checkedAt": "2026-09-14"
+        },
+        {
+          "url": "https://www.xiaohongshu.com/explore/69f870b80000000023005e08",
+          "label": "万象城分店用餐记录",
+          "kind": "community",
+          "checkedAt": "2026-09-14"
+        }
+      ],
+      "checkedAt": "2026-09-14"
+    },
+    {
+      "city": "呼和浩特",
+      "name": "君王铁帽烤肉",
+      "venueName": "君王铁帽烤肉",
+      "category": "restaurant",
+      "area": "呼和浩特市区",
+      "address": "",
+      "menu": [
+        "羊肉",
+        "五花肉"
+      ],
+      "dietaryTags": [
+        "meat",
+        "pork"
+      ],
+      "tags": [
+        "本地餐馆",
+        "本地美食",
+        "午餐",
+        "晚餐"
+      ],
+      "durationMinutes": 60,
+      "summary": "与汤锅错开的烤肉晚餐，少量多样搭配蔬菜。 门店、营业和菜单价格请在地图中确认。",
+      "sources": [
+        {
+          "url": "https://www.xiaohongshu.com/explore/695a79a3000000002202e294",
+          "label": "三日路线及餐饮正文",
+          "kind": "community",
+          "checkedAt": "2026-09-14"
+        }
+      ],
+      "checkedAt": "2026-09-14"
+    },
+    {
+      "city": "呼和浩特",
+      "name": "德乐海蒙餐",
+      "venueName": "德乐海蒙餐",
+      "category": "restaurant",
+      "area": "呼和浩特市区",
+      "address": "",
+      "menu": [
+        "烤羊排",
+        "奶嚼口"
+      ],
+      "dietaryTags": [
+        "meat",
+        "dairy"
+      ],
+      "tags": [
+        "本地餐馆",
+        "本地美食",
+        "午餐",
+        "晚餐"
+      ],
+      "durationMinutes": 60,
+      "summary": "蒙餐正餐以烤羊排和奶食为特色；多人分享比单人点整份更合适。 门店、营业和菜单价格请在地图中确认。",
+      "sources": [
+        {
+          "url": "https://www.xiaohongshu.com/explore/695a79a3000000002202e294",
+          "label": "三日路线及餐饮正文",
+          "kind": "community",
+          "checkedAt": "2026-09-14"
+        }
+      ],
+      "checkedAt": "2026-09-14"
+    },
+    {
+      "city": "呼和浩特",
+      "name": "额尔敦涮肉",
+      "venueName": "额尔敦涮肉",
+      "category": "restaurant",
+      "area": "呼和浩特市区",
+      "address": "",
+      "menu": [
+        "涮羊肉"
+      ],
+      "dietaryTags": [
+        "meat"
+      ],
+      "tags": [
+        "本地餐馆",
+        "本地美食",
+        "午餐",
+        "晚餐"
+      ],
+      "durationMinutes": 60,
+      "summary": "涮肉安排为一顿正式晚餐，和烩菜、焖面轮换。 门店、营业和菜单价格请在地图中确认。",
+      "sources": [
+        {
+          "url": "https://www.xiaohongshu.com/explore/695a79a3000000002202e294",
+          "label": "三日路线及餐饮正文",
+          "kind": "community",
+          "checkedAt": "2026-09-14"
+        }
+      ],
+      "checkedAt": "2026-09-14"
+    }
+  ]
+}

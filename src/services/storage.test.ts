@@ -20,6 +20,7 @@ describe('versioned browser storage', () => {
 
     expect(readVersioned<{ destination: string }>('trip')).toEqual({ destination: '上海' })
     expect(sessionStorage.getItem('trip')).toContain('"version":1')
+    expect(sessionStorage.getItem('trip:backup-before-v1')).toBe(JSON.stringify({ destination: '上海' }))
   })
 
   it('keeps the old unquoted trip prompt recoverable', () => {

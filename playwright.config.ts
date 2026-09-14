@@ -4,9 +4,8 @@ export default defineConfig({
   testDir: './tests',
   timeout: 30_000,
   expect: { timeout: 8_000 },
-  // MapLibre and the local Vite server share one constrained browser/runtime
-  // budget. Serial workers keep page.goto deterministic instead of making a
-  // dozen simultaneous tile/worker requests look like product timeouts.
+  // Keep browser checks serial so page.goto remains deterministic on a
+  // constrained local runtime.
   fullyParallel: false,
   workers: 1,
   reporter: [['list']],

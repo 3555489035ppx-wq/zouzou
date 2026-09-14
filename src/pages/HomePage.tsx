@@ -1,31 +1,15 @@
 import { useEffect, useState } from 'react'
-import { Bell, ChevronDown, CloudRain, CloudSnow, CloudSun, Sun, Wind } from 'lucide-react'
+import { ArrowRight, Bell, ChevronDown, ChevronRight, CloudRain, CloudSnow, CloudSun, Sun, Wind } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { AppShell } from '../components/AppShell'
-import { CityPicker, TripEntryIcon, ZouAvatar, ZouCard } from '../components/ui'
-import { getCityProfile, getDemoTripPlaces } from '../demo-data/cities'
-import { getCityImageGallery } from '../demo-data/city-images'
+import { CityPicker, ZouAvatar, ZouButton, ZouMotionBot } from '../components/ui'
+import { getHomeGuideRecommendations } from '../demo-data/discover'
+
 import { useAppStore } from '../stores/appStore'
+import { useSavedTrips } from '../components/TripLibrary'
+import { tripSummary } from '../services/trip/summary'
 import { weatherService, type Weather } from '../services/weather'
-
-const entries = [
-  { type: 'travel' as const, title: '旅行', body: '定制你的完美行程', path: '/travel/new' },
-  { type: 'weekend' as const, title: '周末', body: '探索附近的精彩', path: '/weekend' },
-  { type: 'date' as const, title: '约会', body: '浪漫灵感与好去处', path: '/date' },
-  { type: 'dining' as const, title: '聚餐', body: '发现美食与餐厅', path: '/dining' },
-]
-
-function getLocalRecommendations(city: string) {
-  const profile = getCityProfile(city)
-  const gallery = getCityImageGallery(city)
-  const types = ['适合排在上午', '天气备选 / 室内外可切换', '留给慢走与休息']
-  return profile.demoLabels.slice(0, 3).map((name, index) => ({
-    name,
-    type: `${types[index]} · ${gallery[index % gallery.length].landmark}真实照片`,
-    image: gallery[index % gallery.length].src,
-    alt: gallery[index % gallery.length].alt,
-  }))
-}
+import './HomePage.css'
 
 const WeatherIcon = ({ condition }: { condition: Weather['condition'] }) => {
   if (condition === 'sunny') return <Sun aria-hidden="true" />
@@ -39,14 +23,13 @@ export const HomePage = () => {
   const navigate = useNavigate()
   const city = useAppStore((s) => s.city)
   const avatar = useAppStore((s) => s.avatar)
-  const tripMode = useAppStore((s) => s.tripMode)
-  const tripCity = useAppStore((s) => s.tripCity)
+  const activeId = useAppStore(s=>s.activeRouteId)
+  const savedTrips=useSavedTrips()
+  const activeTrip=savedTrips.find(plan=>plan.tripId===activeId && ['active','paused','planned'].includes(plan.status??'planned')) ?? savedTrips.find(plan=>['active','paused'].includes(plan.status??'')) ?? savedTrips.find(plan=>(plan.status??'planned')==='planned')
+  const summary=activeTrip?tripSummary(activeTrip):null
   const [citiesOpen, setCitiesOpen] = useState(false)
   const [weather, setWeather] = useState<Weather | null>(null)
-  const recommendations = getLocalRecommendations(city)
-  const activeCity = tripCity ?? city
-  const activePlaces = getDemoTripPlaces(activeCity, 'Day 1')
-  const activeNext = activePlaces[1] ?? activePlaces[0]
+  const recommendations = getHomeGuideRecommendations(city)
   useEffect(() => {
     let cancelled = false
     setWeather(null)
@@ -58,11 +41,22 @@ export const HomePage = () => {
 
   const weatherText = weather ? `${weather.temperature}°C · ${weather.label}` : '正在读取天气…'
   return <AppShell showTabBar><div className="home-page">
-    <header className="home-header"><button className="home-city" onClick={() => setCitiesOpen(true)}><strong>{city}</strong><ChevronDown /><span title={weather?.note ?? '正在读取实时天气'} aria-live="polite">{weather ? <WeatherIcon condition={weather.condition} /> : <CloudSun aria-hidden="true" />}{weatherText}</span></button><div className="home-header__actions"><button className="icon-button notification-button" aria-label="通知中心" onClick={() => navigate('/notifications')}><Bell /><span>3</span></button><button className="avatar-button" aria-label="打开我的主页" onClick={() => navigate('/profile')}><ZouAvatar src={avatar} name="小鹏" /></button></div></header>
-    <section className="home-recommend" aria-labelledby="home-recommend-title"><h2 id="home-recommend-title">为你推荐</h2><span>从一次想走的路开始</span></section>
-    <section className="entry-list" aria-label="创建场景">{entries.map((entry) => <ZouCard key={entry.title} className="entry-card" onClick={() => navigate(entry.path)}><span className="entry-card__icon"><TripEntryIcon type={entry.type} /></span><span><strong>{entry.title}</strong><small>{entry.body}</small></span><span className="entry-card__arrow">→</span></ZouCard>)}</section>
-    <section className={`home-dynamic home-dynamic--${tripMode}`}><div><span className="soft-label">{tripMode === 'active' ? '正在进行' : tripMode === 'upcoming' ? '即将开始' : '准备开始'}</span><h2>{tripMode === 'active' ? `${activeCity} · Day 1` : tripMode === 'upcoming' ? `${activeCity} · 3天2晚` : '开始一次走走'}</h2><p>{tripMode === 'active' ? `下一站 · ${activeNext?.name ?? '下一站'} · ${activeNext?.time ?? '09:30'}` : tripMode === 'upcoming' ? '明天 09:00 出发' : '从一个想法开始，走出一条自己的路线'}</p></div><button onClick={() => navigate(tripMode === 'active' ? '/trips' : '/travel/new')}>{tripMode === 'active' ? '继续行程' : tripMode === 'upcoming' ? '查看行程' : '开始规划'}<span>→</span></button></section>
-    <section className="home-local-recommendations" aria-labelledby="home-local-title"><header><h2 id="home-local-title">在{city}，你可能喜欢</h2><span>和你所在的城市一起更新</span></header><div className="home-local-list">{recommendations.map((item) => <button key={item.name} onClick={() => navigate('/discover')}><img src={item.image} alt={item.alt} width={52} height={50} /><span><strong>{item.name}</strong><small>{item.type}</small></span><span aria-hidden="true">→</span></button>)}</div></section>
+    <header className="home-header"><button className="home-city" onClick={() => setCitiesOpen(true)}><strong>{city}</strong><ChevronDown /><span title={weather?.note ?? '正在读取实时天气'} aria-live="polite">{weather ? <WeatherIcon condition={weather.condition} /> : <CloudSun aria-hidden="true" />}{weatherText}</span></button><div className="home-header__actions"><button className="icon-button notification-button" aria-label="通知中心" onClick={() => navigate('/notifications')}><Bell /></button><button className="avatar-button" aria-label="打开我的主页" onClick={() => navigate('/profile')}><ZouAvatar src={avatar} name="小鹏" /></button></div></header>
+    <section className="home-travel-card" aria-labelledby="home-travel-title">
+      <div className="home-travel-card__intro">
+        <div className="home-travel-card__copy"><h1 id="home-travel-title"><span>想去哪儿</span><span>走走？</span></h1></div>
+        <ZouMotionBot size="lg" interactive label="和走走打个招呼" />
+      </div>
+      <ZouButton onClick={() => navigate('/travel/new')}>开始规划旅行<ArrowRight aria-hidden="true" /></ZouButton>
+    </section>
+    {activeTrip && summary ? <button className="home-resume" onClick={() => navigate(`/trips/${activeTrip.tripId}`)}>
+      <span className="home-resume__header"><span>继续行程</span><span className="home-resume__status">{summary.status}</span></span>
+      <span className="home-resume__body"><span className="home-resume__copy"><strong>{summary.title}</strong><small>{summary.dates}</small></span><ChevronRight aria-hidden="true" /></span>
+    </button> : null}
+    <section className="home-guides" aria-labelledby="home-guides-title">
+      <header className="home-guides__header"><h2 id="home-guides-title">在{city}，你可能喜欢</h2><button onClick={() => navigate(`/discover/cities/${encodeURIComponent(city)}`)} aria-label={`查看${city}全部攻略`}>全部<ChevronRight aria-hidden="true" /></button></header>
+      <div className="home-guide-card">{recommendations.map(item => <button className="home-guide-card__row" key={item.id} onClick={() => navigate(`/discover/${encodeURIComponent(item.id)}`)}><img src={item.cover} alt="" width={52} height={60} loading="lazy" /><span className="home-guide-card__copy"><strong>{item.title}</strong><small>{item.duration} · {item.poiCount}个地点</small></span><ChevronRight aria-hidden="true" /></button>)}</div>
+    </section>
     <CityPicker open={citiesOpen} onClose={() => setCitiesOpen(false)} />
   </div></AppShell>
 }

@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "entries": [
+    {
+      "id": "sh-yangpu-riverside-industrial-walk",
+      "city": "上海",
+      "name": "杨浦滨江工业遗产步行段",
+      "venueName": "杨浦滨江",
+      "category": "activity",
+      "area": "杨浦滨江 / 丹阳路至上海国际时尚中心",
+      "address": "杨浦滨江沿线，入口与转场出发前用手机地图确认",
+      "menu": [],
+      "dietaryTags": [],
+      "tags": ["City Walk", "工业遗产", "滨江", "长距离步行"],
+      "durationMinutes": 210,
+      "checkedAt": "2026-09-09",
+      "summary": "按公开视频简介中的5.5公里建议顺序，从丹阳路站经黄浦码头、杨树浦水厂和水厂栈桥、绿之丘、世界技能博物馆、杨树浦电厂，走到上海国际时尚中心。适合愿意连续步行并关注工业遗产的人；入口开放、馆舍预约、天气和返程交通须在出发前核验。",
+      "level": "candidate",
+      "sources": [
+        {
+          "platform": "bilibili",
+          "author": "康行记Karl",
+          "url": "https://www.bilibili.com/video/BV1gYjA6KEw8",
+          "locator": "公开视频简介的5.5公里漫步建议路线；未采用免票、免预约等动态陈述"
+        }
+      ]
+    }
+  ]
+}

@@ -2,6 +2,12 @@ import { describe, expect, it } from 'vitest'
 import { emptyDietaryProfile, extractDietaryProfile, foodCompatibilityIssues } from './dietary'
 
 describe('dietary profile matching', () => {
+  it('rejects seafood as well as meat for a vegetarian participant', () => {
+    const profile = extractDietaryProfile('素食')
+    expect(foodCompatibilityIssues('清蒸鱼', profile)).toContain('含海鲜或水产线索')
+    expect(foodCompatibilityIssues('鲜虾', profile)).toContain('含海鲜或水产线索')
+    expect(foodCompatibilityIssues('蔬菜豆腐', profile)).toEqual([])
+  })
   it('extracts explicit spicy, seafood, allergy and dislike constraints', () => {
     const profile = extractDietaryProfile('不吃辣，不能吃海鲜，花生过敏，也不喜欢香菜。')
 

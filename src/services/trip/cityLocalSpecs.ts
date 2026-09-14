@@ -3,19 +3,6 @@ import type { CityAdditionalSpec } from './cityKnowledge.expanded'
 
 const CHECKED_AT = '2026-08-31'
 
-const centers: Record<string, [number, number]> = {
-  上海: [121.47, 31.23], 杭州: [120.16, 30.25], 苏州: [120.62, 31.32], 南京: [118.79, 32.04],
-  成都: [104.07, 30.66], 厦门: [118.08, 24.48], 北京: [116.4, 39.9], 广州: [113.26, 23.13],
-  重庆: [106.55, 29.56], 西安: [108.94, 34.34], 深圳: [114.06, 22.54], 长沙: [112.97, 28.19],
-  青岛: [120.38, 36.07], 武汉: [114.3, 30.59], 昆明: [102.83, 24.88], 三亚: [109.51, 18.25],
-  桂林: [110.3, 25.27], 哈尔滨: [126.64, 45.76], 贵阳: [106.71, 26.57], 张家界: [110.48, 29.13],
-  康定: [101.96, 30.05], 稻城亚丁: [100.3, 29.04], 九寨沟: [103.92, 33.26], 大理: [100.23, 25.59],
-  丽江: [100.23, 26.87], 香格里拉: [99.71, 27.83], 西双版纳: [100.8, 22.01], 腾冲: [98.49, 25.02],
-  沈阳: [123.43, 41.8], 大连: [121.61, 38.91], 长春: [125.32, 43.82], 延吉: [129.51, 42.9],
-  漠河: [122.54, 52.97], 温州: [120.7, 28.0], 台州: [121.42, 28.66], 丽水: [119.92, 28.47],
-  乌鲁木齐: [87.62, 43.83], 喀什: [75.99, 39.47], 拉萨: [91.14, 29.65], 林芝: [94.36, 29.65],
-}
-
 const price = (min: number, max: number): KnowledgePrice => ({
   min,
   max,
@@ -23,10 +10,7 @@ const price = (min: number, max: number): KnowledgePrice => ({
   note: '价格为公开体验线索的区间估算，按当天菜单核验',
 })
 
-const point = (city: string, index = 0): [number, number] => {
-  const [longitude, latitude] = centers[city] ?? [0, 0]
-  return [longitude + (index % 3) * 0.004, latitude + (index % 2) * 0.003]
-}
+const point = (_city: string, _index = 0): undefined => undefined
 
 const communitySource = (name: string, url: string): KnowledgeSource => ({
   label: `走走知识库公开地点线索：${name}`,
@@ -62,6 +46,48 @@ const concretePlaceDetails: Record<string, ConcretePlaceDetails> = {
     menuHighlights: ['片儿川', '虾爆鳝面', '猪肝面'],
     searchKeyword: '杭州 奎元馆 解放路154号',
     source: { label: '公开地点核验：奎元馆（解放路）', url: 'https://zhlzh.mofcom.gov.cn/news/entp_view/5838', kind: 'official', checkedAt: CHECKED_AT },
+  },
+  '杭州:荣鲜面馆（钱江路店）': {
+    address: '杭州市上城区钱江路555号日信国际一楼',
+    menuHighlights: ['酸菜鱼片面', '雪菜片儿川', '拌川'],
+    searchKeyword: '杭州 荣鲜面馆 钱江路555号',
+    source: { label: '杭州网实地采访：荣鲜面馆', url: 'https://hznews.hangzhou.com.cn/wenti/content/2023-06/25/content_8564122.htm', kind: 'official', checkedAt: '2026-09-07' },
+  },
+  '杭州:马儿私房菜': {
+    address: '杭州市上城区凤山路157号',
+    menuHighlights: ['油爆虾', '臭豆腐', '白切鸡', '糖醋排骨'],
+    searchKeyword: '杭州 马儿私房菜 凤山路157号',
+    source: { label: 'Apple Maps 门店资料：马儿私房菜', url: 'https://maps.apple.com/place?_provider=57879&place-id=H2710I3F9268AC58DC1', kind: 'official', checkedAt: '2026-09-07' },
+  },
+  '杭州:也龙井': {
+    address: '杭州市西湖区龙井路98号',
+    menuHighlights: [],
+    searchKeyword: '杭州 也龙井 龙井路98号',
+    source: { label: 'Apple Maps 门店资料：也龙井', url: 'https://maps.apple.com/place?_provider=57879&place-id=H2710I3F98CBB3B020E', kind: 'official', checkedAt: '2026-09-07' },
+  },
+  '杭州:一恒一素·吉祥餐厅（拱宸桥店）': {
+    address: '杭州市拱墅区拱宸桥街道吉祥寺弄9号',
+    menuHighlights: ['黑松露炒饭', '吉祥三菇', '牛肝菌烩豆腐', '桂花荔浦芋头'],
+    searchKeyword: '杭州 一恒一素 吉祥餐厅 拱宸桥 吉祥寺弄9号',
+    source: { label: 'Apple Maps 门店资料：一恒一素拱宸桥店', url: 'https://maps.apple.com/place?auid=1118368884579931&lsp=57879', kind: 'official', checkedAt: '2026-09-07' },
+  },
+  '杭州:江南驿（良渚店）': {
+    address: '杭州市余杭区良渚文化村玉鸟流苏商业街12幢',
+    menuHighlights: ['椒麻鸡', '孜然菠菜', '手工豆腐', '炸汤圆'],
+    searchKeyword: '杭州 江南驿 良渚店 玉鸟流苏12幢',
+    source: { label: 'Apple Maps 门店资料：江南驿良渚店', url: 'https://maps.apple.com/place?auid=1117323449448288&lsp=57879', kind: 'official', checkedAt: '2026-09-07' },
+  },
+  '杭州:李白图书馆餐厅（良渚古城店）': {
+    address: '杭州市余杭区瓶窑镇良渚古城遗址公园西入口服务用房1幢2楼',
+    menuHighlights: ['李白茉莉烤鸭', '荷花酥', '西湖牛肉鱼米羹'],
+    searchKeyword: '杭州 李白图书馆餐厅 良渚古城 西入口',
+    source: { label: 'Apple Maps 门店资料：李白图书馆餐厅良渚古城店', url: 'https://maps.apple.com/place?auid=1118672253087259&lsp=57879', kind: 'official', checkedAt: '2026-09-07' },
+  },
+  '杭州:潘水大院（湘湖店）': {
+    address: '杭州市萧山区蜀山街道潘水路798号徐元纳大酒店一楼',
+    menuHighlights: ['鹅肉'],
+    searchKeyword: '杭州 潘水大院 湘湖店 潘水路798号',
+    source: { label: 'Apple Maps 门店自述：潘水大院湘湖店', url: 'https://maps.apple.com/place?auid=1118368949502441&lsp=57879', kind: 'official', checkedAt: '2026-09-07' },
   },
   '苏州:裕兴记': {
     address: '江苏省苏州市姑苏区平江街道西北街11号',
@@ -195,6 +221,13 @@ export const cityLocalSpecs: Record<string, CityAdditionalSpec[]> = {
   ],
   杭州: [
     restaurant('杭州', '奎元馆', '湖滨 / 老城', '片儿川和杭州面食', ['meat', 'pork'], price(20, 60), undefined),
+    { ...restaurant('杭州', '荣鲜面馆（钱江路店）', '上城 / 近江', '酸菜鱼片面、片儿川和拌川', ['meat', 'fish', 'spicy']), durationMinutes: 60, price: { min: 30, max: 60, unit: 'person', state: 'estimated', note: '面食规划预留，非当日菜单报价；出发前核对' } },
+    { ...restaurant('杭州', '马儿私房菜', '上城 / 凤山', '杭帮家常菜', ['meat', 'pork', 'shellfish']), price: { min: 80, max: 120, unit: 'person', state: 'estimated', note: '参考公开人均约95元设置规划区间，实际按点菜结算' } },
+    { ...restaurant('杭州', '也龙井', '西湖 / 龙井', '浙江家常菜', ['meat']), price: { min: 90, max: 150, unit: 'person', state: 'estimated', note: '正餐规划预留，非当日菜单报价；出发前核对' } },
+    { ...restaurant('杭州', '一恒一素·吉祥餐厅（拱宸桥店）', '拱墅 / 运河', '黑松露炒饭、菌菇与豆腐素食', ['vegetarian']), opening: { from: '10:30', to: '21:00', label: '公开门店资料10:30–21:00，出发前复核' }, price: { min: 50, max: 90, unit: 'person', state: 'estimated', note: '按公开菜单设置规划预留，实际以门店结算为准' } },
+    { ...restaurant('杭州', '江南驿（良渚店）', '余杭 / 良渚', '椒麻鸡、手工豆腐和炸汤圆', ['meat', 'spicy']), price: { min: 70, max: 120, unit: 'person', state: 'estimated', note: '按公开菜品设置规划预留，非当日报价' } },
+    { ...restaurant('杭州', '李白图书馆餐厅（良渚古城店）', '余杭 / 良渚古城', '茉莉烤鸭、荷花酥和鱼米羹', ['meat', 'fish']), opening: { from: '16:30', to: '21:00', label: '本行程采用晚餐窗口16:30–21:00，出发前复核' }, price: { min: 100, max: 150, unit: 'person', state: 'estimated', note: '参考公开人均约121元设置区间，实际按点菜结算' } },
+    { ...restaurant('杭州', '潘水大院（湘湖店）', '萧山 / 湘湖', '鹅肉、湘湖蒸菜和海鲜', ['meat', 'seafood']), price: { min: 70, max: 110, unit: 'person', state: 'estimated', note: '参考公开人均约86元设置区间，实际按点菜结算' } },
     restaurant('杭州', '芳明小吃', '滨江社区', '社区小吃和苍蝇小馆体验', ['meat', 'spicy'], price(20, 60), communitySource('芳明小吃', bilibili.芳明小吃), 1),
     localProject('杭州', '胜利河美食街夜逛', '拱墅区', '把运河夜景和本地餐饮放在一条线，适合替换拥挤的纯打卡路线。', ['本地人项目', '夜逛', '逛吃'], undefined, 2),
   ],

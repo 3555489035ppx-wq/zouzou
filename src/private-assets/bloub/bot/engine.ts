@@ -181,7 +181,7 @@ export class BotEngine {
    */
   setExpression(expression: BotExpression | null, now = 0) {
     if (expression === this.expr) return
-    this.exprPrev = this.expr
+    this.exprPrev = this.exprAtTime(now)
     this.expr = expression
     this.exprAt = now
   }
@@ -421,7 +421,7 @@ export class BotEngine {
     if (STATE_BY_ID.get(id)?.blinkIn) this.blinkAt = now
   }
 
-  sample(now: number): BotFrame {
+  sample(now: number, options: { blink?: boolean } = {}): BotFrame {
     const R = this.scale
     const def = STATE_BY_ID.get(this.cur)!
     const shape = this.shapeAtTime(now)
@@ -460,7 +460,7 @@ export class BotEngine {
     // --- vie au repos -----------------------------------------------------
     const alive = pose.eyeAlpha > 0.01
     const look = this.lookAtTime(now)
-    const life = liveliness(now, { wander: alive ? look.wander : 0, blink: alive })
+    const life = liveliness(now, { wander: alive ? look.wander : 0, blink: alive && options.blink !== false })
 
     const gaze = {
       // Les deux visees REMPLACENT celles de la pose au lieu de s'y ajouter (voir
@@ -477,7 +477,7 @@ export class BotEngine {
     // clignement declenche par le changement d'etat, en plus du calendrier
     const forced = clamp((now - this.blinkAt) / 0.2)
     const forcedLid = forced < 1 ? Math.abs(forced * 2 - 1) : 1
-    const lid = Math.min(life.lid, forcedLid)
+    const lid = options.blink === false ? 1 : Math.min(life.lid, forcedLid)
 
     const offX = pose.offX + life.driftX
     const offY = pose.offY + life.driftY
@@ -555,4 +555,3 @@ export class BotEngine {
     }
   }
 }
-

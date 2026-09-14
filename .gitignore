@@ -28,3 +28,18 @@ _research/**/*.jpg
 _research/**/*.jpeg
 _research/**/*.webp
 _research/**/*.gif
+
+# Local review build for taskbook 02
+dist-task02/
+
+# Private research, independent WorkBuddy material and local deployment credentials.
+.workbuddy-ai/
+tools/travel-kb/private/
+.wrangler/
+.hsk/
+.dev.vars*
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+out/
+dist-mobile-audit/

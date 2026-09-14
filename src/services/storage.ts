@@ -30,7 +30,7 @@ export function readVersioned<T>(key: string, kind: 'session' | 'local' = 'sessi
       const envelope = parsed as Partial<VersionedValue<T>>
       return envelope.version === STORAGE_VERSION ? envelope.value ?? null : null
     }
-    // Read the pre-migration JSON format once and upgrade it in place.
+    // The writer backs up the original bytes before upgrading the envelope.
     writeVersioned(key, parsed as T, kind)
     return parsed as T
   } catch {
@@ -44,11 +44,18 @@ export function readVersioned<T>(key: string, kind: 'session' | 'local' = 'sessi
 
 export function writeVersioned<T>(key: string, value: T, kind: 'session' | 'local' = 'session') {
   const storage = getStorage(kind)
-  if (!storage) return
+  if (!storage) return false
   try {
+    const old = storage.getItem(key)
+    if (old !== null && storage.getItem(`${key}:backup-before-v1`) === null) {
+      let legacy = true
+      try { const parsed = JSON.parse(old); legacy = !(parsed && typeof parsed === 'object' && 'version' in parsed && 'value' in parsed) } catch { /* Legacy plain text. */ }
+      if (legacy) storage.setItem(`${key}:backup-before-v1`, old)
+    }
     storage.setItem(key, JSON.stringify({ version: STORAGE_VERSION, value } satisfies VersionedValue<T>))
+    return true
   } catch {
-    // Storage can be unavailable in private browsing or after quota errors.
+    return false
   }
 }
 

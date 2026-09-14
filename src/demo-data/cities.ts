@@ -1,6 +1,8 @@
 import { tripDays, type Place } from './trips'
 import { getCityKnowledge, type KnowledgeCategory } from '../services/trip/cityKnowledge'
+import { getPlaceCoordinates } from '../services/places'
 import { regionalCityProfiles } from './regional-city-profiles'
+import { moreCityProfiles } from './more-city-profiles'
 
 export type CityProfile = {
   mapCenter: [number, number]
@@ -11,8 +13,8 @@ export type CityProfile = {
   routeScale: number
 }
 
-// Map coordinates are used by AMap overlays. Weather coordinates are kept as
-// WGS84 values for the weather provider instead of mixing the two systems.
+// City centers are used for weather and city-level copy only. They are never
+// used as a place coordinate.
 export const cityProfiles: Record<string, CityProfile> = {
   上海: {
     mapCenter: [121.4737, 31.2304],
@@ -247,11 +249,10 @@ export const cityProfiles: Record<string, CityProfile> = {
     routeScale: 0.58,
   },
   ...regionalCityProfiles,
+  ...moreCityProfiles,
 }
 
 export const cityNames = Object.keys(cityProfiles)
-
-const sourceCenter = cityProfiles['上海'].mapCenter
 
 export function getCityProfile(city: string): CityProfile {
   return cityProfiles[city] ?? cityProfiles['上海']
@@ -267,7 +268,7 @@ export function getDemoTripPlaces(city: string, day: string): Place[] {
   const sourcePlaces = tripDays[day] ?? tripDays['Day 1']
 
   if (city !== '上海') {
-    const knowledgeItems = getCityKnowledge(city).items.filter((item) => item.coordinates.some((value) => value !== 0))
+    const knowledgeItems = getCityKnowledge(city).items.filter((item) => item.verified && getPlaceCoordinates({ coordinates: item.coordinates, coordinateSystem: item.coordinateSystem }))
     const used = new Set<string>()
     const categoryFor = (type: string): KnowledgeCategory[] => /咖啡|早餐|午餐|晚餐|美食|小吃/.test(type)
       ? ['restaurant', 'food']
@@ -279,36 +280,34 @@ export function getDemoTripPlaces(city: string, day: string): Place[] {
       const item = knowledgeItems.find((candidate) => !used.has(candidate.id) && categories.includes(candidate.category)) ?? knowledgeItems.find((candidate) => !used.has(candidate.id))
       if (!item) return null
       used.add(item.id)
+      const coordinates = getPlaceCoordinates({ coordinates: item.coordinates, coordinateSystem: item.coordinateSystem })
       return {
         ...place,
         id: `${city}-${day}-${place.id}`,
         name: item.name,
         type: item.category === 'restaurant' ? '晚餐候选' : item.category === 'food' ? '本地美食候选' : place.type,
         note: `${item.summary} 来源：${item.source.label}。`,
-        lng: item.coordinates[0],
-        lat: item.coordinates[1],
-        coordinateSource: `高德 POI：${item.name} · ${item.source.checkedAt}`,
+        ...(coordinates ? { longitude: coordinates.longitude, latitude: coordinates.latitude, lng: coordinates.longitude, lat: coordinates.latitude } : {}),
+        coordinateSource: `${item.source.label} · ${item.source.checkedAt}`,
         verified: item.verified,
-        x: index,
-        z: index,
       } satisfies Place
     }).filter((place): place is Place => Boolean(place))
     if (sourcedPlaces.length === sourcePlaces.length) return sourcedPlaces
   }
 
-  return sourcePlaces.map((place, index) => ({
-    ...place,
+  return sourcePlaces.map((place, index) => {
+    const { lng: _lng, lat: _lat, longitude: _longitude, latitude: _latitude, coordinates: _coordinates, x: _x, z: _z, ...placeWithoutCoordinates } = place
+    return {
+    ...placeWithoutCoordinates,
     id: `${city}-${day}-${place.id}`,
     name: city === '上海' ? place.name : profile.demoLabels[index] ?? `${city} · 演示地点 ${index + 1}`,
-    lng: profile.mapCenter[0] + (place.lng - sourceCenter[0]) * profile.routeScale,
-    lat: profile.mapCenter[1] + (place.lat - sourceCenter[1]) * profile.routeScale,
-    coordinateSource: city === '上海' ? '行程种子坐标；路线由服务实时计算' : '城市候选骨架；坐标待 POI 核验',
-    verified: city === '上海',
-  }))
+    coordinateSource: '地点坐标待核验',
+    verified: false,
+  }
+  })
 }
 
 export function getDemoHotel(city: string): Place {
-  const profile = getCityProfile(city)
   return {
     id: `${city}-hotel-start`,
     time: '08:50',
@@ -320,11 +319,7 @@ export function getDemoHotel(city: string): Place {
     budget: city === '上海' ? 980 : 760,
     transport: '步行 18 分钟',
     note: '两晚住宿参考价已计入，实际以酒店当天公开信息为准。',
-    x: -3.4,
-    z: 2.1,
-    lng: profile.mapCenter[0],
-    lat: profile.mapCenter[1],
-    coordinateSource: city === '上海' ? '行程种子坐标；路线由服务实时计算' : '城市候选酒店位置；坐标待 POI 核验',
-    verified: city === '上海',
+    coordinateSource: '住宿地址待核验',
+    verified: false,
   }
 }

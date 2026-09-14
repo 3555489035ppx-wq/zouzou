@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "origin": "user-provided-planning-policy",
+  "reviewedAt": "2026-09-07",
+  "libraries": ["city_clusters", "structure_pace", "scenarios", "food_photo_culture", "pitfalls_plan_b", "sources_consensus"],
+  "dayPatterns": {
+    "arrival": {"label":"抵达与城市初识","sequence":["到达","寄存或入住","住宿附近一个片区","地方晚餐","可选轻夜游"],"maxCore":1},
+    "core": {"label":"主要体验日","sequence":["核心体验","完整午餐","相邻片区体验","完整晚餐","可选夜游"],"maxCore":3},
+    "departure": {"label":"轻松收尾与返程","sequence":["附近轻活动","用餐或伴手礼","取行李","进站缓冲","返程"],"maxCore":1},
+    "half_day": {"label":"半日一个片区","sequence":["一个核心体验","附近用餐或咖啡","离开"],"maxCore":1},
+    "one_day": {"label":"一日双核心","sequence":["上午核心","午餐","附近第二体验","返程"],"maxCore":2},
+    "weekend": {"label":"周末两日","sequence":["首日抵达与代表片区","次日核心体验与返程"],"maxCore":2},
+    "classic_three": {"label":"三日经典","sequence":["城市初识","核心体验","松弛返程"],"maxCore":3},
+    "deep_four_five": {"label":"四至五日深度","sequence":["抵达片区","城市核心","另一完整片区","可选近郊整日","轻松返程"],"maxCore":3}
+  },
+  "pace": {
+    "easy": {"core":2,"light":1,"restMinutes":30,"maxClusters":1,"summary":"每天以两项核心体验和一项轻活动为上限，留足两餐与休息。"},
+    "match": {"core":3,"light":1,"restMinutes":20,"maxClusters":2,"summary":"先满足必去与兴趣，每天安排两至三项核心体验，相邻片区集中游玩。"},
+    "rich": {"core":3,"light":2,"restMinutes":15,"maxClusters":2,"summary":"在相邻片区补充一至两项短体验，保留完整两餐与返程缓冲。"}
+  },
+  "scenarios": [
+    {"id":"early_riser","terms":["早起","早出门"],"advice":"在已确认开放时间内优先上午体验，前一晚适当收早。"},
+    {"id":"late_riser","terms":["晚起","睡到自然醒","不早起"],"advice":"上午只留弹性安排，主要体验集中在午后，减少当天项目总量。"},
+    {"id":"couple","terms":["情侣","约会","恋人"],"advice":"每天留一段可以慢慢走、喝东西和聊天的时间，夜游作为自选项。"},
+    {"id":"friends","terms":["朋友","闺蜜","兄弟"],"advice":"先选全员都想去的一项核心体验，其余按共同兴趣安排，预留集合时间。"},
+    {"id":"solo","terms":["独自","一个人","独行"],"advice":"减少为凑人数设计的餐饮与活动，夜间活动结束前确认回程方式。"},
+    {"id":"family","terms":["亲子","带娃","孩子","儿童"],"advice":"上午集中主要体验，午后留休息，不把多个大型场馆放在同一天。"},
+    {"id":"parents","terms":["父母","老人","长辈"],"advice":"连续步行之间安排坐下休息，优先同片区体验；台阶与无障碍条件另行确认。"},
+    {"id":"first","terms":["第一次","初次"],"advice":"先选城市最有代表性且符合兴趣的体验，每天一个清楚的主题。"},
+    {"id":"repeat","terms":["二刷","再去","去过"],"advice":"降低已去过的热门点优先级，增加社区街区、专题展和本地生活体验。"},
+    {"id":"student","terms":["学生","学生党"],"advice":"优先免费公共空间和地方小吃；学生优惠仅在核对适用条件后计入。"},
+    {"id":"budget","terms":["低预算","省钱","穷游"],"advice":"减少重复付费项目和跨片区移动，先保留吃住与返程预算。"},
+    {"id":"photo","terms":["拍照","摄影","出片"],"advice":"把同片区步行与拍照合并，光线随季节天气变化，不承诺固定机位无人。"},
+    {"id":"food","terms":["美食","小吃","逛吃"],"advice":"一餐主打地方正餐，另一餐换口味，小吃少量分享，避免连续重油重辣。"},
+    {"id":"museum","terms":["博物馆","展览","文博"],"advice":"一日优先一个重点场馆，围绕感兴趣的展厅留时间，出馆后安排轻活动。"},
+    {"id":"walk","terms":["City Walk","citywalk","漫步"],"advice":"围绕一个连续片区步行，穿插咖啡或休息，可从任一节点提前结束。"},
+    {"id":"weekend","terms":["周末"],"advice":"到达当天不追赶大型项目，第二天先完成主要体验再留返程时间。"},
+    {"id":"birthday","terms":["生日"],"advice":"庆祝用餐作为当天锚点，前后少排项目；布置与服务须向店家确认。"},
+    {"id":"anniversary","terms":["纪念日"],"advice":"集中安排一项有纪念感的体验，留出正餐和自由相处时间。"},
+    {"id":"dinner","terms":["聚餐"],"advice":"先统一预算和全员忌口，再选聚餐片区，附近活动作为自选补充。"},
+    {"id":"nightlife","terms":["夜生活","夜游","夜景"],"advice":"晚间体验和白天游览错开强度，保留回程安排；晚睡后次日适当晚起。"}
+  ],
+  "planB": [
+    {"id":"rain","trigger":"下雨","action":"先缩短可选户外停留，优先同片区室内文化体验或休息；确认开放和预约后再替换。"},
+    {"id":"heat","trigger":"太热","action":"把可选户外步行移到较凉爽的早晚，中午安排用餐、室内体验或休息。"},
+    {"id":"late","trigger":"起晚或迟到","action":"从第一个未开始的可选短活动删减，保留已约项目、正餐和返程缓冲。"},
+    {"id":"tired","trigger":"走累了","action":"在当前片区休息，跳过后续可选站点，体力恢复后再决定是否继续。"},
+    {"id":"closed","trigger":"临时闭馆或约满","action":"在原片区找符合兴趣的替代项目，先核对可用性，不直接保证能入场。"},
+    {"id":"time","trigger":"时间不足","action":"保留必去、用餐、取行李与进站时间，优先删掉远距离可选项目。"},
+    {"id":"budget","trigger":"预算不足","action":"减少可选付费体验或调整住宿档位，重新计算总预算，不压低同一项目价格。"},
+    {"id":"party","trigger":"同行意见变化","action":"重新选择共同核心体验，保留每位同行人的饮食、体力和时间限制。"}
+  ],
+  "consensus": {"maxPlatformShare":0.5,"minimumHighConfidenceAuthorsPerPlatform":2,"metadataCanSupportPattern":false,"sameAuthorCrosspostsCountOnce":true},
+  "dynamic": {"queue":null,"openingToday":null,"livePrice":null,"liveTrafficMinutes":null,"notice":"建议出发前再次确认当天营业、预约及临时调整。"}
+}

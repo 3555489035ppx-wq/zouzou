@@ -1,4 +1,5 @@
 import { regionalCityHotelSpecs } from './regional-hotel-specs'
+import { moreCityHotelSpecs } from './more-city-hotels'
 
 export type CityHotelSpec = {
   name: string
@@ -7,6 +8,7 @@ export type CityHotelSpec = {
   nightly: { min: number; max: number }
   anchorTerms: string[]
   summary: string
+  source?: { label: string; url: string; kind: 'official'; checkedAt: string }
 }
 
 /**
@@ -116,4 +118,5 @@ export const cityHotelSpecs: Record<string, CityHotelSpec[]> = {
     { name: '张家界京武铂尔曼酒店', area: '武陵源 / 标志门', tier: 'premium', nightly: { min: 800, max: 1_400 }, anchorTerms: ['武陵源', '天子山', '十里画廊'], summary: '适合高预算山景行程，天门山与武陵源应分日安排并核算交通。' },
   ],
   ...regionalCityHotelSpecs,
+  ...moreCityHotelSpecs,
 }

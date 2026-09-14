@@ -5,12 +5,18 @@ export type Place = {
   type: string
   stay: string
   budget: number
+  priceState?: 'verified' | 'estimated' | 'unknown' | 'conflict' | 'stale'
   transport: string
   note: string
-  x: number
-  z: number
-  lng: number
-  lat: number
+  x?: number
+  z?: number
+  /** Legacy coordinate aliases retained for stored-plan compatibility. */
+  lng?: number
+  lat?: number
+  /** Canonical geographic coordinate fields. */
+  longitude?: number
+  latitude?: number
+  coordinates?: [number, number]
   area?: string
   inputName?: string
   canonicalName?: string
@@ -24,7 +30,7 @@ export type Place = {
   tel?: string
   verifiedAt?: number
   resolutionStatus?: 'verified' | 'ambiguous' | 'not_found' | 'error'
-  coordinateSystem?: 'wgs84' | 'gcj02'
+  coordinateSystem?: 'wgs84' | 'gcj02' | 'bd09ll'
   mapStatus?: 'resolved' | 'unresolved'
   searchKeyword?: string
   coordinateSource?: string

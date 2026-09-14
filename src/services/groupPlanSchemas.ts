@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import type { GroupPlan, GroupPlanEvent } from './groupPlans'
+import { generatedPlanSchema } from './trip/schemas'
 
 const text = z.string().max(500)
 const id = z.string().min(1).max(200)
@@ -10,6 +11,9 @@ const participantSchema = z.object({
   userId: z.string().max(160).optional(),
   displayName: z.string().min(1).max(80),
   avatar: z.string().max(2_000).optional(),
+  activityPreferences: z.array(z.string().max(80)).max(12).optional(),
+  foodPreferences: z.array(z.string().max(80)).max(12).optional(),
+  note: z.string().max(500).optional(),
   role: z.enum(['owner', 'member']),
   inviteStatus: z.enum(['pending', 'accepted', 'declined', 'expired', 'left']),
   joinedAt: z.string().optional(),
@@ -29,15 +33,21 @@ const candidateSchema = z.object({
     tags: z.array(z.string().max(80)).max(30).optional(),
     lng: z.number().finite().min(-180).max(180).optional(),
     lat: z.number().finite().min(-90).max(90).optional(),
+    longitude: z.number().finite().min(-180).max(180).optional(),
+    latitude: z.number().finite().min(-90).max(90).optional(),
+    coordinateSystem: z.enum(['wgs84', 'gcj02', 'bd09ll']).optional(),
     durationMinutes: z.number().int().positive().max(1_440).optional(),
+    distanceKm: z.number().finite().nonnegative().max(20_000).optional(),
     verified: z.boolean().optional(),
     reason: z.string().max(1_000).optional(),
+    blockedReason: z.string().max(1_000).optional(),
   }).passthrough(),
   order: z.number().int().min(0),
   createdAt: z.string(),
 }).passthrough()
 
 const pollSchema = z.object({
+  resolvedRevision: z.number().int().positive().optional(),
   id,
   planId: id,
   title: z.string().min(1).max(160),
@@ -63,13 +73,23 @@ const journeyStopSchema = z.object({
   budget: z.number().finite().nonnegative(),
   transport: z.string().max(240),
   note: z.string().max(1_000),
-  lng: z.number().finite().min(-180).max(180),
-  lat: z.number().finite().min(-90).max(90),
-  x: z.number().finite(),
-  z: z.number().finite(),
-}).passthrough()
+  lng: z.number().finite().min(-180).max(180).optional(),
+  lat: z.number().finite().min(-90).max(90).optional(),
+  longitude: z.number().finite().min(-180).max(180).optional(),
+  latitude: z.number().finite().min(-90).max(90).optional(),
+  coordinates: z.tuple([z.number().finite().min(-180).max(180), z.number().finite().min(-90).max(90)]).optional(),
+  x: z.number().finite().optional(),
+  z: z.number().finite().optional(),
+}).passthrough().superRefine((stop, context) => {
+  const latitude = stop.latitude ?? stop.lat ?? stop.coordinates?.[1]
+  const longitude = stop.longitude ?? stop.lng ?? stop.coordinates?.[0]
+  if ((latitude === undefined) !== (longitude === undefined)) context.addIssue({ code: z.ZodIssueCode.custom, message: '地点坐标必须同时提供经度和纬度' })
+  if (latitude === 0 && longitude === 0) context.addIssue({ code: z.ZodIssueCode.custom, message: '地点坐标不能使用 0,0 占位' })
+})
 
 const journeySchema = z.object({
+  planId: id.optional(),
+  revision: z.number().int().positive().optional(),
   id,
   title: z.string().min(1).max(240),
   estimatedCost: z.number().finite().nonnegative(),
@@ -78,14 +98,17 @@ const journeySchema = z.object({
 }).passthrough()
 
 export const groupPlanSchema = z.object({
+  candidates: z.array(candidateSchema).max(8).optional(),
+  trip: generatedPlanSchema.optional(),
+  revision: z.number().int().positive().optional(),
   id,
-  type: z.enum(['weekend', 'date', 'dining']),
+  type: z.enum(['travel', 'weekend', 'date', 'dining']),
   ownerId: id,
   title: z.string().min(1).max(240),
   city: z.string().min(1).max(120),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  startTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/),
-  endTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/),
+  startTime: z.union([z.literal(''),z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/)]),
+  endTime: z.union([z.literal(''),z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/)]),
   budget: z.number().finite().nonnegative(),
   partySize: z.number().int().min(1).max(100),
   interests: z.array(text).max(20),

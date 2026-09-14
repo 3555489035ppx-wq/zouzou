@@ -14,6 +14,7 @@ import {
   type TripUnderstanding,
 } from '../src/services/trip/planner'
 import { tripIntentSchema } from '../src/services/trip/schemas'
+import { extractExperiencePreferences } from '../src/services/trip/experiencePolicy'
 
 export type IntentProvider = 'openai' | 'deepseek' | 'local'
 
@@ -179,6 +180,7 @@ function calculateInclusiveDays(dates: TripIntent['dates']) {
 
 function normalizeMissing(rawMissing: string[], intent: Omit<TripIntent, 'missing'>) {
   const missing = rawMissing.filter((item) => {
+    if(/必去|偏好/.test(item)||/(?:未|尚未|没有)(?:提供|指定|明确).*(?:展览|展馆|美食类型|活动)/.test(item))return false
     if (item === '具体出行日期') return !intent.dates
     if (item === '到达时间和地点') return !intent.arrivalTime || !intent.arrivalLocation
     if (item === '返程时间和地点') return !intent.departureTime || !intent.departureLocation
@@ -224,7 +226,7 @@ export function normalizeTripIntent(value: unknown): TripIntent {
     nights: Math.max(0, Math.round(durationFromDates !== null ? durationDays - 1 : asNumber(value.nights) ?? durationDays - 1)),
     partySize: Math.max(1, Math.round(asNumber(value.partySize) ?? 1)),
     budget: asNumber(value.budget),
-    budgetScope: asString(value.budgetScope) ?? '范围待确认',
+    budgetScope: /[\u4e00-\u9fff]/.test(asString(value.budgetScope)??'') ? asString(value.budgetScope)! : '范围待确认',
     pace: normalizePace(value.pace),
     mustVisit: asStringArray(value.mustVisit),
     preferences: asStringArray(value.preferences),
@@ -286,6 +288,7 @@ function buildEvidence(request: TripRequest, provider: IntentProvider, model?: s
 }
 
 function makeUnderstanding(intent: TripIntent, request: TripRequest, provider: IntentProvider, model?: string, guideContext?: import('../src/services/trip/guides').GuideContext): ServerTripUnderstanding {
+  intent={...intent,missing:[...new Map(intent.missing.filter(item=>!/必去|偏好/.test(item)&&!(intent.nights===0&&/住宿|酒店/.test(item))).map(item=>[/日期|年份/.test(item)?'dates':/到达/.test(item)?'arrival':/返程/.test(item)?'departure':/预算/.test(item)?'budget':/酒店|住宿/.test(item)?'hotel':item,item])).values()]}
   return {
     intent,
     evidence: buildEvidence(request, provider, model, guideContext),
@@ -405,6 +408,13 @@ export async function understandTripWithProvider(request: TripRequest): Promise<
   const fallbackDietary = localPreflight.intent.dietary ?? emptyDietaryProfile()
   const intent = {
     ...normalizedIntent,
+    preferences: [...new Set([...normalizedIntent.preferences, ...extractExperiencePreferences(request.text)])],
+    pace: localPreflight.intent.pace === 'relaxed' ? 'relaxed' as const : normalizedIntent.pace,
+    lowMobility: localPreflight.intent.lowMobility || normalizedIntent.lowMobility,
+    dates: localPreflight.intent.dates ?? normalizedIntent.dates,
+    durationDays: localPreflight.intent.dates ? localPreflight.intent.durationDays : normalizedIntent.durationDays,
+    nights: localPreflight.intent.dates ? localPreflight.intent.nights : normalizedIntent.nights,
+    conflicts: [...new Set([...localPreflight.intent.conflicts,...normalizedIntent.conflicts])],
     dietary: mergeDietaryProfiles(normalizedIntent.dietary, fallbackDietary),
     constraints: dietarySummary(fallbackDietary).length > 0 && !normalizedIntent.constraints.some((item) => item.startsWith('饮食限制'))
       ? [...normalizedIntent.constraints, `饮食限制：${dietarySummary(fallbackDietary).join('、')}；下单前确认调味、配料和交叉接触风险`]

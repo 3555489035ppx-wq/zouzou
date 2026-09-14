@@ -1,10 +1,18 @@
 import { regionalCityImages } from './regional-city-images'
 import { cityCoverImages } from './city-cover-images'
+import { moreCityGalleryImages } from './more-city-images'
+import { moreCityFoodImages } from './more-city-food-images'
+import { verifiedPlaceImages } from './verified-place-images'
+import { getReviewedCoverImages } from './reviewed-cover-images'
 
 export type CityImage = {
   src: string
   alt: string
   landmark: string
+  objectPosition?: string
+  kind?: 'landmark' | 'food'
+  /** Route cards may opt out of a city-level image that has not been verified for a specific stop. */
+  routeEligible?: boolean
   sourceUrl: string
   credit: string
   license: string
@@ -314,6 +322,7 @@ const sanyaLocationImages: CityImage[] = [
     src: '/assets/locations/sanya-seafood-noodle.jpg',
     alt: '三亚糟粕醋海鲜粉',
     landmark: '糟粕醋海鲜粉',
+    kind: 'food',
     sourceUrl: 'https://commons.wikimedia.org/wiki/File:Zaopocu_seafood_rice_noodle_soup_at_Qiansheng_Hainanfen,_Sanya_(20230326124453).jpg',
     credit: 'N509FZ',
     license: 'CC BY-SA 4.0',
@@ -363,8 +372,9 @@ const sanyaAdditionalImages: CityImage[] = [
 const cityImageGalleries: Record<string, CityImage[]> = Object.fromEntries(
   Object.keys(cityImages).map((city) => {
     if (city === '上海') return [city, [...shanghaiLocationImages, ...(cityCoverImages[city] ?? [])]]
-    if (city === '三亚') return [city, [...sanyaLocationImages, ...sanyaAdditionalImages]]
-    return [city, [cityImages[city], ...(cityCoverImages[city] ?? [])]]
+    if (city === '三亚') return [city, [...sanyaLocationImages, ...sanyaAdditionalImages, ...(verifiedPlaceImages[city] ?? [])]]
+    if (moreCityGalleryImages[city]) return [city, [cityImages[city], ...moreCityGalleryImages[city], ...(moreCityFoodImages[city] ?? []), ...(verifiedPlaceImages[city] ?? [])]]
+    return [city, [cityImages[city], ...(cityCoverImages[city] ?? []), ...(moreCityFoodImages[city] ?? []), ...(verifiedPlaceImages[city] ?? [])]]
   }),
 ) as Record<string, CityImage[]>
 
@@ -373,5 +383,5 @@ export function getCityImage(city: string): CityImage {
 }
 
 export function getCityImageGallery(city: string): CityImage[] {
-  return cityImageGalleries[city] ?? [getCityImage(city)]
+  return [...getReviewedCoverImages(city), ...(cityImageGalleries[city] ?? [getCityImage(city)])]
 }

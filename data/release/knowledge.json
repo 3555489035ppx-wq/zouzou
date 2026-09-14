@@ -1,0 +1,58 @@
+{
+  "knowledgeVersion": "travel-20260914-72591dbecea55e65",
+  "permissionDeclaration": "docs/CONTENT-AUTHORIZATION.md",
+  "approvalBasis": "owner-confirmed",
+  "reviewedCount": 7918,
+  "cities": 60,
+  "sourceGeneratedAt": "2026-09-14T10:17:40.468Z",
+  "inputs": [
+    {
+      "path": "data/travel-experience-policy.json",
+      "sha256": "9c31c78b7a9f35f408e1c71dbf07c17d1a49c20f8c2a3cdfd2ce41bb5d53cb91"
+    },
+    {
+      "path": "data/travel-experience-reviewed.json",
+      "sha256": "69964f9176f42209390e5366186ce261358dacfd8223c60d1147bf1408e4c055"
+    },
+    {
+      "path": "data/travel-guides-reviewed-20-cities.json",
+      "sha256": "657a967d9d7db588df8c8d34567fe1a5fbff5c28a6fca407343f20717e7dde34"
+    },
+    {
+      "path": "data/travel-guides.json",
+      "sha256": "5289510ec12e8426d8b5669d3c536752bbcb23067bebd471cb7f85cf4fe2791b"
+    },
+    {
+      "path": "data/travel-kb-release.json",
+      "sha256": "1e05ab947c517ff7a787a3ca66cdd4a4ba5f64e1bee5c4d5cc1b60fbe0a09307"
+    },
+    {
+      "path": "data/travel-research/2026-09-06-restaurants.json",
+      "sha256": "fb97f50a48edae3fae2c29683343bad38b722cf5cfb3927cdc37f857bb653350"
+    },
+    {
+      "path": "data/travel-research/destination-expansion-reviewed.json",
+      "sha256": "604215f135bce64cc720bde7369ef6c932cda19d5255ae8ea577fa6c5ce23304"
+    },
+    {
+      "path": "data/travel-research/grounded-meal-venues.json",
+      "sha256": "9d29a44caf2574f7e55d7e4e5301b87f391ab6b49c47be0093750b62283fa2b2"
+    },
+    {
+      "path": "data/travel-research/meal-web-supplement.json",
+      "sha256": "6a3f8727edefe4c2c13ebdf5faa54d285bd293eb6aac18e956f9067f5da93422"
+    },
+    {
+      "path": "data/travel-research/reviewed-meal-venues.json",
+      "sha256": "867b36d0eb9073b8d2af8a4eeedbe99446e47ba0013a019b1190da5777b6d912"
+    },
+    {
+      "path": "data/travel-research/three-platform-named-places.json",
+      "sha256": "edbf40de3d0d03d80c929e3f7f7cb8c4f58179cead649f917232b8f83f80c0d9"
+    },
+    {
+      "path": "data/travel-research/three-platform-reviewed-routes.json",
+      "sha256": "0f620f9422b224e7642f0b6e5a6067965b0a73f941a8070f19eca2ac9d1a36f4"
+    }
+  ]
+}

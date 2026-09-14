@@ -31,7 +31,7 @@ export type TripMediaAnalysisResponse = {
 
 const MAX_MEDIA_COUNT = 6
 const MAX_MEDIA_DATA_URL_CHARS = 10_500_000
-const MAX_MEDIA_TOTAL_CHARS = 22_000_000
+const MAX_MEDIA_TOTAL_CHARS = 26_000_000
 const DEFAULT_DEEPSEEK_VISION_MODEL = 'deepseek-v4-flash-vision-exp'
 const DEFAULT_DASHSCOPE_VISION_MODEL = 'qwen3-vl-flash'
 const DEFAULT_ZHIPU_VISION_MODEL = 'glm-4.6v-flash'
@@ -57,10 +57,12 @@ const asNonNegativeNumber = (value: unknown) => {
 const env = (name: string) => process.env[name]?.trim() || ''
 
 function normalizeDateRange(value: unknown): MediaFact['facts']['dates'] {
+  if(typeof value==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(value)&&Number.isFinite(Date.parse(value))&&new Date(value).toISOString().slice(0,10)===value)return {start:value,end:value}
   if (!isRecord(value)) return null
   const start = asString(value.start)
   const end = asString(value.end)
   if (!/^\d{4}-\d{2}-\d{2}$/.test(start) || !/^\d{4}-\d{2}-\d{2}$/.test(end)) return null
+  if(!Number.isFinite(Date.parse(start))||!Number.isFinite(Date.parse(end))||new Date(start).toISOString().slice(0,10)!==start||new Date(end).toISOString().slice(0,10)!==end||end<start)return null
   return { start, end }
 }
 
@@ -112,7 +114,7 @@ function fallbackMediaFacts(media: VisionMediaInput[], provider: VisionProvider,
  */
 export function normalizeMediaFacts(value: unknown, media: Array<Pick<TripMedia, 'id' | 'name' | 'category'>>, provider: MediaFact['provider']): MediaFact[] {
   const root = isRecord(value) ? value : {}
-  const rawItems = Array.isArray(root.items) ? root.items.filter(isRecord).slice(0, MAX_MEDIA_COUNT) : []
+  const rawItems = (Array.isArray(value)?value:Array.isArray(root.items)?root.items:[]).filter(isRecord).slice(0, MAX_MEDIA_COUNT)
   const byId = new Map(rawItems.map((item, index) => [asString(item.mediaId) || media[index]?.id || `media-${index + 1}`, item]))
 
   return media.map((input, index) => {
@@ -129,7 +131,7 @@ export function normalizeMediaFacts(value: unknown, media: Array<Pick<TripMedia,
       kind: normalizeKind(item.kind),
       rawText: asString(item.rawText).slice(0, 4_000),
       facts: {
-        dates: normalizeDateRange(rawFacts.dates),
+        dates: normalizeDateRange(rawFacts.dates) ?? normalizeDateRange(asString(item.rawText).match(/\b\d{4}-\d{2}-\d{2}\b/)?.[0]),
         times: normalizeTimes(rawFacts.times),
         locations: asStringArray(rawFacts.locations, 8),
         arrivalLocation: asString(rawFacts.arrivalLocation) || null,
@@ -232,6 +234,7 @@ export function sanitizeTripMediaRequest(value: unknown): TripMediaAnalysisReque
   const text = asString(value.text)
   if (text.length > 6_000) throw new Error('旅行描述不能超过 6000 个字符。')
   if (!Array.isArray(value.media) || value.media.length === 0) throw new Error('至少需要一张截图。')
+  if (value.media.length > MAX_MEDIA_COUNT) throw new Error('最多支持6张截图，请移除多余图片后重试。')
 
   let totalChars = 0
   const media = value.media.slice(0, MAX_MEDIA_COUNT).map((item, index) => {
@@ -259,6 +262,7 @@ function imageListText(media: VisionMediaInput[]) {
     '本次图片清单（输出中的 mediaId 必须使用这些 ID）：',
     ...media.map((item) => `- ${item.id}: ${item.name}${item.category ? `（${item.category}）` : ''}`),
     '',
+    'dates必须是{start:YYYY-MM-DD,end:YYYY-MM-DD}或null；单张交通票据只有一个日期时start和end填写同一天，不得因不是完整旅行日期范围而丢弃。',
     '请按照以下 JSON 形状输出：{"items":[{"mediaId":"...","kind":"ticket|hotel|reservation|chat|map|other","rawText":"","facts":{"dates":null,"times":[],"locations":[],"arrivalLocation":null,"departureLocation":null,"hotel":null,"placeNames":[],"budget":null,"notes":[]},"confidence":0,"needsConfirmation":true,"warnings":[]}]。',
   ].join('\n')
 }

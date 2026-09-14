@@ -6,7 +6,7 @@ export type CityAdditionalSpec = {
   area: string
   tags: string[]
   summary?: string
-  coordinates: [number, number]
+  coordinates?: [number, number]
   /** A concrete venue name is required before food enters a generated route. */
   venueName?: string
   address?: string

@@ -1,16 +1,19 @@
 import { readFileSync, statSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { cityNames } from '../src/demo-data/cities'
-import { extractDietaryProfile, foodCompatibilityIssues } from '../src/services/trip/dietary'
-import { emptyGuideContext, type GuideCandidate, type GuideContext, type GuideKnowledgeBase } from '../src/services/trip/guides'
+import { searchGuideCandidates, emptyGuideContext, type GuideCandidate, type GuideContext, type GuideKnowledgeBase } from '../src/services/trip/guides'
 import type { TripRequest } from '../src/services/trip/planner'
+import { regionalCommunitySignals } from '../src/services/trip/regional-community-signals'
+import { filterRuntimeGuides, isRuntimeCityAllowed } from '../src/services/trip/runtimeKnowledgePolicy'
 import { socialResearchGuides } from '../src/services/trip/socialResearch'
 
 const DEFAULT_KNOWLEDGE_BASE_PATH = resolve(process.cwd(), 'data/travel-guides.json')
+const REVIEWED_KNOWLEDGE_BASE_PATH = resolve(process.cwd(), 'data/travel-guides-reviewed-20-cities.json')
 const GUIDE_LIMIT = 8
 
 let cachedKnowledgeBase: GuideKnowledgeBase | null = null
 let cachedMtime = -1
+let cachedReviewedMtime = -1
 
 function knowledgeBasePath() {
   return process.env.TRAVEL_GUIDE_KB_PATH?.trim() || DEFAULT_KNOWLEDGE_BASE_PATH
@@ -33,71 +36,30 @@ function readKnowledgeBase(): GuideKnowledgeBase {
   const path = knowledgeBasePath()
   try {
     const mtime = statSync(path).mtimeMs
-    if (cachedKnowledgeBase && cachedMtime === mtime) return cachedKnowledgeBase
+    const reviewedMtime = statSync(REVIEWED_KNOWLEDGE_BASE_PATH).mtimeMs
+    if (cachedKnowledgeBase && cachedMtime === mtime && cachedReviewedMtime === reviewedMtime) return cachedKnowledgeBase
     const parsed: unknown = JSON.parse(readFileSync(path, 'utf8'))
+    const reviewedParsed: unknown = JSON.parse(readFileSync(REVIEWED_KNOWLEDGE_BASE_PATH, 'utf8'))
     const root = parsed && typeof parsed === 'object' ? parsed as Partial<GuideKnowledgeBase> : {}
+    const reviewedRoot = reviewedParsed && typeof reviewedParsed === 'object' ? reviewedParsed as Partial<GuideKnowledgeBase> : {}
     const guides = Array.isArray(root.guides) ? root.guides.filter(isGuideCandidate) : []
+    const reviewedGuides = Array.isArray(reviewedRoot.guides) ? reviewedRoot.guides.filter(isGuideCandidate) : []
     cachedKnowledgeBase = {
       version: 1,
-      generatedAt: typeof root.generatedAt === 'string' ? root.generatedAt : new Date(0).toISOString(),
-      guides: [...guides, ...socialResearchGuides],
+      generatedAt: typeof reviewedRoot.generatedAt === 'string' ? reviewedRoot.generatedAt : typeof root.generatedAt === 'string' ? root.generatedAt : new Date(0).toISOString(),
+      guides: filterRuntimeGuides([
+        ...reviewedGuides,
+        ...guides,
+        ...regionalCommunitySignals,
+        ...socialResearchGuides,
+      ]),
     }
     cachedMtime = mtime
+    cachedReviewedMtime = reviewedMtime
     return cachedKnowledgeBase
   } catch {
     return { version: 1, generatedAt: new Date(0).toISOString(), guides: [] }
   }
-}
-
-function normalizeText(value: string) {
-  return value.toLowerCase().replace(/[\s，。！？、：；（）()[\]{}“”‘’'"!?,.:;/-]+/g, '')
-}
-
-function queryTerms(query: string) {
-  const terms = query
-    .toLowerCase()
-    .match(/[a-z0-9]{2,}|[\u4e00-\u9fff]{2,}/g) ?? []
-  return [...new Set(terms.filter((term) => !cityNames.includes(term)))]
-}
-
-function parsedLikes(value: number | null) {
-  return typeof value === 'number' && Number.isFinite(value) ? value : 0
-}
-
-function recencyScore(value: string | null) {
-  if (!value) return 0
-  const timestamp = Date.parse(`${value}T00:00:00Z`)
-  if (!Number.isFinite(timestamp)) return 0
-  const days = Math.max(0, (Date.now() - timestamp) / 86_400_000)
-  return Math.max(0, 4 - days / 180)
-}
-
-function candidateScore(candidate: GuideCandidate, city: string, query: string) {
-  const normalizedQuery = normalizeText(query)
-  const candidateText = normalizeText([
-    candidate.title,
-    candidate.summary,
-    candidate.tags.join(' '),
-    candidate.placeHints.join(' '),
-    (candidate.foodHints ?? []).join(' '),
-    (candidate.localExperienceHints ?? []).join(' '),
-    (candidate.dietaryTags ?? []).join(' '),
-    candidate.claims.map((claim) => claim.text).join(' '),
-  ].join(' '))
-  const terms = queryTerms(query)
-  const termScore = terms.reduce((score, term) => {
-    if (!candidateText.includes(normalizeText(term))) return score
-    return score + (candidate.title.includes(term) ? 8 : 3)
-  }, 0)
-  const wantsFood = /本地美食|小吃|逛吃|吃|餐|早市|夜市/.test(normalizedQuery)
-  const wantsLocal = /本地人|土著|当地人|市井|烟火|早市|夜市|菜市场|洗浴|茶馆|采耳|骑行|赶海/.test(normalizedQuery)
-  const hintScore = (wantsFood && (candidate.foodHints?.length ?? 0) > 0 ? 4 : 0)
-    + (wantsLocal && (candidate.localExperienceHints?.length ?? 0) > 0 ? 4 : 0)
-  return (candidate.city === city ? 30 : 0)
-    + termScore
-    + hintScore
-    + Math.min(8, Math.log10(parsedLikes(candidate.likes) + 1) * 2)
-    + recencyScore(candidate.publishedAt)
 }
 
 export function inferGuideCity(text: string) {
@@ -107,32 +69,8 @@ export function inferGuideCity(text: string) {
 export function searchTravelGuides(city: string, query = '', limit = GUIDE_LIMIT): GuideContext {
   const root = readKnowledgeBase()
   const normalizedCity = cityNames.find((item) => item === city) ?? (city.trim() || '上海')
-  const dietary = extractDietaryProfile(query)
-  const candidates = root.guides
-    .filter((candidate) => candidate.city === normalizedCity)
-    .filter((candidate) => {
-      const foodText = [
-        candidate.title,
-        candidate.summary,
-        ...(candidate.foodHints ?? []),
-        ...(candidate.dietaryTags ?? []),
-        ...candidate.claims.filter((claim) => claim.type === 'food').map((claim) => claim.text),
-      ].join(' ')
-      const hasFoodSignal = (candidate.foodHints?.length ?? 0) > 0 || candidate.claims.some((claim) => claim.type === 'food') || /美食|小吃|吃|餐|火锅|海鲜/.test(foodText)
-      return !hasFoodSignal || foodCompatibilityIssues(foodText, dietary, candidate.dietaryTags).length === 0
-    })
-    .map((candidate) => ({ candidate, score: candidateScore(candidate, normalizedCity, query) }))
-    .sort((left, right) => right.score - left.score)
-    .slice(0, Math.max(1, Math.min(GUIDE_LIMIT, Math.round(limit))))
-    .map(({ candidate }) => candidate)
-
-  return {
-    city: normalizedCity,
-    candidates,
-    matchedTerms: queryTerms(query),
-    generatedAt: root.generatedAt,
-    disclaimer: '社区攻略只用于发现体验线索；路线和预约规则会随日期变化，请在详情页确认。',
-  }
+  if (!isRuntimeCityAllowed(normalizedCity)) return emptyGuideContext(normalizedCity, root.generatedAt)
+  return searchGuideCandidates(root, normalizedCity, query, Math.max(1, Math.min(GUIDE_LIMIT, Math.round(limit))))
 }
 
 export function getGuideContextForTrip(request: Pick<TripRequest, 'text'>) {
@@ -156,6 +94,10 @@ export function guideContextForPrompt(context: GuideContext) {
     placeHints: candidate.placeHints,
     foodHints: candidate.foodHints ?? [],
     localExperienceHints: candidate.localExperienceHints ?? [],
+    hotelHints: candidate.hotelHints ?? [],
+    hotelNames: candidate.hotelNames ?? [],
+    sourceReadLevel: candidate.research?.readLevel ?? 'unspecified',
+    experienceCandidates: candidate.experiences ?? [],
     dietaryTags: candidate.dietaryTags ?? [],
     claims: candidate.claims,
     sourceUrl: candidate.sourceUrl,

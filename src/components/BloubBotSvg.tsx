@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { BotEngine, type BotFrame, type Look } from '../private-assets/bloub/bot/engine'
+import { BLOUB_TAP_VARIANTS, reactionExpression, sampleReactionFrame, type BloubTapVariant } from '../character/botReactions'
 import { mixHex } from '../private-assets/bloub/bot/skins'
 import type { StateId } from '../private-assets/bloub/bot/states'
 import { DEMI_VIEWBOX, RAYON } from '../private-assets/bloub/bot/repere'
@@ -15,17 +16,23 @@ import type { BotState } from '../character/engine/motionEngine'
 const stateMap: Record<BotState, StateId> = {
   idle: 'idle',
   listening: 'wide',
+  surprised: 'wide',
   reading: 'thinking',
-  thinking: 'orbit',
-  planning: 'orbit',
-  updating: 'orbit',
+  thinking: 'thinking',
+  focused: 'wide',
+  planning: 'thinking',
+  updating: 'notify',
   done: 'wink',
   success: 'notify',
+  happy: 'notify',
   alert: 'alert',
+  warning: 'alert',
   error: 'exclaim',
+  sad: 'exclaim',
   walking: 'idle',
   arriving: 'wink',
   waiting: 'idle',
+  sleepy: 'sleep',
   paused: 'idle',
   transport: 'idle',
   completed: 'wink',
@@ -33,22 +40,31 @@ const stateMap: Record<BotState, StateId> = {
 
 const mapState = (state: BotState): StateId => stateMap[state] ?? 'idle'
 
-const frameFor = (engine: BotEngine, at: number) => engine.sample(at)
+const resolveVariant = (state: BotState, variant?: number): BloubTapVariant => {
+  if (variant === undefined) return { state: mapState(state) }
+  const index = ((variant % BLOUB_TAP_VARIANTS.length) + BLOUB_TAP_VARIANTS.length) % BLOUB_TAP_VARIANTS.length
+  return BLOUB_TAP_VARIANTS[index]!
+}
 
-export const BloubBotSvg = ({ state = 'idle', reducedMotion = false, gaze = null }: { state?: BotState; reducedMotion?: boolean; gaze?: Look | null }) => {
+export const BloubBotSvg = ({ state = 'idle', reducedMotion = false, gaze = null, variant }: { state?: BotState; reducedMotion?: boolean; gaze?: Look | null; variant?: number }) => {
   const rawId = useId()
   const uid = `bloub-${rawId.replace(/[^a-zA-Z0-9_-]/g, '')}`
   const timeRef = useRef(0)
+  const variantRef = useRef(variant)
+  variantRef.current = variant
   const engineRef = useRef<BotEngine | null>(null)
-  if (!engineRef.current) engineRef.current = new BotEngine(RAYON, mapState(state))
-  const [frame, setFrame] = useState<BotFrame>(() => frameFor(engineRef.current as BotEngine, 0))
+  const resolved = resolveVariant(state, variant)
+  const resolvedExpression = reactionExpression(resolved)
+  if (!engineRef.current) engineRef.current = new BotEngine(RAYON, resolved.state, null, resolvedExpression)
+  const [frame, setFrame] = useState<BotFrame>(() => sampleReactionFrame(engineRef.current as BotEngine, 0, variant))
 
   useEffect(() => {
     const engine = engineRef.current
     if (!engine) return
-    engine.setState(mapState(state), timeRef.current)
-    setFrame(frameFor(engine, reducedMotion ? timeRef.current + 1 : timeRef.current))
-  }, [state, reducedMotion])
+    engine.setState(resolved.state, timeRef.current)
+    engine.setExpression(resolvedExpression, timeRef.current)
+    setFrame(sampleReactionFrame(engine, reducedMotion ? timeRef.current + 1 : timeRef.current, variant))
+  }, [reducedMotion, resolved.state, resolvedExpression, state, variant])
 
   // Keep the gaze in the same deterministic engine as the state morph. This
   // makes pointer/target changes feel attentive without introducing a second
@@ -57,13 +73,13 @@ export const BloubBotSvg = ({ state = 'idle', reducedMotion = false, gaze = null
     const engine = engineRef.current
     if (!engine) return
     engine.setLook(gaze, timeRef.current)
-    setFrame(frameFor(engine, reducedMotion ? timeRef.current + 1 : timeRef.current))
+    setFrame(sampleReactionFrame(engine, reducedMotion ? timeRef.current + 1 : timeRef.current, variantRef.current))
   }, [gaze, reducedMotion])
 
   useEffect(() => {
     const engine = engineRef.current
     if (!engine || reducedMotion) {
-      if (engine) setFrame(frameFor(engine, timeRef.current + 1))
+      if (engine) setFrame(sampleReactionFrame(engine, timeRef.current + 1, variantRef.current))
       return
     }
     let raf = 0
@@ -71,7 +87,7 @@ export const BloubBotSvg = ({ state = 'idle', reducedMotion = false, gaze = null
     const tick = (now: number) => {
       timeRef.current += Math.min(64, now - previous) / 1000
       previous = now
-      setFrame(frameFor(engine, timeRef.current))
+      setFrame(sampleReactionFrame(engine, timeRef.current, variantRef.current))
       raf = requestAnimationFrame(tick)
     }
     raf = requestAnimationFrame(tick)

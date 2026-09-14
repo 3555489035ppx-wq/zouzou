@@ -1,0 +1,14 @@
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: geolocation=(self), camera=(), microphone=()
+/share/*
+  Cache-Control: no-store
+  X-Robots-Tag: noindex, nofollow
+  Referrer-Policy: no-referrer
+/sw.js
+  Cache-Control: no-cache
+/build.json
+  Cache-Control: no-store
+/manifest.webmanifest
+  Cache-Control: no-cache

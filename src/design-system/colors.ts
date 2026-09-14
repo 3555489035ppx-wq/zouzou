@@ -27,3 +27,11 @@ export const sceneColors = {
   grid: '#e5e5e5',
   gridSoft: '#eeeeee',
 } as const
+
+export const botColors = {
+  primary: '#A5A5A5',
+  primaryDark: '#898989',
+  primaryLight: '#C5C5C5',
+  face: '#111111',
+  faceLight: '#FFFFFF',
+} as const

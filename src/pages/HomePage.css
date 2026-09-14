@@ -1,0 +1,100 @@
+.app-page .home-page { row-gap: var(--space-md); }
+
+.home-page .home-travel-card {
+  container-type: inline-size;
+  min-width: 0;
+  display: grid;
+  width: calc(100% - 12px);
+  justify-self: center;
+  gap: var(--space-sm);
+  padding: 20px;
+  background: var(--color-paper);
+  border-radius: var(--radius-large);
+  box-shadow: var(--elevation-2);
+}
+
+.home-travel-card__intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 128px;
+  align-items: start;
+  gap: var(--space-xs);
+  min-height: 104px;
+}
+
+.home-travel-card__copy { min-width: 0; }
+.home-travel-card h1 { margin: 0; font-size: 2.125rem; line-height: 1.25; letter-spacing: -.025em; }
+.home-travel-card h1 span { display: block; }
+.home-travel-card .motion-bot { width: 128px; height: 128px; justify-self: end; margin-top: calc(-1 * var(--space-xs)); margin-right: calc(-1 * var(--space-xs)); }
+.home-travel-card > .zou-button { width: 100%; min-height: 52px; justify-content: space-between; }
+.home-travel-card > .zou-button svg { width: 20px; height: 20px; }
+
+.home-page .home-resume {
+  display: grid;
+  gap: var(--space-sm);
+  width: 100%;
+  margin-top: 0;
+  padding: var(--space-md) var(--space-lg);
+  color: var(--color-ink);
+  text-align: left;
+  background: var(--color-paper);
+  border: 0;
+  border-radius: var(--radius-medium);
+  box-shadow: var(--app-card-shadow);
+}
+
+.home-resume__header { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: var(--space-xs); font-size: var(--text-footnote); color: var(--color-ink-soft); }
+.home-resume__status { font-weight: 400; }
+.home-resume__body { display: grid; grid-template-columns: minmax(0, 1fr) 20px; align-items: center; gap: var(--space-sm); }
+.home-resume__copy { display: grid; gap: var(--space-2xs); min-width: 0; }
+.home-resume strong { font-size: var(--text-card); line-height: 1.5; font-weight: 600; overflow-wrap: anywhere; }
+.home-resume small { color: var(--color-ink-soft); font-size: var(--text-footnote); line-height: 1.5; overflow-wrap: anywhere; }
+.home-resume svg { width: 20px; height: 20px; color: var(--color-ink-soft); }
+
+.home-guides { display: grid; gap: var(--space-2xs); min-width: 0; margin-top: 0; }
+.home-guides__header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); }
+.home-guides__header h2 { margin: 0; min-width: 0; font-size: var(--text-headline); font-weight: 500; line-height: 1.5; overflow-wrap: anywhere; }
+.home-guides__header > button { display: inline-flex; align-items: center; justify-content: flex-end; gap: var(--space-3xs); flex-shrink: 0; min-height: 44px; min-width: 44px; padding: 0; border: 0; background: transparent; color: var(--color-ink-soft); font-size: var(--text-footnote); }
+.home-guides__header > button svg { width: 16px; height: 16px; }
+.home-page .home-guide-card { min-width: 0; padding: 0 var(--space-md); background: var(--color-paper); border: 0; border-radius: var(--radius-medium); box-shadow: var(--app-card-shadow); }
+
+.home-guide-card__row {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) 16px;
+  gap: var(--space-sm);
+  align-items: center;
+  width: 100%;
+  min-height: 88px;
+  padding: var(--space-sm) 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--color-ink);
+  text-align: left;
+}
+
+.home-guide-card__row + .home-guide-card__row { border-top: 1px solid var(--color-rule); }
+.home-guide-card__row img { width: 52px; height: 60px; object-fit: cover; border-radius: 8px; background: var(--color-paper-soft); }
+.home-guide-card__copy { display: grid; gap: var(--space-2xs); min-width: 0; }
+.home-guide-card__copy strong { font-size: var(--text-feed); font-weight: 500; line-height: 1.5; overflow-wrap: anywhere; }
+.home-guide-card__copy small { color: var(--color-ink-soft); font-size: var(--text-footnote); line-height: 1.5; }
+.home-guide-card__row > svg { width: 16px; height: 16px; color: var(--color-ink-soft); }
+.home-guide-card__row:focus-visible { outline-offset: -3px; border-radius: 8px; }
+
+@media (hover: hover) {
+  .home-guide-card__row:hover strong,
+  .home-resume:hover strong { text-decoration: underline; text-underline-offset: 4px; }
+  .home-resume:hover { background: var(--color-paper-soft); }
+}
+
+@media (max-width: 359px) {
+  .home-page .home-travel-card { padding: var(--space-md); }
+  .home-page .home-resume { padding-inline: var(--space-md); }
+  .home-travel-card__intro { grid-template-columns: minmax(0, 1fr) 112px; }
+  .home-travel-card h1 { font-size: 1.875rem; }
+  .home-travel-card .motion-bot { width: 112px; height: 112px; }
+}
+
+@container (max-width: 15rem) {
+  .home-travel-card__intro { grid-template-columns: minmax(0, 1fr); gap: var(--space-sm); }
+  .home-travel-card .motion-bot { justify-self: end; }
+}

@@ -312,14 +312,6 @@ const catalogs: Record<string, RegionalCatalog> = {
   },
 }
 
-const offsets: [number, number][] = [[0, 0], [0.004, 0.003], [-0.005, 0.004], [0.006, -0.004], [-0.004, -0.005], [0.008, 0.002], [-0.007, 0.006], [0.003, -0.008], [-0.009, -0.003], [0.01, -0.006]]
-
-function coordinatesFor(center: [number, number], index: number, name: string, area: string): [number, number] {
-  const [longitude, latitude] = offsets[index % offsets.length]
-  const remote = /远线|景区|雪山|草原|古镇|村|湖|岛|山|沟|县/.test(`${name}${area}`) ? 2.2 : 1
-  return [center[0] + longitude * remote, center[1] + latitude * remote]
-}
-
 function buildSpecs(city: string, catalog: RegionalCatalog): CityAdditionalSpec[] {
   const places = catalog.landmarks.map(([name, area, category = 'attraction'], index) => ({
     name,
@@ -327,7 +319,6 @@ function buildSpecs(city: string, catalog: RegionalCatalog): CityAdditionalSpec[
     area,
     tags: ['核心看点', '经典', category === 'attraction' ? '景点' : '城市漫步'],
     summary: `${name}是${city}${area}值得优先安排的目的地，适合按同一片区连续游览；开放和预约按当天公开信息为准。`,
-    coordinates: coordinatesFor(catalog.center, index, name, area),
     durationMinutes: category === 'attraction' ? 150 : 90,
   } satisfies CityAdditionalSpec))
   const local = catalog.local.map(([name, area, category = 'activity'], index) => ({
@@ -336,7 +327,6 @@ function buildSpecs(city: string, catalog: RegionalCatalog): CityAdditionalSpec[
     area,
     tags: ['本地人项目', '本地生活', '片区慢走'],
     summary: `把${name}作为${city}的本地生活节点，重点感受${area}的日常氛围；不要和远距离片区交叉安排。`,
-    coordinates: coordinatesFor(catalog.center, index + catalog.landmarks.length, name, area),
     durationMinutes: 90,
   } satisfies CityAdditionalSpec))
   const foods = catalog.foods.map(([name, area, dietaryTags = [], category = 'food'], index) => ({
@@ -346,7 +336,6 @@ function buildSpecs(city: string, catalog: RegionalCatalog): CityAdditionalSpec[
     tags: category === 'restaurant' ? ['本地美食', '正餐', '片区就近吃'] : ['本地小吃', '本地美食', '随走随吃'],
     dietaryTags,
     summary: `${name}是${city}常见的地方吃法，口味、配料和当天供应以门店菜单为准；有饮食限制时先逐项确认。`,
-    coordinates: coordinatesFor(catalog.center, index + catalog.landmarks.length + catalog.local.length, name, area),
     durationMinutes: category === 'restaurant' ? 80 : 35,
   } satisfies CityAdditionalSpec))
   return [...places, ...local, ...foods]

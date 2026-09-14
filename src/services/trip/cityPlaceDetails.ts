@@ -124,6 +124,11 @@ export const cityPlaceDetails: Record<string, CityPlaceDetail> = {
 
 export function enrichPlaceSummary(name: string, summary: string) {
   const detail = cityPlaceDetails[name]
-  if (!detail || summary.includes('核心看点：')) return summary
-  return `${summary} 核心看点：${detail.highlights} 建议逛法：${detail.routeTip}`
+  if (summary.includes('核心看点：')) return summary
+  if (detail) return `${summary} 核心看点：${detail.highlights} 建议逛法：${detail.routeTip}`
+
+  const foodLike = /菜单|配料|口味|小吃|美食|早餐|午餐|晚餐|餐馆|饭馆|面馆|粉店|菜馆|茶饮|咖啡|甜品|烧烤|包子|汤|面|粉|粥|饭|肉|鱼|虾|蟹|鸭|鸡|豆腐|年糕|米饺|粽|奶茶/.test(`${name}${summary}`)
+  return foodLike
+    ? `${summary} 核心看点：优先尝招牌做法和本地常见搭配，现场确认配料与口味。建议逛法：按当日动线就近安排，热门时段预留排队时间。`
+    : `${summary} 核心看点：优先看${name}最具代表性的建筑、景观或展陈主线。建议逛法：按所在片区顺路安排，留出拍照和临时休息时间。`
 }

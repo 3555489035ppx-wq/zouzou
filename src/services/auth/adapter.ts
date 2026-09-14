@@ -19,25 +19,8 @@ export interface AuthAdapter {
   signInWithProvider(provider: Exclude<AuthProvider, 'phone'>): Promise<AuthUser>
 }
 
-const demoUser = (provider: AuthProvider, phone?: string): AuthUser => ({
-  id: 'local-demo-user',
-  phone,
-  provider,
-  nickname: '小鹏',
-})
-
 export const localAuthAdapter: AuthAdapter = {
-  async requestCode() {
-    await new Promise((resolve) => window.setTimeout(resolve, 260))
-  },
-  async signInWithCode(phone, code) {
-    if (code.trim().length < 4) throw new Error('验证码至少需要 4 位')
-    await new Promise((resolve) => window.setTimeout(resolve, 220))
-    return demoUser('phone', phone)
-  },
-  async signInWithProvider(provider) {
-    await new Promise((resolve) => window.setTimeout(resolve, 220))
-    return demoUser(provider)
-  },
+  async requestCode() { throw new Error('手机号登录尚未配置短信服务；没有发送验证码。你可以使用仅此设备的访客模式。') },
+  async signInWithCode() { throw new Error('尚未配置短信验证服务，不能验证登录。') },
+  async signInWithProvider(provider) { throw new Error((provider === 'wechat' ? '微信' : 'Apple') + '登录尚未配置授权凭证；你可以使用访客模式。') },
 }
-

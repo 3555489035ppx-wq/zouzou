@@ -1,0 +1,43 @@
+.form-picker-trigger { width:100%; min-width:0; min-height:48px; padding:10px 12px; display:flex; align-items:center; justify-content:space-between; gap:8px; border:1px solid transparent; border-radius:10px; background:#f5f5f5; color:#202020; font:inherit; font-size:15px; text-align:left; }
+.form-picker-trigger .is-placeholder { color:#6a6a6a; font-weight:400; }
+.form-picker-trigger svg { width:18px; height:18px; flex:none; color:#676767; }
+.form-picker-validation { position:absolute; width:1px!important; min-height:0!important; height:1px; padding:0!important; opacity:0; pointer-events:none; }
+.form-picker-dialog { padding:0; border:0; border-radius:22px 22px 0 0; width:min(100%,430px); max-width:100%; max-height:90dvh; margin:auto auto 0; background:#fff; color:#202020; box-shadow:0 -10px 40px #0002; }
+.form-picker-dialog::backdrop { background:#0005; }
+.form-picker-panel { padding:20px 20px max(20px,env(safe-area-inset-bottom)); }
+.form-picker-panel header,.form-picker-month { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.form-picker-panel h2 { font-size:18px; }
+.form-picker-panel header button,.form-picker-month button { display:grid; place-items:center; width:44px; height:44px; border:0; border-radius:50%; background:#f5f5f5; }
+.form-picker-panel svg { width:20px; height:20px; }
+.form-picker-month { margin:16px 0; }
+.form-picker-calendar { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:4px; text-align:center; }
+.form-picker-calendar>span { padding:8px 0; color:#6a6a6a; font-size:12px; }
+.form-picker-calendar button { min-height:44px; padding:0; border:0; background:transparent; border-radius:12px; font-size:15px; }
+.form-picker-panel button[aria-pressed=true] { background:#202020; color:white; }
+.form-picker-panel button:disabled { opacity:.28; }
+.form-picker-panel footer { display:flex; gap:10px; margin-top:22px; }
+.form-picker-panel footer button { flex:1; min-height:48px; border:0; border-radius:14px; background:#f1f1f1; font-size:15px; font-weight:600; }
+.form-picker-panel footer .is-primary { background:#202020; color:#fff; }
+.form-picker-time-preview { text-align:center; margin:12px 0 20px; font-size:32px; font-weight:650; font-variant-numeric:tabular-nums; }
+.form-picker-time-preview span { padding:0 8px; color:#777; }
+.form-picker-time-columns { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.form-picker-time-columns h3 { text-align:center; font-size:12px; color:#6a6a6a; margin-bottom:8px; }
+.form-picker-time-columns section>div { max-height:220px; overflow:auto; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:4px; scrollbar-width:thin; }
+.form-picker-time-columns button { min-height:44px; border:0; border-radius:10px; background:#f5f5f5; font-size:15px; font-variant-numeric:tabular-nums; }
+.budget-mode-control { display:flex; gap:4px; background:#f5f5f5; padding:4px; border-radius:10px; min-height:48px; }
+.budget-mode-control button { flex:1; border:0; border-radius:7px; background:transparent; font-size:14px; color:#666; }
+.budget-mode-control button[aria-pressed=true] { background:#202020; color:white; }
+.form-picker-time-preview { margin:8px 0 4px; font-size:28px; }
+.time-wheel-hint { text-align:center; color:#666; font-size:12px; margin:0 0 16px; }
+.form-picker-time-columns { position:relative; grid-template-columns:1fr 20px 1fr; gap:8px; max-width:280px; margin:auto; }
+.form-picker-time-columns section { min-width:0; }
+.form-picker-time-columns section>.time-wheel { display:block; height:220px; max-height:220px; padding:88px 0; overflow-y:auto; scroll-snap-type:y mandatory; scrollbar-width:none; overscroll-behavior:contain; mask-image:linear-gradient(transparent,#000 30%,#000 70%,transparent); }
+.time-wheel::-webkit-scrollbar { display:none; }
+.form-picker-time-columns .time-wheel button { display:block; width:100%; height:44px; min-height:44px; padding:0; border:0; border-radius:8px; background:transparent; color:#777; font-size:22px; scroll-snap-align:center; }
+.form-picker-time-columns .time-wheel button[aria-pressed=true] { color:#202020; background:#f1f1f1; font-weight:650; }
+.time-wheel-colon { align-self:center; padding-top:24px; text-align:center; font-size:24px; }
+.form-select-options {display:grid;gap:4px;margin-top:16px;max-height:55dvh;overflow:auto;scrollbar-width:none;overscroll-behavior:contain;}
+.form-select-options::-webkit-scrollbar {display:none;}
+.form-select-options button {display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px;width:100%;border:0;border-radius:10px;background:#f5f5f5;padding:12px 16px;text-align:left;font:inherit;}
+.form-datetime-fields {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;min-width:0;}
+.form-picker-trigger span {min-width:0;overflow-wrap:anywhere;}

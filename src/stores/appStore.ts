@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { EXPENSE_CATEGORIES, PACKING_CATEGORIES, type Footprint, type PackingItem, type TripExpense } from '../services/trip/journeyTools'
+import { EXPENSE_CATEGORIES, PACKING_CATEGORIES, mergePackingSuggestions, type Footprint, type PackingItem, type TripExpense } from '../services/trip/journeyTools'
 import { transitionTripFlow, tripFlowStates, type TripFlowEvent, type TripFlowState } from '../services/trip/tripMachine'
 
 type TripMode = 'none' | 'upcoming' | 'active' | 'completed'
@@ -29,6 +29,7 @@ type AppState = {
   commentsByPost: Record<string, PostComment[]>
   expenses: TripExpense[]
   packingItems: PackingItem[]
+  packingDismissed: string[]
   footprints: Footprint[]
   onboardingCompleted: boolean
   archivedRouteIds: string[]
@@ -37,6 +38,7 @@ type AppState = {
   savedPosts: string[]
   followedAuthors: string[]
   vote: string | null
+  saveProfile: (profile: Pick<AppState,'nickname'|'avatar'|'bio'|'cover'>) => void
   setProfile: (nickname: string, avatar: string, bio?: string) => void
   setCover: (cover: string) => void
   setCity: (city: string) => void
@@ -53,9 +55,11 @@ type AppState = {
   publishRoute: (post: Omit<PublishedPost, 'id' | 'publishedAt'>) => void
   deletePublishedPost: (id: string) => void
   addComment: (postId: string, body: string) => void
+  deleteComment: (postId: string, id: string) => void
   addExpense: (expense: TripExpense) => void
   updateExpense: (id: string, patch: Partial<Omit<TripExpense, 'id' | 'journeyId'>>) => void
   deleteExpense: (id: string) => void
+  addPackingSuggestions: (items: PackingItem[]) => void
   seedPackingItems: (journeyId: string, items: PackingItem[]) => void
   addPackingItem: (item: PackingItem) => void
   togglePackingItem: (id: string) => void
@@ -74,22 +78,22 @@ type AppState = {
 const toggleInList = (items: string[], id: string) => items.includes(id) ? items.filter((item) => item !== id) : [...items, id]
 
 const safeList = (value: unknown) => Array.isArray(value)
-  ? value.filter((item): item is string => typeof item === 'string').slice(0, 200)
+  ? value.filter((item): item is string => typeof item === 'string')
   : []
 
 const isRecord = (value: unknown): value is Record<string, unknown> => Boolean(value && typeof value === 'object')
 const safeExpenses = (value: unknown): TripExpense[] => Array.isArray(value)
-  ? value.filter((item): item is TripExpense => isRecord(item) && typeof item.id === 'string' && typeof item.journeyId === 'string' && typeof item.amount === 'number' && Number.isFinite(item.amount) && typeof item.currency === 'string' && typeof item.category === 'string' && EXPENSE_CATEGORIES.includes(item.category as TripExpense['category']) && Array.isArray(item.participantIds) && typeof item.occurredAt === 'string' && typeof item.createdAt === 'string').slice(0, 200)
+  ? value.filter((item): item is TripExpense => isRecord(item) && typeof item.id === 'string' && typeof item.journeyId === 'string' && typeof item.amount === 'number' && Number.isFinite(item.amount) && typeof item.currency === 'string' && typeof item.category === 'string' && EXPENSE_CATEGORIES.includes(item.category as TripExpense['category']) && Array.isArray(item.participantIds) && typeof item.occurredAt === 'string' && typeof item.createdAt === 'string')
   : []
 const safePackingItems = (value: unknown): PackingItem[] => Array.isArray(value)
-  ? value.filter((item): item is PackingItem => isRecord(item) && typeof item.id === 'string' && typeof item.journeyId === 'string' && typeof item.label === 'string' && typeof item.category === 'string' && PACKING_CATEGORIES.includes(item.category as PackingItem['category']) && typeof item.checked === 'boolean' && typeof item.recommended === 'boolean' && typeof item.createdAt === 'string').slice(0, 300)
+  ? value.filter((item): item is PackingItem => isRecord(item) && typeof item.id === 'string' && typeof item.journeyId === 'string' && typeof item.label === 'string' && typeof item.category === 'string' && PACKING_CATEGORIES.includes(item.category as PackingItem['category']) && typeof item.checked === 'boolean' && typeof item.recommended === 'boolean' && typeof item.createdAt === 'string')
   : []
 const safeFootprints = (value: unknown): Footprint[] => Array.isArray(value)
-  ? value.filter((item): item is Footprint => isRecord(item) && typeof item.id === 'string' && typeof item.userId === 'string' && typeof item.city === 'string' && typeof item.country === 'string' && typeof item.visitedAt === 'string' && typeof item.createdAt === 'string' && (item.source === 'journey' || item.source === 'manual')).slice(0, 300)
+  ? value.filter((item): item is Footprint => isRecord(item) && typeof item.id === 'string' && typeof item.userId === 'string' && typeof item.city === 'string' && typeof item.country === 'string' && typeof item.visitedAt === 'string' && typeof item.createdAt === 'string' && (item.source === 'journey' || item.source === 'manual'))
   : []
 const safeComments = (value: unknown): Record<string, PostComment[]> => {
   if (!isRecord(value)) return {}
-  return Object.fromEntries(Object.entries(value).slice(0, 200).map(([postId, comments]) => [postId, Array.isArray(comments)
+  return Object.fromEntries(Object.entries(value).map(([postId, comments]) => [postId, Array.isArray(comments)
     ? comments.filter((item): item is PostComment => isRecord(item) && typeof item.id === 'string' && typeof item.author === 'string' && typeof item.body === 'string' && typeof item.createdAt === 'string').map((item) => ({ ...item, author: item.author.slice(0, 40), body: item.body.slice(0, 500) })).slice(0, 100)
     : []]))
 }
@@ -107,7 +111,7 @@ const migratePersistedState = (value: unknown): Partial<AppState> => {
     communityCity: typeof state.communityCity === 'string' ? state.communityCity : '上海',
     communityMapVisible: state.communityMapVisible !== false,
     reducedMotion: state.reducedMotion === true,
-    tripMode: modes.includes(state.tripMode as TripMode) ? state.tripMode : 'active',
+    tripMode: modes.includes(state.tripMode as TripMode) ? state.tripMode : 'none',
     tripFlowState: tripFlowStates.includes(state.tripFlowState as TripFlowState) ? state.tripFlowState as TripFlowState : 'idle',
     activeRouteId: typeof state.activeRouteId === 'string' ? state.activeRouteId : null,
     publishedRouteIds: safeList(state.publishedRouteIds),
@@ -116,6 +120,7 @@ const migratePersistedState = (value: unknown): Partial<AppState> => {
     commentsByPost: safeComments(state.commentsByPost),
     expenses: safeExpenses(state.expenses),
     packingItems: safePackingItems(state.packingItems),
+    packingDismissed: safeList(state.packingDismissed),
     footprints: safeFootprints(state.footprints),
     onboardingCompleted: state.onboardingCompleted === true,
     archivedRouteIds: safeList(state.archivedRouteIds),
@@ -146,6 +151,7 @@ const persistedKeys = (state: AppState): Partial<AppState> => ({
   commentsByPost: state.commentsByPost,
   expenses: state.expenses,
   packingItems: state.packingItems,
+  packingDismissed: state.packingDismissed,
   footprints: state.footprints,
   onboardingCompleted: state.onboardingCompleted,
   archivedRouteIds: state.archivedRouteIds,
@@ -156,7 +162,18 @@ const persistedKeys = (state: AppState): Partial<AppState> => ({
   vote: state.vote,
 })
 
-export const useAppStore = create<AppState>()(persist((set) => ({
+export const useAppStore = create<AppState>()(persist((rawSet, get) => {
+  // Persist first: a quota/permission failure must leave the previous UI and stored state intact.
+  const set = (update: Partial<AppState> | ((state: AppState) => Partial<AppState>)) => {
+    const previous = get(), patch = typeof update === 'function' ? update(previous) : update
+    const next = { ...previous, ...patch }
+    if (typeof window !== 'undefined') {
+      try { localStorage.setItem('zouzou-demo-v2', JSON.stringify({ state: persistedKeys(next), version: 3 })) }
+      catch { throw Error('本机保存失败，原记录未改变。请释放存储空间后重试。') }
+    }
+    rawSet(patch)
+  }
+  return ({
   nickname: '小鹏',
   avatar: '/assets/date.jpg',
   cover: '/assets/shanghai-skyline.jpg',
@@ -168,7 +185,7 @@ export const useAppStore = create<AppState>()(persist((set) => ({
   reducedMotion: false,
   // Keep deep-linked preview routes useful; the first-user onboarding path
   // explicitly switches this to `none` before entering Home.
-  tripMode: 'active',
+  tripMode: 'none',
   tripFlowState: 'idle',
   activeRouteId: null,
   publishedRouteIds: [],
@@ -177,6 +194,7 @@ export const useAppStore = create<AppState>()(persist((set) => ({
   commentsByPost: {},
   expenses: [],
   packingItems: [],
+  packingDismissed: [],
   footprints: [],
   onboardingCompleted: false,
   archivedRouteIds: [],
@@ -185,6 +203,7 @@ export const useAppStore = create<AppState>()(persist((set) => ({
   savedPosts: [],
   followedAuthors: [],
   vote: null,
+  saveProfile: (profile) => set(state=>({...profile,commentsByPost:Object.fromEntries(Object.entries(state.commentsByPost).map(([id,comments])=>[id,comments.map(comment=>comment.author===state.nickname?{...comment,author:profile.nickname}:comment)]))})),
   setProfile: (nickname, avatar, bio) => set((state) => ({ nickname: nickname.slice(0, 40), avatar, bio: bio === undefined ? state.bio : bio.slice(0, 120) })),
   setCover: (cover) => set({ cover }),
   // City is a product-wide preference. Home, community, trip copy and
@@ -192,7 +211,7 @@ export const useAppStore = create<AppState>()(persist((set) => ({
   // City is a single product context. When a saved trip already exists, a
   // deliberate city switch also retargets that demo route so Home, Community
   // and Trips cannot drift into different destinations.
-  setCity: (city) => set((state) => ({ city, communityCity: city, tripCity: state.tripCity ? city : state.tripCity })),
+  setCity: (city) => set({ city, communityCity: city }),
   setTripCity: (tripCity) => set({ tripCity }),
   setCommunityCity: (communityCity) => set({ communityCity }),
   setCommunityMapVisible: (communityMapVisible) => set({ communityMapVisible }),
@@ -212,20 +231,28 @@ export const useAppStore = create<AppState>()(persist((set) => ({
     return { publishedRouteIds: state.publishedRouteIds.includes(post.routeId) ? state.publishedRouteIds : [...state.publishedRouteIds, post.routeId], publishedPosts: existing ? state.publishedPosts.map((item) => item.id === existing.id ? nextPost : item) : [nextPost, ...state.publishedPosts] }
   }),
   deletePublishedPost: (id) => set((state) => { const post = state.publishedPosts.find((item) => item.id === id); return { publishedPosts: state.publishedPosts.filter((item) => item.id !== id), publishedRouteIds: post ? state.publishedRouteIds.filter((routeId) => routeId !== post.routeId) : state.publishedRouteIds } }),
+  deleteComment: (postId, id) => set(state => ({commentsByPost: {...state.commentsByPost, [postId]: (state.commentsByPost[postId] ?? []).filter(comment=>comment.id!==id)}})),
   addComment: (postId, body) => set((state) => {
     const cleanBody = body.trim().slice(0, 500)
     if (!cleanBody || !postId) return state
     const comment: PostComment = { id: `comment-${Date.now()}`, author: state.nickname || '小鹏', body: cleanBody, createdAt: new Date().toISOString() }
     return { commentsByPost: { ...state.commentsByPost, [postId]: [comment, ...(state.commentsByPost[postId] ?? [])].slice(0, 100) } }
   }),
-  addExpense: (expense) => set((state) => ({ expenses: [expense, ...state.expenses.filter((item) => item.id !== expense.id)].slice(0, 200) })),
+  addExpense: (expense) => set((state) => ({ expenses: [expense, ...state.expenses.filter((item) => item.id !== expense.id)] })),
   updateExpense: (id, patch) => set((state) => ({ expenses: state.expenses.map((item) => item.id === id ? { ...item, ...patch } : item) })),
   deleteExpense: (id) => set((state) => ({ expenses: state.expenses.filter((item) => item.id !== id) })),
-  seedPackingItems: (journeyId, items) => set((state) => state.packingItems.some((item) => item.journeyId === journeyId) ? state : { packingItems: [...items, ...state.packingItems].slice(0, 300) }),
-  addPackingItem: (item) => set((state) => ({ packingItems: [item, ...state.packingItems.filter((current) => current.id !== item.id)].slice(0, 300) })),
+  addPackingSuggestions: (items) => set(state => {
+    const packingItems = mergePackingSuggestions(state.packingItems, items, state.packingDismissed)
+    return packingItems === state.packingItems ? state : { packingItems }
+  }),
+  seedPackingItems: (journeyId, items) => set(state => {
+    const packingItems = mergePackingSuggestions(state.packingItems, items.filter(item => item.journeyId === journeyId), state.packingDismissed)
+    return packingItems === state.packingItems ? state : { packingItems }
+  }),
+  addPackingItem: (item) => set((state) => ({ packingItems: [item, ...state.packingItems.filter((current) => current.id !== item.id)] })),
   togglePackingItem: (id) => set((state) => ({ packingItems: state.packingItems.map((item) => item.id === id ? { ...item, checked: !item.checked } : item) })),
-  deletePackingItem: (id) => set((state) => ({ packingItems: state.packingItems.filter((item) => item.id !== id) })),
-  addFootprint: (footprint) => set((state) => state.footprints.some((item) => item.journeyId === footprint.journeyId && item.placeId === footprint.placeId && item.city === footprint.city) ? state : { footprints: [footprint, ...state.footprints].slice(0, 300) }),
+  deletePackingItem: (id) => set((state) => ({ packingDismissed: [...new Set([...state.packingDismissed, id])], packingItems: state.packingItems.filter((item) => item.id !== id) })),
+  addFootprint: (footprint) => set((state) => state.footprints.some((item) => item.id === footprint.id || (item.journeyId === footprint.journeyId && item.placeId === footprint.placeId && item.city === footprint.city && item.visitedAt === footprint.visitedAt)) ? state : { footprints: [footprint, ...state.footprints] }),
   updateFootprint: (id, patch) => set((state) => ({ footprints: state.footprints.map((item) => item.id === id ? { ...item, ...patch } : item) })),
   deleteFootprint: (id) => set((state) => ({ footprints: state.footprints.filter((item) => item.id !== id) })),
   setFriendInviteAccepted: (friendInviteAccepted) => set({ friendInviteAccepted }),
@@ -234,7 +261,7 @@ export const useAppStore = create<AppState>()(persist((set) => ({
   toggleFollow: (author) => set((state) => ({ followedAuthors: toggleInList(state.followedAuthors, author) })),
   setVote: (vote) => set({ vote }),
   resetDemo: () => set({ tripMode: 'active', tripFlowState: 'idle', tripCity: null, activeRouteId: null, publishedRouteIds: [], personalTrips: [], publishedPosts: [], commentsByPost: {}, expenses: [], packingItems: [], footprints: [], onboardingCompleted: false, archivedRouteIds: [], friendInviteAccepted: false, vote: null, likedPosts: [], savedPosts: [], followedAuthors: [], reducedMotion: false, communityMapVisible: true }),
-}), {
+})}, {
   name: 'zouzou-demo-v2',
   version: 3,
   partialize: persistedKeys,

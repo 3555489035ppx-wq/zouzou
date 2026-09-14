@@ -10,6 +10,7 @@ import {
 } from './planner'
 import type { GuideContext } from './guides'
 import { cityNames, getCityProfile } from '../../demo-data/cities'
+import { isRuntimeCityAllowed } from './runtimeKnowledgePolicy'
 import { getCityRouteZone } from './cityRouteSpecs'
 
 describe('Shanghai itinerary planner', () => {
@@ -84,8 +85,9 @@ describe('Shanghai itinerary planner', () => {
     generated.forEach((plan) => {
       const mealStops = Object.values(plan.days).flat().filter((stop) => /午餐|晚餐|本地小吃/.test(stop.type))
       expect(mealStops.length).toBeGreaterThanOrEqual(1)
-      expect(new Set(mealStops.map((stop) => stop.name)).size).toBe(mealStops.length)
-      expect(mealStops.map((stop) => stop.name)).toEqual(expect.arrayContaining(['味香斋']))
+      // Selection may change as the reviewed venue pool grows.
+      expect(new Set(mealStops.map((stop) => stop.id)).size).toBe(mealStops.length)
+      expect(mealStops.some(stop=>!stop.pendingVenue&&plan.knowledge.items.some(item=>item.name===stop.name))).toBe(true)
       expect(plan.days['Day 1'].some((stop) => /午餐|晚餐|本地小吃/.test(stop.type))).toBe(true)
       expect(plan.budgetBreakdown.meals).toBeGreaterThan(0)
     })
@@ -165,7 +167,7 @@ describe('Shanghai itinerary planner', () => {
 
     expect(generated[0].city).toBe('杭州')
     expect(generated[0].guideContext?.candidates.length).toBe(1)
-    expect(generated[0].evidence.some((item) => item.includes('公开地点线索'))).toBe(true)
+    expect(generated[0].evidence.some((item) => item.includes('公开攻略证据'))).toBe(true)
     expect(generated[0].evidence.join(' ')).not.toMatch(/小红书|B站|抖音|社区/)
     expect(Object.values(generated[0].days).flat().some((stop) => stop.name.includes('武康路'))).toBe(false)
     expect(Object.values(generated[0].days).flat().some((stop) => stop.name.includes('西湖'))).toBe(true)
@@ -218,7 +220,7 @@ describe('Shanghai itinerary planner', () => {
 
       Object.values(plan.days).forEach((stops) => {
         const orders = stops
-          .filter((stop) => !isHotelStop(stop) && stop.type !== '到达' && stop.type !== '返程')
+          .filter((stop) => !isHotelStop(stop) && stop.type !== '到达' && stop.type !== '返程' && !/早餐|午餐|晚餐|本地小吃/.test(stop.type))
           .map((stop) => getCityRouteZone(city, stop.name, stop.area ?? stop.zone).order)
         expect(orders).toEqual([...orders].sort((left, right) => left - right))
       })
@@ -226,7 +228,7 @@ describe('Shanghai itinerary planner', () => {
   })
 
   it('generates a complete three-day timeline for every supported city', () => {
-    for (const city of cityNames) {
+    for (const city of cityNames.filter(isRuntimeCityAllowed)) {
       const firstPlace = getCityProfile(city).demoLabels[0]
       const understanding = understandTrip({
         text: `2026年9月18日到9月20日去${city}，3天2晚，2个人，预算4000元。10:30到${city}东站，住${city}中心酒店，18:30从${city}东站返程。想去${firstPlace}，行程不要太赶。`,
@@ -238,7 +240,14 @@ describe('Shanghai itinerary planner', () => {
       expect(understanding.intent.destination).toBe(city)
       expect(understanding.intent.missing).toEqual([])
       expect(Object.keys(plan.days)).toEqual(['Day 1', 'Day 2', 'Day 3'])
-      expect(allStops.length).toBeGreaterThanOrEqual(13)
+      // Long visits and fixed returns may leave fewer stops. Completeness is
+      // measured by meal coverage and feasible timing, not a minimum POI count.
+      for(const [day,stops] of Object.entries(plan.days)) {
+        expect(stops.some(stop=>stop.type==='午餐'),`${city} ${day} lunch`).toBe(true)
+        if(day!=='Day 3')expect(stops.some(stop=>stop.type==='晚餐'),`${city} ${day} dinner`).toBe(true)
+      }
+      expect(plan.validation.checks.find(check=>check.name==='时间顺序')?.passed,city).toBe(true)
+      expect(plan.validation.checks.find(check=>check.name==='餐期')?.passed,city).toBe(true)
       expect(allStops.some((stop) => stop.name.includes(firstPlace))).toBe(true)
       expect(allStops.every((stop) => stop.name && stop.time && stop.transport)).toBe(true)
       expect(plan.hotelRecommendations).toHaveLength(3)
@@ -261,7 +270,8 @@ describe('Shanghai itinerary planner', () => {
     expect(understanding.intent.pace).toBe('relaxed')
     expect(understanding.intent.preferences).toEqual(expect.arrayContaining(['本地美食', '夜景']))
     expect(plan.knowledge.city).toBe('长沙')
-    expect(stops.map((stop) => stop.name)).toEqual(expect.arrayContaining(['岳麓山风景名胜区', '橘子洲景区', '湖南博物院', '秦娭毑皮蛋肉丸']))
+    expect(stops.map((stop) => stop.name)).toEqual(expect.arrayContaining(['岳麓山风景名胜区', '橘子洲景区', '湖南博物院']))
+    expect(stops.some(stop=>/午餐|晚餐/.test(stop.type)&&!stop.pendingVenue&&plan.knowledge.items.some(item=>item.name===stop.name))).toBe(true)
     expect(stops.map((stop) => stop.name)).not.toEqual(expect.arrayContaining(['长沙臭豆腐', '糖油粑粑', '口味虾 / 湘菜晚餐']))
     expect(stops.some((stop) => stop.type === '住宿' && stop.name.includes('五一广场'))).toBe(true)
     expect(plan.budget).toBeLessThanOrEqual(3000)

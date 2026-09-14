@@ -53,12 +53,25 @@ afterEach(() => {
 })
 
 describe('trip media vision integration', () => {
+  test('preserves analyzed fact arrays across the intent endpoint and reads explicit ISO dates from OCR',()=>{
+    const facts=normalizeMediaFacts({items:[{mediaId:'ticket-1',kind:'ticket',rawText:'到达日期：2026-09-12',facts:{arrivalLocation:'成都东站',dates:null},confidence:1}]},media,'deepseek')
+    expect(facts[0].facts.dates).toEqual({start:'2026-09-12',end:'2026-09-12'})
+    const forwarded=normalizeMediaFacts(facts,media,'client-evidence')
+    expect(forwarded[0].facts).toEqual(facts[0].facts)
+    expect(forwarded[0].rawText).toBe('到达日期：2026-09-12')
+  })
   test('accepts only bounded base64 image inputs', () => {
     const request = sanitizeTripMediaRequest({ text: '上海三天', media })
     expect(request.media[0]).toMatchObject({ id: 'ticket-1', name: '车票.png', dataUrl: media[0].dataUrl })
 
     expect(() => sanitizeTripMediaRequest({ text: '上海', media: [{ ...media[0], dataUrl: 'blob:http://local/private' }] })).toThrow('只接受 base64 图片')
     expect(() => sanitizeTripMediaRequest({ text: '上海', media: [{ ...media[0], dataUrl: 'https://example.com/ticket.png' }] })).toThrow('只接受 base64 图片')
+  })
+  test('accepts six 3 MiB image envelopes and rejects a seventh instead of dropping it',()=>{
+    const dataUrl='data:image/png;base64,'+'A'.repeat(4*1024*1024)
+    const images=Array.from({length:6},(_,index)=>({...media[0],id:String(index),dataUrl}))
+    expect(sanitizeTripMediaRequest({text:'测试大小边界；此处只验证信封容量，不模拟真实图片解码',media:images}).media).toHaveLength(6)
+    expect(()=>sanitizeTripMediaRequest({text:'上海',media:[...images,images[0]]})).toThrow('最多支持6张')
   })
 
   test('marks low-confidence facts for confirmation and normalizes fields', () => {

@@ -1,4 +1,5 @@
 import { extractDietaryProfile, foodCompatibilityIssues } from './dietary'
+import { extractExperiencePreferences } from './experiencePolicy'
 
 export type GuidePlatform = 'xiaohongshu' | 'bilibili' | 'douyin' | 'user-import' | 'licensed-search'
 
@@ -42,6 +43,22 @@ export type GuideCandidate = {
   dietaryTags?: string[]
   claims: GuideClaim[]
   permission: 'user-provided' | 'licensed' | 'unknown'
+  /** Claim-specific experiences; candidate insights are not scheduling constraints. */
+  experiences?: Array<{
+    library: 'city_clusters' | 'structure_pace' | 'scenarios' | 'food_photo_culture' | 'pitfalls_plan_b'
+    subject: string
+    summary: string
+    level: 'candidate' | 'supported_pattern' | 'high_confidence_experience_pattern'
+    evidenceLocator: string
+  }>
+  /** Read coverage and exact term locations; never implies real-world verification. */
+  research?: {
+    batch: string
+    lastReadBatch?: string
+    readLevel: 'search-metadata' | 'note-text' | 'video-description' | 'video-subtitle'
+    bodyCharacters: number
+    evidence: Array<{ term: string; field: string; locator: string }>
+  }
 }
 
 export type GuideKnowledgeBase = {
@@ -90,7 +107,8 @@ export function searchGuideCandidates(
   limit = 5,
 ): GuideContext {
   const normalized = query.trim().toLowerCase()
-  const terms = normalized.split(/[\s,，、。；;]+/).filter((term) => term.length >= 2)
+  const explicitHints = [...new Set(knowledgeBase.guides.filter(guide => guide.city === city).flatMap(guide => [...guide.placeHints, ...(guide.foodHints ?? []), ...(guide.hotelNames ?? [])]))].filter(hint => hint.length >= 2 && normalized.includes(hint.toLowerCase()))
+  const terms = [...new Set([...explicitHints.map(hint => hint.toLowerCase()), ...extractExperiencePreferences(query).map(term=>term.toLowerCase()), ...normalized.split(/[\s,，、。；;]+/).filter((term) => term.length >= 2)])]
   const wantsFood = /本地美食|小吃|逛吃|吃|餐|早市|夜市/.test(normalized)
   const wantsLocal = /本地人|土著|当地人|市井|烟火|早市|夜市|菜市场|洗浴|茶馆|采耳|骑行|赶海/.test(normalized)
   const wantsHotel = /酒店|住宿|民宿|客栈|住/.test(normalized)
@@ -118,18 +136,26 @@ export function searchGuideCandidates(
       ...(guide.hotelHints ?? []),
       ...(guide.hotelNames ?? []),
       ...guide.claims.map((claim) => claim.text),
+      ...(guide.experiences ?? []).map(experience => experience.subject),
     ].join(' ').toLowerCase()
     const termScore = terms.reduce((score, term) => score + (haystack.includes(term) ? 2 : 0), 0)
-    const communityScore = guide.likes !== null && guide.likes >= 500 ? 1 : 0
+    // Popularity is a tie breaker, not proof. Read body/subtitle evidence is preferred.
+    const evidenceScore = (guide.research?.evidence.length ?? 0) > 0 && ['note-text', 'video-subtitle'].includes(guide.research?.readLevel ?? '') ? 3 : 0
     const hintScore = (wantsFood && (guide.foodHints?.length ?? 0) > 0 ? 4 : 0)
       + (wantsLocal && (guide.localExperienceHints?.length ?? 0) > 0 ? 4 : 0)
       + (wantsHotel && ((guide.hotelHints?.length ?? 0) > 0 || (guide.hotelNames?.length ?? 0) > 0) ? 5 : 0)
-    return { guide, score: termScore + communityScore + hintScore }
+    return { guide, score: termScore * 3 + evidenceScore + hintScore }
   }).sort((left, right) => right.score - left.score || (right.guide.likes ?? 0) - (left.guide.likes ?? 0))
+
+  const deduped = scored.filter(({ guide }, index, all) => all.findIndex(entry => entry.guide.sourceUrl.split(/[?#]/)[0] === guide.sourceUrl.split(/[?#]/)[0]) === index)
+  const reviewedQuota = Math.min(4, Math.max(0, limit))
+  const reservedReviewed = deduped.filter(({ guide }) => guide.id.startsWith('reviewed20-')).slice(0, reviewedQuota)
+  const reservedIds = new Set(reservedReviewed.map(({ guide }) => guide.id))
+  const selected = [...reservedReviewed, ...deduped.filter(({ guide }) => !reservedIds.has(guide.id))].slice(0, Math.max(0, limit))
 
   return {
     city,
-    candidates: scored.slice(0, limit).map(({ guide }) => guide),
+    candidates: selected.map(({ guide }) => guide),
     matchedTerms: terms,
     generatedAt: knowledgeBase.generatedAt,
     disclaimer: '公开资料只用于发现地点线索；路线和预约规则会随日期变化，请在详情页确认。',

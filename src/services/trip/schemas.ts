@@ -102,10 +102,13 @@ const placeSchema = z.object({
   budget: finiteNumber.nonnegative(),
   transport: z.string().max(240),
   note: z.string().max(2_000),
-  x: finiteNumber,
-  z: finiteNumber,
-  lng: finiteNumber.min(-180).max(180),
-  lat: finiteNumber.min(-90).max(90),
+  x: finiteNumber.optional(),
+  z: finiteNumber.optional(),
+  lng: finiteNumber.min(-180).max(180).optional(),
+  lat: finiteNumber.min(-90).max(90).optional(),
+  longitude: finiteNumber.min(-180).max(180).optional(),
+  latitude: finiteNumber.min(-90).max(90).optional(),
+  coordinates: z.tuple([finiteNumber.min(-180).max(180), finiteNumber.min(-90).max(90)]).optional(),
   area: z.string().max(120).optional(),
   inputName: z.string().max(240).optional(),
   canonicalName: z.string().max(240).optional(),
@@ -119,7 +122,7 @@ const placeSchema = z.object({
   tel: z.string().max(80).optional(),
   verifiedAt: finiteNumber.optional(),
   resolutionStatus: z.enum(['verified', 'ambiguous', 'not_found', 'error']).optional(),
-  coordinateSystem: z.enum(['wgs84', 'gcj02']).optional(),
+  coordinateSystem: z.enum(['wgs84', 'gcj02', 'bd09ll']).optional(),
   mapStatus: z.enum(['resolved', 'unresolved']).optional(),
   searchKeyword: z.string().max(240).optional(),
   coordinateSource: z.string().max(240).optional(),
@@ -137,7 +140,12 @@ export const plannedStopSchema = placeSchema.extend({
   dietaryTags: z.array(z.string().max(80)).max(20).optional(),
   factState: z.enum(['verified', 'estimated']),
   factSource: z.string().max(300),
-}).passthrough()
+}).passthrough().superRefine((place, context) => {
+  const latitude = place.latitude ?? place.lat ?? place.coordinates?.[1]
+  const longitude = place.longitude ?? place.lng ?? place.coordinates?.[0]
+  if ((latitude === undefined) !== (longitude === undefined)) context.addIssue({ code: z.ZodIssueCode.custom, message: '地点坐标必须同时提供经度和纬度' })
+  if (latitude === 0 && longitude === 0) context.addIssue({ code: z.ZodIssueCode.custom, message: '地点坐标不能使用 0,0 占位' })
+})
 
 const validationReportSchema = z.object({
   passed: z.boolean(),
@@ -218,8 +226,8 @@ export function parseTripRequest(value: unknown): TripRequest | null {
   return result.success ? result.data as TripRequest : null
 }
 
-export function parseGeneratedPlans(value: unknown): GeneratedPlan[] | null {
-  const result = z.array(generatedPlanSchema).max(3).safeParse(value)
+export function parseGeneratedPlans(value: unknown, maxPlans = 3): GeneratedPlan[] | null {
+  const result = z.array(generatedPlanSchema).max(maxPlans).safeParse(value)
   return result.success ? result.data as GeneratedPlan[] : null
 }
 

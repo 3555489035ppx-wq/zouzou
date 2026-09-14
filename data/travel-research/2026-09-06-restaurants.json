@@ -1,0 +1,1106 @@
+{
+  "checkedAt": "2026-09-06",
+  "standard": "同城、具体门店、对应菜品、可追溯推荐依据；报价、营业及库存未实时确认。",
+  "restaurants": [
+    {
+      "city": "宁波",
+      "name": "宁波状元楼酒店（和义路店）",
+      "area": "海曙区 / 和义路",
+      "address": "宁波市海曙区和义路88号",
+      "menu": [
+        "红膏呛蟹",
+        "宁波汤圆",
+        "雪菜大汤黄鱼",
+        "冰糖甲鱼"
+      ],
+      "dietaryTags": [
+        "seafood",
+        "meat",
+        "pork",
+        "sesame"
+      ],
+      "summary": "想吃红膏呛蟹可选这家甬菜老字号，平台菜单称宁波红膏咸蟹；宁波非遗资料同时记录状元楼红膏炝蟹技艺。适合和义路、天一广场一带正餐；生腌冷菜不适合不吃生食的选择，可改点熟制黄鱼。口味推荐来自平台点评及地方饮食资料，不保证每个人都喜欢。",
+      "sources": [
+        {
+          "url": "https://gs.ctrip.com/html5/you/foods/fooddetail/120087/270455.html",
+          "label": "携程：和义路店菜单、地址与点评",
+          "fields": [
+            "city",
+            "branch",
+            "address",
+            "menu",
+            "reviews"
+          ],
+          "readLevel": "search-extract"
+        },
+        {
+          "url": "https://www.ihningbo.cn/directory/show/105",
+          "label": "宁波非遗：状元楼宁波菜烹饪技艺",
+          "fields": [
+            "brand",
+            "dish"
+          ],
+          "readLevel": "search-extract"
+        }
+      ]
+    },
+    {
+      "city": "宁波",
+      "name": "宁波状元楼酒店（东部新城店）",
+      "area": "鄞州区 / 东部新城",
+      "address": "宁波市鄞州区中山东路1665号宏泰广场12号楼",
+      "menu": [
+        "红膏呛蟹",
+        "大厨油爆虾",
+        "熏鱼",
+        "阳春面"
+      ],
+      "dietaryTags": [
+        "seafood",
+        "meat",
+        "wheat"
+      ],
+      "summary": "同城另一家明确分店，地图聚合菜单列红膏炝蟹及食客推荐。适合已在东部新城的用户，不能把和义路店的距离或分店资料直接套用。当前营业和当日蟹品供应需联系门店。",
+      "sources": [
+        {
+          "url": "https://maps.apple.com/place?_provider=57879&place-id=H2710I3F9268E09057A",
+          "label": "Apple Maps/大众点评聚合：东部新城店公开索引",
+          "fields": [
+            "city",
+            "branch",
+            "address",
+            "menu",
+            "reviews"
+          ],
+          "readLevel": "search-extract"
+        }
+      ]
+    },
+    {
+      "city": "宁波",
+      "name": "东福园饭店（鼓楼店）",
+      "area": "海曙区 / 鼓楼",
+      "address": "宁波市海曙区公园路（平台主资料5号、旧点评7号，门牌待确认）",
+      "menu": [
+        "红油呛蟹",
+        "宁波汤圆",
+        "糖炒年糕",
+        "宁式烤菜",
+        "锅烧河鳗"
+      ],
+      "dietaryTags": [
+        "seafood",
+        "meat",
+        "pork",
+        "wheat"
+      ],
+      "summary": "鼓楼片区的甬菜正餐选择。餐厅资料列红膏咸蟹，携程现列红油呛蟹，做法与当日品名需问店；不将两种做法视为完全相同。宁波晚报2026年报道其老店文化，平台点评口味有差异。",
+      "sources": [
+        {
+          "url": "https://gs.ctrip.com/html5/you/foods/fooddetail/83/270994.html",
+          "label": "携程：鼓楼店菜单、地址及门牌冲突",
+          "fields": [
+            "city",
+            "branch",
+            "address",
+            "menu",
+            "reviews"
+          ],
+          "readLevel": "search-extract"
+        },
+        {
+          "url": "https://m.cncn.com/meishi/ningbo/store/971",
+          "label": "欣欣旅游：东福园菜品资料",
+          "fields": [
+            "brand",
+            "menu"
+          ],
+          "readLevel": "search-extract"
+        },
+        {
+          "url": "https://epaper.cnnb.com.cn/nbwb/pc/content/202604/28/content_273935.html",
+          "label": "宁波晚报：东福园美食往事",
+          "fields": [
+            "branch",
+            "reputation"
+          ],
+          "readLevel": "search-extract"
+        }
+      ]
+    },
+    {
+      "city": "宁波",
+      "name": "缸鸭狗（天一广场店）",
+      "area": "海曙区 / 天一广场",
+      "address": "宁波市海曙区天一广场水晶街68号（公开点评地址，门牌待确认）",
+      "menu": [
+        "宁波汤圆",
+        "鲜虾馄饨"
+      ],
+      "dietaryTags": [
+        "meat",
+        "pork",
+        "sesame",
+        "seafood",
+        "wheat"
+      ],
+      "summary": "适合天一广场路线中的汤圆和点心体验。公开食客点评提到猪油黑芝麻汤圆，不能按纯素甜品安排；甜度、排队与食量评价因人而异。小吃体验不能默认代替足量正餐。",
+      "category": "food",
+      "sources": [
+        {
+          "url": "https://gs.ctrip.com/html5/you/comment/83/5223715-food.html",
+          "label": "携程：缸鸭狗公开食客点评",
+          "fields": [
+            "city",
+            "branch",
+            "address",
+            "menu",
+            "reviews"
+          ],
+          "readLevel": "search-extract"
+        }
+      ]
+    },
+    {
+      "city": "宁波",
+      "name": "南塘油赞子（南塘店）",
+      "area": "海曙区 / 南塘老街",
+      "address": "宁波市海曙区南郊路224号",
+      "menu": [
+        "油赞子"
+      ],
+      "dietaryTags": [
+        "wheat"
+      ],
+      "summary": "南塘老街顺路小吃，可选原味或海苔咸味。推荐依据为平台具体门店及公开点评，部分食客认为值得尝当地特色，也有人认为口味普通；按个人喜好选择，不为了点心专门跨城。",
+      "category": "food",
+      "sources": [
+        {
+          "url": "https://you.ctrip.com/food/83/5224318.html",
+          "label": "携程：南塘店地址、口味和食客点评",
+          "fields": [
+            "city",
+            "branch",
+            "address",
+            "menu",
+            "reviews"
+          ],
+          "readLevel": "search-extract"
+        }
+      ]
+    },
+    {
+      "city": "天津",
+      "name": "耳朵眼炸糕（东北角店）",
+      "area": "红桥区 / 东北角",
+      "address": "天津市红桥区大胡同商业街32号",
+      "menu": [
+        "耳朵眼炸糕",
+        "锅巴菜"
+      ],
+      "category": "food",
+      "dietaryTags": [
+        "sesame",
+        "wheat"
+      ],
+      "summary": "东北角附近的炸糕小吃选择，平台菜单与点评有豆沙炸糕和锅巴菜。馅料可按口味选择；属于点心体验，不当作完整正餐。",
+      "sources": [
+        {
+          "url": "https://gs.ctrip.com/html5/you/foods/Tianjin154/4928084.html",
+          "label": "公开餐厅资料：同城门店、菜品与推荐依据",
+          "fields": [
+            "city",
+            "branch",
+            "address",
+            "menu",
+            "recommendation"
+          ],
+          "readLevel": "search-extract"
+        }
+      ]
+    },
+    {
+      "city": "济南",
+      "name": "闫府私房菜（恒隆店）",
+      "area": "历下区 / 泉城路",
+      "address": "济南市历下区泉城路188号恒隆广场东翼4层416A",
+      "menu": [
+        "糖醋鲤鱼",
+        "甜沫",
+        "油旋",
+        "九转大肠"
+      ],
+      "category": "restaurant",
+      "dietaryTags": [
+        "seafood",
+        "meat",
+        "pork",
+        "wheat"
+      ],
+      "summary": "泉城路片区的鲁菜选择，平台菜品与食客点评对应糖醋鲤鱼、九转大肠等。偏好酸甜或内脏者可选，不喜欢内脏可换鱼和点心。",
+      "sources": [
+        {
+          "url": "https://touch.go.qunar.com/poi/5259168",
+          "label": "公开餐厅资料：同城门店、菜品与推荐依据",
+          "fields": [
+            "city",
+            "branch",
+            "address",
+            "menu",
+            "recommendation"
+          ],
+          "readLevel": "search-extract"
+        },
+        {
+          "url": "https://www.csair.com/h5/cn/tourism_strategy/guonei_lvyougonglve/Jinan2/1cfu3o1g4pvqa.shtml",
+          "label": "南航济南美食：推荐闫府与同址",
+          "fields": [
+            "address",
+            "recommendation"
+          ],
+          "readLevel": "search-extract"
+        }
+      ]
+    },
+    {
+      "city": "福州",
+      "name": "聚春园大酒店（东街口总店）",
+      "area": "鼓楼区 / 东街口",
+      "address": "福州市鼓楼区东街2号",
+      "menu": [
+        "佛跳墙",
+        "荔枝肉",
+        "芋泥"
+      ],
+      "category": "restaurant",
+      "dietaryTags": [
+        "seafood",
+        "meat",
+        "pork"
+      ],
+      "summary": "想专门体验佛跳墙可选择东街口老品牌；官方美食资料记录聚春园佛跳墙宴及芋泥。正餐与酒店自助套餐不同，不能把旧自助价当作佛跳墙单点价格。",
+      "sources": [
+        {
+          "url": "https://dynamic.m.tuniu.com/restaurant/1806785/",
+          "label": "公开餐厅资料：同城门店、菜品与推荐依据",
+          "fields": [
+            "city",
+            "branch",
+            "address",
+            "menu",
+            "recommendation"
+          ],
+          "readLevel": "search-extract"
+        },
+        {
+          "url": "https://www.fuzhoumeishi.cn/node/21640/20240319/65f93a21d95e3.shtml",
+          "label": "福州美食之都：聚春园佛跳墙宴",
+          "fields": [
+            "brand",
+            "menu"
+          ],
+          "readLevel": "search-extract"
+        }
+      ]
+    },
+    {
+      "city": "无锡",
+      "name": "王兴记（中山路店）",
+      "area": "梁溪区 / 中山路",
+      "address": "无锡市中山路223号",
+      "menu": [
+        "无锡小笼",
+        "无锡馄饨",
+        "糖芋头"
+      ],
+      "category": "restaurant",
+      "dietaryTags": [
+        "meat",
+        "pork",
+        "seafood",
+        "wheat",
+        "egg"
+      ],
+      "summary": "中山路老牌小笼和馄饨选择，平台列无锡小笼包、三鲜馄饨及糖水芋头。小笼偏甜口，点评对皮厚薄意见不一；三鲜可能含虾和鸡蛋。",
+      "sources": [
+        {
+          "url": "https://you.ctrip.com/food/wuxi10/5112782-dianping.html",
+          "label": "公开餐厅资料：同城门店、菜品与推荐依据",
+          "fields": [
+            "city",
+            "branch",
+            "address",
+            "menu",
+            "recommendation"
+          ],
+          "readLevel": "search-extract"
+        }
+      ]
+    },
+    {
+      "city": "合肥",
+      "name": "鸿章小馆（合肥港汇广场店）",
+      "area": "蜀山区 / 港汇广场",
+      "address": "合肥市蜀山区望江西路与潜山路交汇处港汇广场1层",
+      "menu": [
+        "李鸿章大杂烩"
+      ],
+      "category": "restaurant",
+      "dietaryTags": [
+        "meat",
+        "seafood"
+      ],
+      "summary": "同庆楼官方门店页明确以李鸿章大杂烩为招牌，面向家庭聚餐。推荐依据为品牌自述，具体用料、分量与口味需要点单确认。",
+      "sources": [
+        {
+          "url": "http://www.tongqinglou.cn/tql/index/storedisplay_detail?id=66",
+          "label": "公开餐厅资料：同城门店、菜品与推荐依据",
+          "fields": [
+            "city",
+            "branch",
+            "address",
+            "menu",
+            "recommendation"
+          ],
+          "readLevel": "search-extract"
+        }
+      ]
+    },
+    {
+      "city": "郑州",
+      "name": "合记烩面（人民路店）",
+      "area": "金水区 / 人民路",
+      "address": "郑州市人民路3号",
+      "menu": [
+        "河南烩面",
+        "羊肉烩面"
+      ],
+      "category": "restaurant",
+      "dietaryTags": [
+        "meat",
+        "lamb",
+        "wheat"
+      ],
+      "summary": "想吃河南烩面可选人民路店，平台列优质羊肉烩面与三鲜烩面，点评提到汤头和面条韧劲。三鲜配料需另问，不因面馆品牌默认全部菜满足忌口。",
+      "sources": [
+        {
+          "url": "https://you.ctrip.com/food/157/4926535.html",
+          "label": "公开餐厅资料：同城门店、菜品与推荐依据",
+          "fields": [
+            "city",
+            "branch",
+            "address",
+            "menu",
+            "recommendation"
+          ],
+          "readLevel": "search-extract"
+        },
+        {
+          "url": "http://www.hejihuimian.cn/",
+          "label": "合记官方：人民路总店名录",
+          "fields": [
+            "branch"
+          ],
+          "readLevel": "search-extract"
+        }
+      ]
+    },
+    {
+      "city": "郑州",
+      "name": "方中山胡辣汤（顺河路店）",
+      "area": "金水区 / 紫荆山路",
+      "address": "郑州市金水区紫荆山路与顺河路交叉口",
+      "menu": [
+        "胡辣汤",
+        "水煎包"
+      ],
+      "category": "restaurant",
+      "dietaryTags": [
+        "meat",
+        "beef",
+        "wheat",
+        "spicy"
+      ],
+      "summary": "胡辣汤和水煎包的早餐选择。平台食客提到即使微辣也可能明显，不直接给忌辣用户推荐；供应餐期出发前确认。",
+      "sources": [
+        {
+          "url": "https://gs.ctrip.com/html5/you/foods/zhengzhou157/4926547.html",
+          "label": "公开餐厅资料：同城门店、菜品与推荐依据",
+          "fields": [
+            "city",
+            "branch",
+            "address",
+            "menu",
+            "recommendation"
+          ],
+          "readLevel": "search-extract"
+        }
+      ]
+    },
+    {
+      "city": "洛阳",
+      "name": "真不同饭店（中州东路店）",
+      "area": "老城区 / 中州东路",
+      "address": "洛阳市老城区中州东路393号（旧资料门牌不同，出发前确认）",
+      "menu": [
+        "洛阳水席",
+        "牡丹燕菜",
+        "浆面条"
+      ],
+      "category": "restaurant",
+      "dietaryTags": [
+        "meat",
+        "pork",
+        "wheat",
+        "spicy"
+      ],
+      "summary": "想体验洛阳水席可选择这家老店，平台菜品明确列牡丹燕菜、洛阳肉片和浆面条。水席适合多人点菜分享，胡椒与酸味接受度因人而异。",
+      "sources": [
+        {
+          "url": "https://gs.ctrip.com/html5/you/foods/fooddetail/2088557/4926390.html",
+          "label": "公开餐厅资料：同城门店、菜品与推荐依据",
+          "fields": [
+            "city",
+            "branch",
+            "address",
+            "menu",
+            "recommendation"
+          ],
+          "readLevel": "search-extract"
+        }
+      ]
+    },
+    {
+      "city": "洛阳",
+      "name": "小街熟食",
+      "area": "西工区 / 西工小街",
+      "address": "洛阳市西工小街44号",
+      "menu": [
+        "洛阳锅贴",
+        "浆面条",
+        "不翻汤"
+      ],
+      "category": "restaurant",
+      "dietaryTags": [
+        "meat",
+        "pork",
+        "wheat",
+        "sesame"
+      ],
+      "summary": "西工小街的锅贴与汤食选择，平台菜单列小街锅贴、浆面条和洛阳不翻汤。先确认锅贴按份或按斤售卖，避免点量过大。",
+      "sources": [
+        {
+          "url": "https://gs.ctrip.com/html5/you/foods/fooddetail/198/4926402.html",
+          "label": "公开餐厅资料：同城门店、菜品与推荐依据",
+          "fields": [
+            "city",
+            "branch",
+            "address",
+            "menu",
+            "recommendation"
+          ],
+          "readLevel": "search-extract"
+        }
+      ]
+    },
+    {
+      "city": "兰州",
+      "name": "马子禄牛肉面（大众巷店）",
+      "area": "城关区 / 大众巷",
+      "address": "兰州市城关区大众巷86号",
+      "menu": [
+        "兰州牛肉面"
+      ],
+      "category": "restaurant",
+      "dietaryTags": [
+        "meat",
+        "beef",
+        "wheat"
+      ],
+      "summary": "大众巷的具名牛肉面店，平台地址与牛肉面体验相对应。适合作为早午餐候选，晚市未确认，不把外地同名分店安排进兰州路线。",
+      "sources": [
+        {
+          "url": "https://m-p.tuniu.com/restaurant/3245039/",
+          "label": "公开餐厅资料：同城门店、菜品与推荐依据",
+          "fields": [
+            "city",
+            "branch",
+            "address",
+            "menu",
+            "recommendation"
+          ],
+          "readLevel": "search-extract"
+        }
+      ]
+    },
+    {
+      "city": "兰州",
+      "name": "杜记甜食",
+      "area": "城关区 / 大众巷",
+      "address": "兰州市城关区大众巷72号",
+      "menu": [
+        "灰豆子",
+        "甜醅子",
+        "酿皮",
+        "牛奶鸡蛋醪糟",
+        "杏皮水"
+      ],
+      "category": "food",
+      "dietaryTags": [
+        "wheat",
+        "dairy",
+        "egg",
+        "sesame"
+      ],
+      "summary": "可在大众巷集中尝试灰豆子、甜醅子等当地小吃。公开点评既有推荐也有对口感的不同意见；醪糟、牛奶、鸡蛋和芝麻等配料按具体点单确认。",
+      "sources": [
+        {
+          "url": "https://touch.go.qunar.com/poi/3187607",
+          "label": "公开餐厅资料：同城门店、菜品与推荐依据",
+          "fields": [
+            "city",
+            "branch",
+            "address",
+            "menu",
+            "recommendation"
+          ],
+          "readLevel": "search-extract"
+        }
+      ]
+    },
+    {
+      "city": "西宁",
+      "name": "益鑫羊肉手抓馆（花园北街店）",
+      "area": "城东区 / 花园北街",
+      "address": "西宁市城东区花园北街白玉巷5号",
+      "menu": [
+        "手抓羊肉",
+        "甜醅",
+        "青海老酸奶"
+      ],
+      "category": "restaurant",
+      "dietaryTags": [
+        "meat",
+        "lamb",
+        "dairy"
+      ],
+      "summary": "手抓羊肉是平台明确介绍的招牌，可搭配店内酸奶、甜醅。肉类按称重与份量询价，不把平台人均当作一份羊肉报价。",
+      "sources": [
+        {
+          "url": "https://you.ctrip.com/food/xining237/4927523.html",
+          "label": "公开餐厅资料：同城门店、菜品与推荐依据",
+          "fields": [
+            "city",
+            "branch",
+            "address",
+            "menu",
+            "recommendation"
+          ],
+          "readLevel": "search-extract"
+        },
+        {
+          "url": "https://www.amap.com/place/B03CB06Q3J",
+          "label": "高德：花园北街店地址",
+          "fields": [
+            "city",
+            "branch",
+            "address"
+          ],
+          "readLevel": "search-extract"
+        }
+      ]
+    },
+    {
+      "city": "西宁",
+      "name": "德禄酸奶（莫家街店）",
+      "area": "城中区 / 莫家街",
+      "address": "西宁市饮马街街道凯达广场附近（近大十字，具体门牌待确认）",
+      "menu": [
+        "青海老酸奶",
+        "甜醅"
+      ],
+      "category": "food",
+      "dietaryTags": [
+        "dairy"
+      ],
+      "summary": "莫家街片区的酸奶点心选择，公开菜单与点评提到无糖酸奶及甜醅。无糖不等于不酸，口味可先少量尝试；不将普通酸奶写成已核实牦牛奶原料。",
+      "sources": [
+        {
+          "url": "https://hk.trip.com/restaurant/china/xining/detail/de-lu-11690089/",
+          "label": "公开餐厅资料：同城门店、菜品与推荐依据",
+          "fields": [
+            "city",
+            "branch",
+            "address",
+            "menu",
+            "recommendation"
+          ],
+          "readLevel": "search-extract"
+        }
+      ]
+    },
+    {
+      "city": "海口",
+      "name": "老彭记清补凉（新华南店）",
+      "area": "龙华区 / 新华南路",
+      "address": "海口市龙华区新华南路2号宏州电器商城1楼临街商铺",
+      "menu": [
+        "清补凉",
+        "炒冰"
+      ],
+      "category": "food",
+      "dietaryTags": [
+        "peanut",
+        "dairy"
+      ],
+      "summary": "骑楼老城周边的清补凉选择，菜单有椰奶、糖水和炒冰清补凉。不同配料和底料各有口感，不能把整店清补凉都当作同一款，花生及乳制品需确认。",
+      "sources": [
+        {
+          "url": "https://gs.ctrip.com/html5/you/foods/fooddetail/37/313330.html",
+          "label": "公开餐厅资料：同城门店、菜品与推荐依据",
+          "fields": [
+            "city",
+            "branch",
+            "address",
+            "menu",
+            "recommendation"
+          ],
+          "readLevel": "search-extract"
+        }
+      ]
+    },
+    {
+      "city": "泉州",
+      "name": "侯阿婆烧肉粽（钟楼店）",
+      "area": "鲤城区 / 东街",
+      "address": "泉州市鲤城区东街59号",
+      "menu": [
+        "肉粽"
+      ],
+      "category": "food",
+      "dietaryTags": [
+        "meat",
+        "pork",
+        "peanut"
+      ],
+      "summary": "钟楼附近的烧肉粽选择，平台食客推荐馅料丰富的粽子。可能搭配花生酱与甜辣酱，过敏和忌辣用户应确认或换选。",
+      "sources": [
+        {
+          "url": "https://you.ctrip.com/food/243/90003.html",
+          "label": "公开餐厅资料：同城门店、菜品与推荐依据",
+          "fields": [
+            "city",
+            "branch",
+            "address",
+            "menu",
+            "recommendation"
+          ],
+          "readLevel": "search-extract"
+        }
+      ]
+    },
+    {
+      "city": "泉州",
+      "name": "水门国仔面线糊（水门巷店）",
+      "area": "鲤城区 / 水门巷",
+      "address": "泉州市鲤城区水门巷21号",
+      "menu": [
+        "面线糊"
+      ],
+      "category": "restaurant",
+      "dietaryTags": [
+        "seafood",
+        "wheat"
+      ],
+      "summary": "泉州美食之都官方资料记录该店址及面线糊工艺。汤底使用海鲜或虾糠，不能仅因外观看不到虾就给海鲜过敏用户安排。",
+      "sources": [
+        {
+          "url": "https://www.quanzhou.gov.cn/gastronomy/ch/msjy/fypx/202501/t20250104_3126950.htm",
+          "label": "公开餐厅资料：同城门店、菜品与推荐依据",
+          "fields": [
+            "city",
+            "branch",
+            "address",
+            "menu",
+            "recommendation"
+          ],
+          "readLevel": "search-extract"
+        }
+      ]
+    },
+    {
+      "city": "银川",
+      "name": "国强手抓（贵宾楼店）",
+      "area": "金凤区 / 上海西路",
+      "address": "银川市金凤区上海西路与尹家渠北街交口金海明月花园四号",
+      "menu": [
+        "手抓羊肉"
+      ],
+      "category": "restaurant",
+      "dietaryTags": [
+        "meat",
+        "lamb"
+      ],
+      "summary": "本地手抓羊肉推荐资料与高德同址相互对应。资料也记录价格、服务评价的分歧，按肉量询价后再点，不作绝对口碑保证。",
+      "sources": [
+        {
+          "url": "http://yc.bendibao.com/meishi/20251028/59174.shtm",
+          "label": "公开餐厅资料：同城门店、菜品与推荐依据",
+          "fields": [
+            "city",
+            "branch",
+            "address",
+            "menu",
+            "recommendation"
+          ],
+          "readLevel": "search-extract"
+        },
+        {
+          "url": "https://www.amap.com/place/B0FFFFNE71",
+          "label": "高德：贵宾楼店地址",
+          "fields": [
+            "city",
+            "branch",
+            "address"
+          ],
+          "readLevel": "search-extract"
+        }
+      ]
+    },
+    {
+      "city": "银川",
+      "name": "迎宾楼（解放西街店）",
+      "area": "兴庆区 / 解放西街",
+      "address": "银川市兴庆区解放西街11号",
+      "menu": [
+        "手抓羊肉"
+      ],
+      "category": "restaurant",
+      "dietaryTags": [
+        "meat",
+        "lamb"
+      ],
+      "summary": "兴庆区的另一家手抓羊肉候选，适合已经在老城的用户。资料提到涮羊肉与炒菜选择，也有排队、附加收费方面的反馈，菜单和收费现场确认。",
+      "sources": [
+        {
+          "url": "http://yc.bendibao.com/meishi/20251028/59174.shtm",
+          "label": "公开餐厅资料：同城门店、菜品与推荐依据",
+          "fields": [
+            "city",
+            "branch",
+            "address",
+            "menu",
+            "recommendation"
+          ],
+          "readLevel": "search-extract"
+        }
+      ]
+    },
+    {
+      "city": "呼和浩特",
+      "name": "格日勒阿妈蒙古厨房（大召店）",
+      "area": "玉泉区 / 大召",
+      "address": "呼和浩特市大召西夹道与新生街交叉口西南侧（具体门牌待确认）",
+      "menu": [
+        "奶茶",
+        "手把肉",
+        "奶皮子",
+        "羊肉串"
+      ],
+      "category": "restaurant",
+      "dietaryTags": [
+        "meat",
+        "lamb",
+        "dairy"
+      ],
+      "summary": "大召片区可选择奶茶搭配手把肉，平台菜单与点评同时提供蒙餐体验。奶茶可带奶皮、炒米等，咸甜与奶味接受度不同，不把蒙餐整桌安排给乳制品过敏者。",
+      "sources": [
+        {
+          "url": "https://you.ctrip.com/food/156/22662027.html",
+          "label": "公开餐厅资料：同城门店、菜品与推荐依据",
+          "fields": [
+            "city",
+            "branch",
+            "address",
+            "menu",
+            "recommendation"
+          ],
+          "readLevel": "search-extract"
+        }
+      ]
+    },
+    {
+      "city": "呼和浩特",
+      "name": "德顺源（桥靠店）",
+      "area": "赛罕区 / 昭乌达路",
+      "address": "呼和浩特市赛罕区昭乌达路内蒙古医院南门对面凯旋广场院内",
+      "menu": [
+        "烧麦",
+        "莜面"
+      ],
+      "category": "restaurant",
+      "dietaryTags": [
+        "meat",
+        "lamb",
+        "wheat"
+      ],
+      "summary": "菜单明确有羊肉大葱烧麦与土豆泥拌莜面，作为赛罕区餐饮选择。烧麦按馅料确认，不把品牌分店误放在大召旁。",
+      "sources": [
+        {
+          "url": "https://gs.ctrip.com/html5/you/foods/fooddetail/156/16165544.html",
+          "label": "公开餐厅资料：同城门店、菜品与推荐依据",
+          "fields": [
+            "city",
+            "branch",
+            "address",
+            "menu",
+            "recommendation"
+          ],
+          "readLevel": "search-extract"
+        }
+      ]
+    },
+    {
+      "city": "太原",
+      "name": "清和元（铜锣湾店）",
+      "area": "迎泽区 / 铜锣湾",
+      "address": "太原市迎泽区南肖墙铜锣湾A1座21—26号（平台亦标柳巷72号，入口待确认）",
+      "menu": [
+        "头脑",
+        "烧麦"
+      ],
+      "category": "restaurant",
+      "dietaryTags": [
+        "meat",
+        "lamb",
+        "wheat"
+      ],
+      "summary": "想体验头脑可选清和元铜锣湾店，公开点评对应头脑与羊肉烧麦。头脑风味浓，有人喜欢也有人不适应，可先小份尝试；供应季节和时段要确认。",
+      "sources": [
+        {
+          "url": "https://tw.trip.com/restaurant/china/taiyuan/detail/qing-he-yuan-29923672/",
+          "label": "公开餐厅资料：同城门店、菜品与推荐依据",
+          "fields": [
+            "city",
+            "branch",
+            "address",
+            "menu",
+            "recommendation"
+          ],
+          "readLevel": "search-extract"
+        }
+      ]
+    },
+    {
+      "city": "南宁",
+      "name": "舒记粉店（七星路店）",
+      "area": "青秀区 / 七星路",
+      "address": "南宁市七星路46号",
+      "menu": [
+        "老友粉"
+      ],
+      "category": "restaurant",
+      "dietaryTags": [
+        "meat",
+        "pork",
+        "beef",
+        "spicy"
+      ],
+      "summary": "七星路的老友粉具体门店，平台介绍及食客点评提到现炒配料、酸笋与酸辣汤。口味偏重，不给明确不吃辣的用户直接安排。",
+      "sources": [
+        {
+          "url": "https://you.ctrip.com/food/nanning166/4926846.html",
+          "label": "公开餐厅资料：同城门店、菜品与推荐依据",
+          "fields": [
+            "city",
+            "branch",
+            "address",
+            "menu",
+            "recommendation"
+          ],
+          "readLevel": "search-extract"
+        }
+      ]
+    },
+    {
+      "city": "宜昌",
+      "name": "福厨餐厅（云集店）",
+      "area": "西陵区 / 云集路",
+      "address": "宜昌市云集路41号夷陵饭店内",
+      "menu": [
+        "福厨鱼头王",
+        "汽水粑粑",
+        "砂锅煎豆腐"
+      ],
+      "category": "restaurant",
+      "dietaryTags": [
+        "seafood",
+        "meat",
+        "spicy"
+      ],
+      "summary": "云集路可选择的具名正餐店，公开菜单列鱼头、汽水粑粑和豆腐。现有证据没有白刹肥鱼，不把鱼头菜强行映射成该道菜。",
+      "sources": [
+        {
+          "url": "https://gs.ctrip.com/html5/you/foods/fooddetail/313/101276.html",
+          "label": "公开餐厅资料：同城门店、菜品与推荐依据",
+          "fields": [
+            "city",
+            "branch",
+            "address",
+            "menu",
+            "recommendation"
+          ],
+          "readLevel": "search-extract"
+        }
+      ]
+    },
+    {
+      "city": "威海",
+      "name": "老妈疙瘩汤（渔港路店）",
+      "area": "环翠区 / 渔港路",
+      "address": "威海市渔港路33-6号",
+      "menu": [
+        "海鲜疙瘩汤",
+        "海肠捞饭",
+        "鲅鱼饺子"
+      ],
+      "category": "restaurant",
+      "dietaryTags": [
+        "seafood",
+        "wheat",
+        "meat"
+      ],
+      "summary": "渔港路的胶东餐饮选择，公开菜单明确有海鲜疙瘩汤、海肠捞饭及鲅鱼饺子。适合想在一顿饭体验多种当地做法的人，海鲜过敏应换其他餐厅。",
+      "sources": [
+        {
+          "url": "https://you.ctrip.com/food/weihai169/65350.html",
+          "label": "公开餐厅资料：同城门店、菜品与推荐依据",
+          "fields": [
+            "city",
+            "branch",
+            "address",
+            "menu",
+            "recommendation"
+          ],
+          "readLevel": "search-extract"
+        }
+      ]
+    },
+    {
+      "city": "威海",
+      "name": "咱妈家海菜包子（长峰店）",
+      "area": "经区 / 长峰",
+      "address": "威海市海滨南路7号（工商银行北侧）",
+      "menu": [
+        "海菜包子"
+      ],
+      "category": "restaurant",
+      "dietaryTags": [
+        "meat",
+        "pork",
+        "seafood",
+        "wheat"
+      ],
+      "summary": "长峰片区的海菜包子选择，菜单区分海菜肉丁、鲅鱼、大虾等馅料。海菜包子不等于素包，按实际馅料确认。",
+      "sources": [
+        {
+          "url": "https://you.ctrip.com/food/weihai169/143186962-dianping.html",
+          "label": "公开餐厅资料：同城门店、菜品与推荐依据",
+          "fields": [
+            "city",
+            "branch",
+            "address",
+            "menu",
+            "recommendation"
+          ],
+          "readLevel": "search-extract"
+        }
+      ]
+    },
+    {
+      "city": "珠海",
+      "name": "益健名厨海鲜城（夏湾店）",
+      "area": "香洲区 / 夏湾",
+      "address": "珠海市香洲区珠平路29号",
+      "menu": [
+        "脆皮鲜虾红米肠",
+        "流沙包",
+        "榴莲酥"
+      ],
+      "category": "restaurant",
+      "dietaryTags": [
+        "seafood",
+        "wheat",
+        "egg",
+        "dairy"
+      ],
+      "summary": "夏湾片区的粤式餐饮候选，平台菜单和地图同址。现有菜单证据不支持把它写成横琴蚝或叠石蚝饭专门店。",
+      "sources": [
+        {
+          "url": "https://hk.trip.com/restaurant/china/zhuhai/detail/yi-jian-bao-chi-seafood-cheng-122883385/",
+          "label": "公开餐厅资料：同城门店、菜品与推荐依据",
+          "fields": [
+            "city",
+            "branch",
+            "address",
+            "menu",
+            "recommendation"
+          ],
+          "readLevel": "search-extract"
+        },
+        {
+          "url": "https://www.amap.com/place/B02F402MZQ",
+          "label": "高德：珠平路29号门店",
+          "fields": [
+            "city",
+            "address"
+          ],
+          "readLevel": "search-extract"
+        },
+        {
+          "url": "http://m.dianping.com/shop/2402758?msource=applemaps",
+          "label": "大众点评：夏湾店推荐菜索引",
+          "fields": [
+            "branch",
+            "menu"
+          ],
+          "readLevel": "search-extract"
+        }
+      ]
+    },
+    {
+      "city": "南昌",
+      "name": "老三样·旧食新味（船山路店）",
+      "area": "西湖区 / 船山路",
+      "address": "南昌市西湖区船山路437-34号",
+      "menu": [
+        "牙签猪颈肉",
+        "红烧鸡脚",
+        "鲜虾花甲",
+        "蟹脚捞面"
+      ],
+      "dietaryTags": [
+        "meat",
+        "pork",
+        "seafood",
+        "spicy",
+        "wheat"
+      ],
+      "summary": "平台该分店菜单列出猪颈肉、鸡脚及海鲜菜，船山路店食客正文也提到鸡脚与蟹脚主食，适合能接受重口味的赣菜正餐。评论中有同名门店混淆，需按船山路具体地址找店；旧排号和价格不沿用。",
+      "sources": [
+        {
+          "url": "https://tw.trip.com/restaurant/china/nanchang/detail/laosanyang-restaurant-136300021/",
+          "label": "Trip.com：船山路店菜单、地址与食客正文",
+          "fields": [
+            "city",
+            "branch",
+            "address",
+            "menu",
+            "reviews"
+          ],
+          "readLevel": "page-body"
+        }
+      ]
+    }
+  ]
+}

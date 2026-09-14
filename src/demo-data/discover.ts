@@ -1,25 +1,37 @@
+import { buildMultiDayRoutes } from './discover-multiday'
+import { reviewedPhotoForPlace, authorizedSocialPhotos } from './authorized-social-photos'
 import { getCityImageGallery } from './city-images'
-import { cityProfiles, getCityProfile } from './cities'
+import { cityNames, cityProfiles, getCityProfile } from './cities'
 import { cityKnowledge, isConcreteKnowledgeItem, type CityKnowledgeItem } from '../services/trip/cityKnowledge'
-import { isUserFacingCover, placesMatch, selectJourneyCover, type CoverStatus, type JourneyImage } from '../services/journey-images'
+import { coverVisualIdentity, isUserFacingCover, normalizePlaceName, placesMatch } from '../services/journey-images/presentation'
+import type { CoverStatus, JourneyImage } from '../services/journey-images'
+import { discoverCoverIndex } from './discover-cover-index'
+import { getPlaceCoordinates } from '../services/places'
+import { isRuntimeCityAllowed } from '../services/trip/runtimeKnowledgePolicy'
+import { breakfastRouteEdits } from './discover-breakfast-routes'
+import { destinationExpansion } from '../services/trip/destinationExpansion'
+import { localFoodRouteEdits } from './discover-local-food-routes'
+import approvedCoverPaths from '../../data/journey-images/approved-cover-paths-2026-09-14.json'
+import { reviewedCoverPhotos } from './reviewed-cover-images'
 
 export type ContentSource = 'official' | 'knowledge' | 'user'
 export type ContentStatus = 'draft' | 'published' | 'hidden'
 
-export type Poi = { id: string; name: string; cityId: string; latitude: number; longitude: number; address: string; category: string; image: string; mapProviderId?: string; coordinateSource?: string; verified?: boolean; stay: string; transportation: string; introduction: string }
-export type Route = { id: string; cityId: string; title: string; summary: string; category: string; tags: string[]; peopleType: string[]; weatherType: string[]; timePeriod: string[]; duration: string; budgetMin: number; budgetMax: number; pois: Poi[]; tips: string[]; recommendedReason: string; cover?: string; coverImage?: JourneyImage; coverImageSource?: JourneyImage['source']; coverImageStatus?: CoverStatus; distanceKm?: number; sourceName?: string; sourceUrl?: string }
-export type DiscoverItem = { id: string; contentSource: ContentSource; authorId?: string; authorName?: string; cityId: string; title: string; subtitle: string; cover: string; category: string; tags: string[]; routeId: string; duration: string; budget: string; poiCount: number; likeCount: number; saveCount: number; useCount: number; publishedAt: string; status: ContentStatus; sourceName?: string; sourceUrl?: string; qualityScore: number; editorScore: number; freshnessScore: number; routeCompletenessScore: number }
+export type Poi = { time?: string; period?: string; area?: string; sourceUrl?: string; day?: number; id: string; name: string; cityId: string; latitude?: number; longitude?: number; address?: string; searchKeyword?: string; category: string; image: string; mapProviderId?: string; coordinateSource?: string; verified?: boolean; stay: string; transportation: string; introduction: string; priceState?: 'unknown' | 'estimated'; estimatedBudget?: number }
+export type Route = { dayCount?: number; id: string; cityId: string; title: string; summary: string; category: string; tags: string[]; peopleType: string[]; weatherType: string[]; timePeriod: string[]; duration: string; budgetMin: number; budgetMax: number; pois: Poi[]; tips: string[]; recommendedReason: string; cover?: string; coverImage?: JourneyImage; coverImageSource?: JourneyImage['source']; coverImageStatus?: CoverStatus; distanceKm?: number; sourceName?: string; sourceUrl?: string }
+export type DiscoverItem = {
+  featured?: boolean; id: string; contentSource: ContentSource; authorId?: string; authorName?: string; cityId: string; title: string; subtitle: string; cover: string; category: string; tags: string[]; routeId: string; duration: string; budget: string; poiCount: number; likeCount: number; saveCount: number; useCount: number; publishedAt: string; status: ContentStatus; sourceName?: string; sourceUrl?: string; qualityScore: number; editorScore: number; freshnessScore: number; routeCompletenessScore: number }
 export type FeedConfig = { sourceWeights: Record<ContentSource, number>; pageSize: number }
 
-export const discoverFeedConfig: FeedConfig = { sourceWeights: { official: 70, knowledge: 20, user: 10 }, pageSize: 20 }
-const cityCoordinates: Record<string, [number, number]> = { 上海: [121.44, 31.21], 杭州: [120.16, 30.25], 北京: [116.40, 39.91], 成都: [104.07, 30.67], 广州: [113.27, 23.13], 深圳: [114.06, 22.54], 三亚: [109.51, 18.25] }
+export const discoverFeedConfig: FeedConfig = { sourceWeights: { official: 70, knowledge: 20, user: 10 }, pageSize: 48 }
 const imageForPlace = (city: string, placeName: string, fallbackIndex: number) => {
-  const gallery = getCityImageGallery(city).filter((image) => isUserFacingCover(image.src))
+  const gallery = getCityImageGallery(city).filter((image) => image.routeEligible !== false && isUserFacingCover(image.src))
   const sanyaFood = city === '三亚' && /鸡饭|海鲜|清补凉|椰子鸡|抱罗粉|文昌鸡|夜市/.test(placeName)
     ? gallery.find((image) => /海鲜粉|清补凉|鸡饭/.test(`${image.landmark} ${image.alt}`))
     : undefined
+  const foodExact = gallery.find((image) => image.kind === 'food' && (placesMatch(image.landmark, placeName) || image.alt.includes(placeName)))
   const exact = gallery.find((image) => placesMatch(image.landmark, placeName) || image.alt.includes(placeName))
-  return sanyaFood?.src ?? exact?.src ?? gallery[fallbackIndex % gallery.length]?.src ?? gallery[0]?.src ?? ''
+  return sanyaFood?.src ?? foodExact?.src ?? exact?.src ?? ''
 }
 const sanyaFoodLabel = (placeName: string) => /清补凉/.test(placeName)
   ? '清补凉'
@@ -71,7 +83,6 @@ const routeSeeds = [
 ] as const
 
 const seededRoutes: Route[] = routeSeeds.map(([city, title, summary, category, names], routeIndex) => {
-  const [longitude, latitude] = cityCoordinates[city]
   const coordinates = verifiedRouteCoordinates[city]
   return {
     id: `route-${routeIndex + 1}`,
@@ -86,10 +97,9 @@ const seededRoutes: Route[] = routeSeeds.map(([city, title, summary, category, n
     duration: city === '三亚' && category === '聚餐' ? '5h' : routeIndex === 0 ? '4.5h' : '4h',
     budgetMin: category === '聚餐' ? 180 : 120,
     budgetMax: category === '聚餐' ? 360 : 220,
-    distanceKm: city === '三亚' ? (category === '聚餐' ? 3.8 : 7.6) : undefined,
     cover: imageForPlace(city, names[0], routeIndex),
     pois: names.map((name, index) => {
-      const [poiLongitude, poiLatitude] = coordinates?.[index] ?? [longitude + index * .003, latitude + index * .003]
+      const coordinate = coordinates?.[index]
       const foodItem = foodKnowledgeForPoi(city, name)
       const isFood = Boolean(foodItem) || /鸡饭|清补凉|椰子鸡|海鲜|夜市/.test(name)
       const transportation = city !== '三亚'
@@ -109,14 +119,13 @@ const seededRoutes: Route[] = routeSeeds.map(([city, title, summary, category, n
         id: `poi-${routeIndex + 1}-${index + 1}`,
         name,
         cityId: city,
-        latitude: poiLatitude,
-        longitude: poiLongitude,
-        address: `${city}${name}`,
+        ...(coordinate ? { latitude: coordinate[1], longitude: coordinate[0] } : {}),
+        ...(coordinate ? { coordinateSource: '走走地点资料 · 坐标已核验' } : {}),
+        searchKeyword: `${city} ${name}`,
         category: isFood ? '餐饮' : index === 2 ? '咖啡 / 休息' : '地点',
         image: imageForPlace(city, imageName, category === '聚餐' ? index + 3 : index),
         mapProviderId: undefined,
-        coordinateSource: coordinates ? 'OpenStreetMap Nominatim · 2026-08-30' : undefined,
-        verified: Boolean(coordinates),
+        verified: Boolean(coordinate),
         stay,
         transportation,
         introduction: foodItem
@@ -127,13 +136,14 @@ const seededRoutes: Route[] = routeSeeds.map(([city, title, summary, category, n
       }
     }),
     tips: ['地点按同一片区串联，预算按人均区间估算。', '热门时段建议预留等候时间。'],
-    recommendedReason: coordinates ? '地点顺序使用已核验坐标，步行几何由路线服务返回。' : '地点顺序待核验，路线服务返回前不宣称可直接执行。',
+     recommendedReason: coordinates ? '地点顺序使用已核验地点资料；真实道路请打开地图 App 计算。' : '地点顺序待核验；打开某一站的地图 App 后再确认道路。',
   }
 })
 
-const fallbackRoutes: Route[] = Object.keys(cityProfiles).filter((city) => !routeSeeds.some(([seedCity]) => seedCity === city)).map((city, index) => {
+const fallbackRoutes: Route[] = Object.keys(cityProfiles)
+  .filter((city) => isRuntimeCityAllowed(city) && !routeSeeds.some(([seedCity]) => seedCity === city))
+  .map((city, index) => {
   const profile = getCityProfile(city)
-  const [longitude, latitude] = profile.mapCenter
   const foodVenue = concreteFoodForCity(city)
   const profileNames = profile.demoLabels.slice(0, 5)
   const names = foodVenue
@@ -162,29 +172,26 @@ const fallbackRoutes: Route[] = Object.keys(cityProfiles).filter((city) => !rout
       id: `poi-city-${index + 1}-${poiIndex + 1}`,
       name,
       cityId: city,
-      latitude: latitude + poiIndex * .003,
-      longitude: longitude + poiIndex * .003,
-      address: `${city}${name}`,
+       searchKeyword: `${city} ${name}`,
       category: isFood ? '餐饮' : poiIndex === 2 ? '咖啡 / 休息' : '地点',
       image: imageForPlace(city, name, poiIndex),
-      coordinateSource: '城市候选骨架；坐标待 POI 核验',
+       coordinateSource: '走走地点资料 · 坐标待核验',
       verified: false,
       stay: isFood ? '45min' : poiIndex === 2 ? '50min' : '35min',
-      transportation: poiIndex ? '步行约 12 分钟' : '从这里开始',
+       transportation: poiIndex ? '前往方式待确认' : '从这里开始',
       introduction: foodItem ? foodPoiIntroduction(foodItem) : `在${name}停留一会，按自己的节奏感受${city}。`,
       }
     }),
     tips: ['地点按相邻片区组织，减少折返。', '热门时段建议预留等候时间。'],
     recommendedReason: '地点顺序按相邻区域组织，走起来不需要折返。',
     cover: imageForPlace(city, names[0], index),
-    distanceKm: 5.2,
   }
 })
 
 const uniqueKnowledgeItems = (items: CityKnowledgeItem[]) => {
   const names = new Set<string>()
   return items.filter((item) => {
-    if (names.has(item.name) || item.coordinates.every((value) => value === 0)) return false
+    if (names.has(item.name) || item.coordinates?.every((value) => value === 0)) return false
     names.add(item.name)
     return true
   })
@@ -239,12 +246,19 @@ const companionScore = (item: CityKnowledgeItem, anchor: CityKnowledgeItem, them
 }
 
 const knowledgeRouteGroups = (items: CityKnowledgeItem[]) => {
-  const candidates = uniqueKnowledgeItems(items).filter((item) => item.category !== 'food' && item.category !== 'restaurant' || isConcreteKnowledgeItem(item))
+  // Breakfast-only additions enter explicitly reviewed morning sequences below,
+  // not arbitrary dinner/night templates selected by the generic theme scorer.
+  const editorialNames = new Set(Object.values(destinationExpansion).flat().map(item=>item.name))
+  const candidates = uniqueKnowledgeItems(items).filter(item=>!item.tags.includes('早餐专用') && !editorialNames.has(item.name)).filter((item) => item.category !== 'food' && item.category !== 'restaurant' || isConcreteKnowledgeItem(item))
   const usedAnchors = new Set<string>()
   const usage = new Map<string, number>()
   const selectedGroups: CityKnowledgeItem[][] = []
   const groupOverlap = (left: CityKnowledgeItem[], right: CityKnowledgeItem[]) => left.filter((item) => right.some((other) => other.name === item.name)).length / Math.max(left.length, right.length)
-  return routeThemes.flatMap((theme) => {
+  return routeThemes.flatMap((requestedTheme) => {
+    // Without a named venue this is a neighborhood exploration, not a dining route.
+    const theme = requestedTheme.category === '聚餐' && !candidates.some(isFoodCategory)
+      ? {...requestedTheme, category: 'Citywalk', label: requestedTheme.label === '本地逛吃' ? '街区生活' : requestedTheme.label === '特色美食' ? '地方文化' : requestedTheme.label}
+      : requestedTheme
     const available = candidates.filter((item) => !usedAnchors.has(item.name))
     const anchorPool = available.length > 0 ? available : candidates
     const anchor = [...anchorPool].sort((left, right) => anchorScore(right, theme, usage) - anchorScore(left, theme, usage))[0]
@@ -275,6 +289,12 @@ const officialRoutes: Route[] = [...seededRoutes, ...fallbackRoutes]
 
 const buildKnowledgeRoutes = (city: string, items: CityKnowledgeItem[]): Route[] => {
   return knowledgeRouteGroups(items).map(({ theme, items: group }, index) => {
+    const edit = [...breakfastRouteEdits,...localFoodRouteEdits].find(entry => entry.city===city && entry.anchor===group[0].name)
+    const editedItems=edit?.names.map(name=>items.find(item=>item.name===name))
+    const appliedEdit=editedItems?.every((item):item is CityKnowledgeItem=>Boolean(item)) ? edit : undefined
+    if(appliedEdit && editedItems)group=editedItems as CityKnowledgeItem[]
+    const isMorningEdit=Boolean(appliedEdit && !('timePeriods' in appliedEdit))
+    if(isMorningEdit)group=group.map((item,i)=>i===0?{...item,durationMinutes:20}:item)
     const first = group[0]
     const last = group.at(-1) ?? first
     const minBudget = group.reduce((total, item) => total + (item.price.unit === 'night' ? 0 : item.price.min), 0)
@@ -283,90 +303,114 @@ const buildKnowledgeRoutes = (city: string, items: CityKnowledgeItem[]): Route[]
     return {
       id: `knowledge-route-${city}-${index + 1}`,
       cityId: city,
-      title: `${city}${theme.label} · ${first.name}`,
-      summary: `围绕${first.name}，顺路串起${group.slice(1).map((item) => item.name).join('、') || last.name}，适合${theme.label}。`,
+      title: appliedEdit?.title ?? `${city}${theme.label} · ${first.name}`,
+      summary: appliedEdit?.summary ?? `围绕${first.name}，串起${group.slice(1).map((item) => item.name).join('、') || last.name}；出发前按实际交通确认衔接。`,
       category: theme.category,
       tags: [...new Set([theme.category, theme.label, '城市精选', ...group.flatMap((item) => item.tags)])].slice(0, 7),
       peopleType: theme.category === '约会' ? ['情侣', '朋友'] : theme.category === '聚餐' ? ['朋友', '同事'] : ['朋友', '独自'],
       weatherType: ['晴天', '阴天'],
-      timePeriod: theme.timePeriods,
+      timePeriod: appliedEdit ? ('timePeriods' in appliedEdit ? [...appliedEdit.timePeriods] : ['早上','上午']) : theme.timePeriods,
       duration: durationLabel(group),
       budgetMin: minBudget,
       budgetMax: Math.max(maxBudget, minBudget),
-      pois: group.map((item, poiIndex) => ({
+      pois: group.map((item, poiIndex) => {
+        const coordinates = item.verified ? getPlaceCoordinates({ coordinates: item.coordinates, coordinateSystem: item.coordinateSystem }) : null
+        return {
         id: `poi-${city}-${index + 1}-${poiIndex + 1}`,
         name: item.name,
+        area: item.area, sourceUrl: item.source.url,
         cityId: city,
-        latitude: item.coordinates[1],
-        longitude: item.coordinates[0],
-        address: `${city}${item.area}`,
+        ...(coordinates ? { latitude: coordinates.latitude, longitude: coordinates.longitude } : {}),
+        ...(item.address ? { address: item.address } : {}),
+        searchKeyword: item.searchKeyword ?? `${city} ${item.venueName ?? item.name}`,
         category: item.category,
+        priceState: item.price.state ?? 'estimated',
+        estimatedBudget: item.price.state==='unknown' ? undefined : Math.round((item.price.min+item.price.max)/2),
         image: imageForPlace(city, item.name, index + poiIndex),
-        coordinateSource: `${item.source.label} · ${item.source.checkedAt}`,
+        ...(item.verified ? { coordinateSource: `${item.source.label} · ${item.source.checkedAt}` } : {}),
         verified: item.verified,
         stay: `${item.durationMinutes}min`,
-        transportation: poiIndex === 0 ? '从这里开始' : '步行路线待服务核验',
-        introduction: item.summary,
-      })),
-      tips: ['地图道路几何由路线服务计算，不用地点之间的直线代替。', '预算按人均区间估算，地点顺序按同一片区组织。'],
-      recommendedReason: `围绕${theme.label}安排，优先串联同一片区的地点，减少折返。`,
+        transportation: poiIndex === 0 ? '从这里开始' : '打开手机地图选择交通方式',
+        introduction: isFoodCategory(item) ? foodPoiIntroduction(item) : item.summary,
+      }
+      }),
+      tips: [appliedEdit?.tip ?? '根据当天体力减少补充停留，不压缩主要体验和用餐。', '出发前确认预约、营业和临时调整；实际转场请打开手机地图。', ...(group.some(item=>item.price.state==='unknown') ? ['部分餐饮价格未确认，未计金额不代表免费。'] : ['费用为参考区间，实际以现场为准。'])],
+      recommendedReason: appliedEdit?.summary ?? `围绕${theme.label}安排，优先串联同一片区的地点，减少折返。`,
       cover: imageForPlace(city, first.name, index),
-      distanceKm: Math.max(2, Math.round(group.length * 1.4 * 10) / 10),
       sourceName: `${city}城市知识库`,
       sourceUrl: source.url,
     }
   })
 }
 
-const knowledgeRoutes: Route[] = Object.entries(cityKnowledge).flatMap(([city, knowledge]) => buildKnowledgeRoutes(city, knowledge.items))
+const knowledgeRoutes: Route[] = Object.entries(cityKnowledge)
+  .filter(([city]) => isRuntimeCityAllowed(city))
+  .flatMap(([city, knowledge]) => buildKnowledgeRoutes(city, knowledge.items))
 
-const attachJourneyCover = (route: Route, usedHashes: Set<string>): Route => {
-  const selection = selectJourneyCover({
-    id: route.id,
-    title: route.title,
-    category: route.category,
-    city: route.cityId,
-    places: route.pois.map((poi) => poi.name),
-    tags: route.tags,
-  }, getCityImageGallery(route.cityId), usedHashes)
-  if (!selection.image) return { ...route, cover: undefined, coverImageStatus: selection.status }
-  usedHashes.add(selection.image.imageHash)
-  return { ...route, cover: selection.image.cachedUrl, coverImage: selection.image, coverImageSource: selection.image.source, coverImageStatus: selection.status }
+const multiDayRoutes = cityNames.flatMap(city => buildMultiDayRoutes(city, knowledgeRoutes.filter(route => route.cityId === city)))
+type RouteCoverCandidate = { src: string; placeName: string; source?: JourneyImage['source']; image?: JourneyImage }
+const isDiningPoi = (poi: Poi) => /早餐|午餐|晚餐|餐饮|餐厅|小吃|restaurant|food/.test(poi.category)
+const visuallyReviewedCovers = new Set([...approvedCoverPaths, ...reviewedCoverPhotos.map(photo => photo.src)])
+const indexedCoversByCity = new Map<string, JourneyImage[]>()
+for (const selection of Object.values(discoverCoverIndex)) {
+  const photo = selection.image
+  if (!photo || !isUserFacingCover(photo.cachedUrl) || !visuallyReviewedCovers.has(photo.cachedUrl)) continue
+  const gallery = indexedCoversByCity.get(photo.city) ?? []
+  if (!gallery.some(other => other.cachedUrl === photo.cachedUrl)) gallery.push(photo)
+  indexedCoversByCity.set(photo.city, gallery)
+}
+const coverUses = new Map<string, number>()
+const coverPlaces = new Map<string, string>()
+const attachJourneyCover = (route: Route): Route => {
+  // Multi-day travel covers show a place in the trip, not the first breakfast.
+  const places = route.dayCount ? route.pois.filter(poi => !isDiningPoi(poi))
+    : route.category === '聚餐' ? route.pois.filter(isDiningPoi) : route.pois
+  const matches = (name: string) => places.some(poi => placesMatch(name, poi.name))
+  const candidates: RouteCoverCandidate[] = getCityImageGallery(route.cityId)
+    .filter(photo => photo.routeEligible !== false && isUserFacingCover(photo.src) && visuallyReviewedCovers.has(photo.src) && matches(photo.landmark) && (!route.dayCount || photo.kind !== 'food'))
+    .map(photo => ({ src: photo.src, placeName: photo.landmark, source: photo.sourceUrl.includes('wikimedia.org') ? 'wikimedia' : undefined }))
+  candidates.push(...authorizedSocialPhotos.filter(photo => visuallyReviewedCovers.has(photo.localPath) && photo.city === route.cityId && matches(photo.placeName) && (!photo.routeIds.length || photo.routeIds.includes(route.id)))
+    .map(photo => ({ src: photo.localPath, placeName: photo.placeName, source: 'xiaohongshu' as const })))
+  for (const indexed of indexedCoversByCity.get(route.cityId) ?? []) {
+    if (!matches(indexed.placeName ?? '') || route.dayCount && (indexed.kind === 'food' || indexed.category === 'dining')) continue
+    candidates.push({ src: indexed.cachedUrl, placeName: indexed.placeName ?? '', source: indexed.source, image: indexed })
+  }
+  // A dining-heavy short trip can use its actual meal photo if no reviewed
+  // sightseeing photo exists; never borrow an unrelated city landmark.
+  if (!candidates.length && route.dayCount) {
+    for (const photo of indexedCoversByCity.get(route.cityId) ?? []) {
+      if (route.pois.some(poi => isDiningPoi(poi) && placesMatch(photo.placeName, poi.name))) {
+        candidates.push({src:photo.cachedUrl,placeName:photo.placeName ?? '',source:photo.source,image:photo})
+      }
+    }
+  }
+  const unique = candidates.filter((photo, index) => candidates.findIndex(other => other.src === photo.src) === index)
+  const score = (photo: RouteCoverCandidate) => (route.title.includes(photo.placeName) ? 20 : 0)
+    + (photo.src.includes('/cover-refresh/') ? 12 : 0) - (coverUses.get(coverVisualIdentity(photo.src)) ?? 0) * 16
+  const selected = unique.sort((a, b) => score(b) - score(a))[0]
+  if (!selected) return { ...route, cover: '', coverImage: undefined, coverImageSource: undefined, coverImageStatus: 'fallback' }
+  const identity = coverVisualIdentity(selected.src)
+  coverUses.set(identity, (coverUses.get(identity) ?? 0) + 1)
+  coverPlaces.set(route.id, normalizePlaceName(selected.placeName))
+  return { ...route, cover: selected.src, coverImage: selected.image, coverImageSource: selected.source, coverImageStatus: 'ready' }
 }
 
 /** Image assignment is prepared at build time from the local, attribution-backed cache. */
-const usedCoverHashesByCity = new Map<string, Set<string>>()
-export const routes: Route[] = [...officialRoutes, ...knowledgeRoutes].map((route) => {
-  const usedHashes = usedCoverHashesByCity.get(route.cityId) ?? new Set<string>()
-  const attached = attachJourneyCover(route, usedHashes)
-  usedCoverHashesByCity.set(route.cityId, usedHashes)
-  return attached
+export const routes: Route[] = [...officialRoutes, ...knowledgeRoutes, ...multiDayRoutes].map((route) => {
+  return attachJourneyCover({...route, pois:route.pois.map(poi => ({...poi, image:reviewedPhotoForPlace(route.cityId,poi.name)?.localPath ?? poi.image}))})
 })
 
-const coverMatchesCategory = (category: string, image: string) => {
-  if (category !== '聚餐') return true
-  return /鸡饭|海鲜|海鲜粉|粉|小吃|餐|夜市|市场|椰子/.test(image)
-}
-
-const coverIsSuitableForEntry = (entry: DiscoverItem, route: Route | undefined, cover: string) => {
-  if (entry.category !== '聚餐') return true
-  if (entry.contentSource === 'user' && cover === entry.cover) return true
-  if (route?.cover === cover && route.coverImage?.category === 'dining') return true
-  if (route?.pois.some((poi) => poi.image === cover && poi.category === '餐饮')) return true
-  return coverMatchesCategory(entry.category, cover)
-}
-
 const item = (route: Route, contentSource: ContentSource, suffix: string, score: number): DiscoverItem => {
-  const coverIndex = contentSource === 'official' ? 0 : contentSource === 'knowledge' ? 1 : 2
-  const categoryCover = route.category === '聚餐' ? route.pois.find((poi) => poi.category === '餐饮')?.image : undefined
-  const cover = [route.cover, categoryCover, route.pois[coverIndex % route.pois.length]?.image, route.pois[0].image].find((candidate) => isUserFacingCover(candidate)) ?? ''
-  const userCover = contentSource === 'user' ? route.pois.find((poi) => poi.image !== cover && isUserFacingCover(poi.image))?.image ?? cover : cover
-  return { id: `post-${route.id}-${suffix}`, contentSource, authorId: contentSource === 'user' ? 'user-xiaopeng' : undefined, authorName: contentSource === 'user' ? '小鹏' : undefined, cityId: route.cityId, title: route.title, subtitle: route.summary, cover: userCover, category: route.category, tags: route.tags, routeId: route.id, duration: route.duration, budget: `¥${route.budgetMin}-${route.budgetMax}/人`, poiCount: route.pois.length, likeCount: 96 + score, saveCount: 38 + score, useCount: 12 + score, publishedAt: '2026-08-28', status: 'published', sourceName: contentSource === 'knowledge' ? route.sourceName ?? `${route.cityId}城市攻略知识库` : undefined, sourceUrl: contentSource === 'knowledge' ? route.sourceUrl : undefined, qualityScore: score, editorScore: score + 2, freshnessScore: 82, routeCompletenessScore: 94 }
+  const cover = typeof route.cover === 'string' && isUserFacingCover(route.cover) ? route.cover : ''
+  const userCover = contentSource === 'user'
+    ? route.pois.find((poi) => poi.image !== cover && isUserFacingCover(poi.image))?.image ?? cover
+    : cover
+  return { id: `post-${route.id}-${suffix}`, contentSource, authorId: contentSource === 'user' ? 'user-xiaopeng' : undefined, authorName: contentSource === 'user' ? '小鹏' : undefined, cityId: route.cityId, title: route.title, subtitle: route.summary, cover: userCover, category: route.category, tags: route.tags, routeId: route.id, duration: route.duration, budget: route.dayCount ? '地点费用参考，住宿交通另计' : `¥${route.budgetMin}-${route.budgetMax}/人`, poiCount: route.pois.length, likeCount: 0, saveCount: 0, useCount: 0, publishedAt: '2026-08-28', status: 'published', sourceName: contentSource === 'knowledge' ? route.sourceName ?? `${route.cityId}城市攻略知识库` : undefined, sourceUrl: contentSource === 'knowledge' ? route.sourceUrl : undefined, qualityScore: score, editorScore: score + 2, freshnessScore: 82, routeCompletenessScore: 94 }
 }
 
 export const getRoute = (id: string) => routes.find((route) => route.id === id)
 export const createUserDiscoverItem = (route: Route, overrides?: Partial<Pick<DiscoverItem, 'title' | 'subtitle' | 'cover' | 'publishedAt'>>): DiscoverItem => ({ ...item(route, 'user', 'shared', 76), ...overrides })
-const staticUserItems = [createUserDiscoverItem(routes.find((route) => route.id === officialRoutes[0].id) ?? officialRoutes[0])]
+const staticUserItems: DiscoverItem[] = []
 const officialRouteIds = new Set(officialRoutes.map((route) => route.id))
 const officialItems = routes.filter((route) => officialRouteIds.has(route.id)).map((route, index) => item(route, 'official', 'official', 90 - index))
 const knowledgeItems = routes.filter((route) => !officialRouteIds.has(route.id)).map((route, index) => item(route, 'knowledge', 'knowledge', 88 - (index % 10)))
@@ -376,19 +420,24 @@ export const discoverItems: DiscoverItem[] = [...officialItems, ...knowledgeItem
 export const getDiscoverItem = (id: string) => {
   const existing = discoverItems.find((entry) => entry.id === id)
   if (existing) return existing
-  const sharedRouteId = id.match(/^post-(.+)-shared$/)?.[1]
-  const route = sharedRouteId ? getRoute(sharedRouteId) : undefined
-  return route ? createUserDiscoverItem(route) : undefined
+  return undefined
 }
 export const rankScore = (entry: DiscoverItem) => entry.qualityScore * .3 + entry.editorScore * .3 + entry.routeCompletenessScore * .25 + entry.freshnessScore * .15
 const overlaps = (a: Route, b: Route) => a.pois.filter((poi) => b.pois.some((other) => other.name === poi.name)).length / Math.max(a.pois.length, b.pois.length)
-export const getCityTopGuides = (cityId: string, limit = 15) => {
+// The same places on different days or in a different order are distinct plans.
+const itinerarySignature = (route: Route) => JSON.stringify([route.dayCount, route.pois.map(poi => [poi.day, poi.name, poi.time])])
+export const getCityTopGuides = (cityId: string, limit = 40) => {
   const sorted = discoverItems.filter((entry) => entry.cityId === cityId && entry.contentSource === 'knowledge' && entry.status === 'published').sort((a, b) => rankScore(b) - rankScore(a))
-  return sorted.reduce<DiscoverItem[]>((kept, candidate) => {
+  const distinct = sorted.reduce<DiscoverItem[]>((kept, candidate) => {
     const route = getRoute(candidate.routeId)
-    if (!route || kept.some((entry) => { const keptRoute = getRoute(entry.routeId); return keptRoute && overlaps(route, keptRoute) > .7 })) return kept
-    return kept.length < limit ? [...kept, candidate] : kept
+    if (!route || kept.some((entry) => { const keptRoute = getRoute(entry.routeId); return keptRoute && (route.dayCount || keptRoute.dayCount ? itinerarySignature(route) === itinerarySignature(keptRoute) : overlaps(route, keptRoute) > .7) })) return kept
+    return [...kept, candidate]
   }, [])
+  const dayLeaders = [2, 3, 4, 1].flatMap(days => {
+    const entry = distinct.find(item => getRoute(item.routeId)?.dayCount === days)
+    return entry ? [entry] : []
+  })
+  return [...dayLeaders, ...distinct.filter(entry => !dayLeaders.includes(entry))].slice(0, limit)
 }
 
 export const getDiscoverFeed = (cityId: string, config = discoverFeedConfig, publishedRouteIds: string[] = []) => {
@@ -400,29 +449,110 @@ export const getDiscoverFeed = (cityId: string, config = discoverFeedConfig, pub
     .map((route) => createUserDiscoverItem(route))
   const user = [...discoverItems.filter((entry) => entry.cityId === cityId && entry.contentSource === 'user'), ...published]
     .filter((entry, index, entries) => entries.findIndex((candidate) => candidate.routeId === entry.routeId) === index)
-  const usedCovers = new Set<string>()
+  const publishedIds = new Set(user.map(entry => entry.routeId))
   const feed: DiscoverItem[] = []
-  for (const entry of [...official, ...knowledge, ...user]) {
+  for (const entry of [...official, ...knowledge].filter(entry => !publishedIds.has(entry.routeId)).slice(0, Math.max(0, config.pageSize - user.length)).concat(user)) {
     if (feed.length >= config.pageSize) break
     const route = getRoute(entry.routeId)
-    const routeImages = route?.pois
-      .slice()
-      .sort((left, right) => Number(coverMatchesCategory(entry.category, right.image)) - Number(coverMatchesCategory(entry.category, left.image)))
-      .map((poi) => poi.image) ?? []
-    const galleryImages = getCityImageGallery(cityId)
-      .slice()
-      .sort((left, right) => Number(coverMatchesCategory(entry.category, right.src)) - Number(coverMatchesCategory(entry.category, left.src)))
-      .map((image) => image.src)
-    const candidates = [...new Set([
-      entry.contentSource === 'user' ? entry.cover : route?.cover,
-      ...routeImages,
-      entry.cover,
-      ...galleryImages,
-    ].filter((candidate): candidate is string => isUserFacingCover(candidate)))]
-    const cover = candidates.find((candidate) => !usedCovers.has(candidate) && coverIsSuitableForEntry(entry, route, candidate))
-    if (!cover) continue
-    usedCovers.add(cover)
-    feed.push(cover === entry.cover ? entry : { ...entry, cover })
+    // Cover selection already matches a sourced place. Do not discard a route
+    // because its photo is reused or absent, or infer food content from filenames.
+    const cover = entry.contentSource === 'user' ? entry.cover : route?.cover
+    const chosenCover = isUserFacingCover(cover) ? cover! : ''
+    feed.push(chosenCover === entry.cover ? entry : { ...entry, cover: chosenCover })
   }
-  return feed
+  const firstCovers = new Set<string>()
+  const orderedFeed = [...feed.filter(entry => { if (firstCovers.has(entry.cover)) return false; firstCovers.add(entry.cover); return true }), ...feed.filter((entry, index) => feed.findIndex(other => other.cover === entry.cover) !== index)]
+  return [...orderedFeed.filter(entry => entry.contentSource !== 'user'), ...orderedFeed.filter(entry => entry.contentSource === 'user')]
 }
+
+export type ExploreCityCard = {
+  cityId: string
+  name: string
+  cover: string
+  landmark: string
+  intro: string
+  guideCount: number
+  publishedRouteCount: number
+  updatedAt: string
+  tags: string[]
+}
+
+/** City index used by Explore > 探索. Covers and guide counts come from the
+ * same data sources as route cards, so a city cannot appear as an empty shell. */
+export const getExploreCityCards = (query = ''): ExploreCityCard[] => {
+  const keyword = normalizeCityQuery(query)
+  const visibleRoutes = getItineraryPlazaItems()
+  return cityNames
+    .filter((city) => !keyword || city.toLowerCase().includes(keyword))
+    .map((city) => {
+      const image = getCityImageGallery(city)[0]
+      const knowledge = cityKnowledge[city]
+      const profile = getCityProfile(city)
+      return {
+        cityId: city,
+        name: city,
+        cover: authorizedSocialPhotos.find(photo => photo.city === city)?.localPath ?? image?.src ?? '',
+        landmark: authorizedSocialPhotos.find(photo => photo.city === city)?.placeName ?? image?.landmark ?? profile.demoLabels[0] ?? city,
+        intro: knowledge?.intro ?? `${city}的代表性景点、街区和本地吃法。`,
+        guideCount: getItineraryPlazaItems(city).length,
+        publishedRouteCount: visibleRoutes.filter(item=>item.cityId===city).length,
+        updatedAt: '2026-09-05',
+        tags: profile.demoLabels.slice(0, 3),
+      }
+    })
+}
+
+/** National itinerary plaza: keep one ranked route from every supported city
+ * in the national feed, then fill the remaining slots with varied routes. */
+const featuredGuidesForCity = (entries: DiscoverItem[]) => {
+  const score = (entry: DiscoverItem) => {
+    const route = getRoute(entry.routeId)!
+    const places = route.pois
+    return places.filter(poi => poi.sourceUrl && poi.introduction.length >= 30).length * 4
+      + new Set(places.map(poi => poi.area)).size * 2
+      + places.filter(poi => poi.category === 'attraction').length * 3
+      - places.filter(poi => /早走|晨逛|夜逛/.test(poi.name)).length
+  }
+  const ranked = [...entries].sort((a,b) => score(b)-score(a) || a.routeId.localeCompare(b.routeId))
+  const selected: DiscoverItem[] = []
+  for (const days of [3, 4, 2, 1]) {
+    const entry = ranked.find(item => getRoute(item.routeId)?.dayCount === days)
+    if (entry) selected.push(entry)
+  }
+  const extra = ranked.find(item => !selected.includes(item))
+  if (extra) selected.push(extra)
+  return new Set(selected.map(item => item.routeId))
+}
+
+/** Exact editorial corpus: 20 multiday guides per city; five featured per city.
+ * Interleave cities so pagination does not hide later cities behind one city's list. */
+export const getItineraryPlazaItems = (cityId?: string, limit = 1200, featuredOnly = false): DiscoverItem[] => {
+  const groups = (cityId ? [cityId] : cityNames).map(city => {
+    const catalog = getCityTopGuides(city, 100).filter(item => Boolean(getRoute(item.routeId)?.dayCount))
+    const entries = ([ [3,8], [4,8], [2,3], [1,1] ] as const).flatMap(([days,count]) => catalog.filter(item => getRoute(item.routeId)?.dayCount === days).slice(0,count))
+    const featured = featuredGuidesForCity(entries)
+    return entries.map(item => ({...item, featured: featured.has(item.routeId)})).filter(item => !featuredOnly || item.featured)
+  })
+  return Array.from({length:20}, (_,index) => groups.flatMap(group => group[index] ? [group[index]] : [])).flat().slice(0,limit)
+}
+
+/** Home recommends distinct photographed places, with a cover from each route. */
+export function getHomeGuideRecommendations(city: string, limit = 3): DiscoverItem[] {
+  const preferred = getItineraryPlazaItems(city, 20, true)
+  const remaining = getItineraryPlazaItems(city, 20).filter(item => !preferred.some(other => other.id === item.id))
+  const selected: DiscoverItem[] = []
+  const covers = new Set<string>()
+  const places = new Set<string>()
+  for (const entry of [...preferred, ...remaining]) {
+    const identity = coverVisualIdentity(entry.cover)
+    const place = coverPlaces.get(entry.routeId) ?? identity
+    if (!isUserFacingCover(entry.cover) || covers.has(identity) || places.has(place)) continue
+    covers.add(identity)
+    places.add(place)
+    selected.push(entry)
+    if (selected.length === limit) break
+  }
+  return selected
+}
+
+export function normalizeCityQuery(value: string) { const q=value.trim().toLowerCase().replace(/市$/, ''); return ({shanghai:'上海',chengdu:'成都',dali:'大理',大理白族自治州:'大理'} as Record<string,string>)[q] ?? q }

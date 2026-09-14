@@ -1,9 +1,6 @@
 import {
   COMET_DOT,
   COMET_RIBBONS,
-  DOT_PEAK,
-  DOT_R,
-  DOT_X,
   NOTIF_ANGLE,
   NOTIF_DIST,
   NOTIF_MARGIN,
@@ -131,6 +128,27 @@ const barItalic = (pose: Partial<Silhouette> = {}): Silhouette => ({
 const TEAR = polyPath(hullOfCircles(0, 0, 0.118, 0, 0.172, 0.012))
 
 /**
+ * 四瓣的点击形态：从中心向四个方向鼓出，仍保持球体一样的连续轮廓。
+ * 轮廓提前采样，避免在每一帧重算几何。
+ */
+const QUATREFOIL_RADII = circle(1).radii.map((_, index, source) => {
+  const angle = (index / source.length) * TAU
+  return 0.82 + 0.2 * Math.cos(angle * 4)
+})
+
+const quatrefoil = (t: number): Silhouette => {
+  const pulse = Math.sin(t * (TAU / 1.8)) * 0.018
+  return {
+    radii: QUATREFOIL_RADII,
+    rot: Math.sin(t * (TAU / 2.4)) * 0.035,
+    cx: 0,
+    cy: pulse * 0.45,
+    sx: 1 + pulse,
+    sy: 1 - pulse
+  }
+}
+
+/**
  * Le triangle ne tourne pas sur lui-meme : son centre decrit un cercle de
  * rayon 0.213 autour de l'origine (mesure). C'est ce decalage qui donne
  * l'impression qu'il bascule au lieu de pivoter sur place.
@@ -158,6 +176,7 @@ export type StateId =
   | 'sleep'
   | 'egg'
   | 'hexagon'
+  | 'quatrefoil'
   | 'play'
   | 'orbit'
   | 'burst'
@@ -196,13 +215,6 @@ export interface StateDef {
   pose(local: number): Pose
 }
 
-/** Onde de pulsation qui parcourt les trois points de gauche a droite. */
-function dotPulse(t: number, index: number): number {
-  const p = ((((t - index * 0.5) / 1.5) % 1) + 1) % 1
-  const k = p < 0.5 ? 0.5 - 0.5 * Math.cos(p * TAU) : 0
-  return clamp(k * 2)
-}
-
 export const STATES: StateDef[] = [
   {
     id: 'idle',
@@ -218,29 +230,16 @@ export const STATES: StateDef[] = [
     id: 'thinking',
     duration: 2.6,
     morph: 0.4,
-    baseFace: false,
+    baseFace: true,
     baseBody: false,
     blinkIn: true,
-    pose: (t) => {
-      const mid = dotPulse(t, 1)
-      // Les points lateraux sortent des flancs de la boule : dans la video ils
-      // restent fusionnes avec elle 1-2 frames avant de se detacher.
-      const emerge = 0.3 + 0.7 * easings.easeOutCubic(clamp(t / 0.3))
-      return base({
-        // la boule DEVIENT le point du milieu : le morph reste continu
-        sil: circle(DOT_R * (1 + (DOT_PEAK - 1) * mid), { cx: DOT_X[1]! }),
-        eyeAlpha: 0,
-        dots: [0, 2].map((i) => {
-          const k = dotPulse(t, i)
-          return {
-            x: DOT_X[i]! * emerge,
-            y: 0,
-            r: DOT_R * (1 + (DOT_PEAK - 1) * k),
-            opacity: 0.55 + 0.45 * k
-          }
-        })
-      })
-    }
+    // 思考态保持一个有呼吸感的球体，不再拆成三个点。
+    pose: (t) => base({
+      sil: circle(1 + Math.sin(t * (TAU / 2.6)) * 0.025),
+      gaze: { yaw: -4, pitch: -8, roll: -3 },
+      split: 15.4,
+      eyes: pair(0.2, 0.42)
+    })
   },
 
   {
@@ -406,6 +405,21 @@ export const STATES: StateDef[] = [
   },
 
   {
+    id: 'quatrefoil',
+    duration: 1.8,
+    morph: 0.45,
+    blinkIn: true,
+    baseFace: true,
+    baseBody: false,
+    pose: (t) => base({
+      sil: quatrefoil(t),
+      gaze: { yaw: 7, pitch: -4, roll: -5 },
+      split: 14.2,
+      eyes: pair(0.19, 0.38)
+    })
+  },
+
+  {
     id: 'play',
     duration: 2,
     morph: 0.5,
@@ -441,9 +455,10 @@ export const STATES: StateDef[] = [
     baseBody: false,
     blinkIn: false,
     pose: (t) => {
-      // Rotation mesuree : rampe sur 0.35 s puis 1.25 tour/s (sens antihoraire).
+      // Keep the measured orbit readable in a touch interaction: one calm
+      // rotation takes about 2.4 s instead of rushing past the viewer.
       const ramp = easings.easeInOutCubic(clamp(t / 0.35))
-      const rot = -TAU * 1.25 * t * ramp
+      const rot = -TAU * 0.42 * t * ramp
       // Le corps se relache du triangle vers la boule pendant l'orbite.
       const back = easings.easeInOutCubic(clamp((t - 1.6) / 0.9))
       const tri = spinningTriangle(rot)
@@ -461,7 +476,7 @@ export const STATES: StateDef[] = [
         sil,
         // les yeux filent autour de la sphere ~3x plus vite que la silhouette
         gaze: {
-          yaw: REST_GAZE.yaw + Math.sin(t * 6.5) * 65 * (1 - back),
+          yaw: REST_GAZE.yaw + Math.sin(t * 2.4) * 65 * (1 - back),
           pitch: -4 + back * 32,
           roll: -13
         },
@@ -591,6 +606,7 @@ export const POSES: Record<StateId, number> = {
   sleep: 0.45,
   egg: 0.8,
   hexagon: 0.8,
+  quatrefoil: 0.9,
   play: 0.9,
   orbit: 1.2,
   swirl: 0.5,

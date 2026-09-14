@@ -1,4 +1,5 @@
 import 'dotenv/config'
+import { handleCommunityRequest } from './community'
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http'
 import { fileURLToPath } from 'node:url'
 import { resolve } from 'node:path'
@@ -6,10 +7,14 @@ import { getAIProviderConfig, sanitizeTripRequest, understandTripWithProvider } 
 import { analyzeTripMediaWithProvider, getVisionProviderConfig, sanitizeTripMediaRequest } from './trip-vision'
 import { getGuideStats, inferGuideCity, searchTravelGuides } from './travel-guides'
 import { GroupPlanError, groupPlans } from './group-plans'
+import { sessionUser, endSession } from './sessions'
+import { ShareError, TripSharingRepository } from './trip-sharing'
+let sharing: TripSharingRepository | undefined
 
 const DEFAULT_PORT = 8787
 const MAX_BODY_BYTES = 1_000_000
-const MAX_MEDIA_BODY_BYTES = 24_000_000
+// Six 3 MiB originals expand to just over 25 MB in base64, plus JSON.
+const MAX_MEDIA_BODY_BYTES = 27_000_000
 
 class HttpError extends Error {
   constructor(public readonly statusCode: number, message: string) {
@@ -22,7 +27,7 @@ function setCorsHeaders(response: ServerResponse, request: IncomingMessage) {
   const requestOrigin = request.headers.origin
   if (configuredOrigins.length === 0) response.setHeader('Access-Control-Allow-Origin', '*')
   else if (requestOrigin && configuredOrigins.includes(requestOrigin)) response.setHeader('Access-Control-Allow-Origin', requestOrigin)
-  response.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
+  response.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,OPTIONS')
   response.setHeader('Access-Control-Allow-Headers', 'Content-Type')
   response.setHeader('Vary', 'Origin')
 }
@@ -43,13 +48,33 @@ function sendJson(response: ServerResponse, statusCode: number, payload: unknown
 
 function sendGroupPlanError(response: ServerResponse, error: unknown) {
   const known = error instanceof GroupPlanError
-  const status = !known ? 500 : error.code === 'NOT_FOUND' ? 404 : error.code === 'FORBIDDEN' ? 403 : error.code === 'POLL_CLOSED' || error.code === 'PLAN_CLOSED' ? 409 : 400
+  const status = !known ? 500 : error.code === 'NOT_FOUND' ? 404 : error.code === 'FORBIDDEN' ? 403 : error.code === 'POLL_CLOSED' || error.code === 'PLAN_CLOSED' || error.code === 'CONSTRAINT_CONFLICT' || error.code === 'VERSION_CONFLICT' || error.code === 'POLL_RESOLVED' ? 409 : 400
   sendJson(response, status, { error: known ? error.code : 'GROUP_PLAN_FAILED', message: error instanceof Error ? error.message : '计划服务暂时不可用。' })
 }
 
 async function handleGroupPlanRequest(request: IncomingMessage, response: ServerResponse) {
   const url = new URL(request.url ?? '/', `http://${request.headers.host ?? '127.0.0.1'}`)
   const segments = url.pathname.split('/').filter(Boolean)
+  const userId = sessionUser(request, response)
+  const isInvite = segments[2] === 'invite'
+  let actorId = ''
+  if (segments[2] && !isInvite) {
+    try {
+      const plan = await groupPlans.get(segments[2])
+      const member = plan.participants.find(item => item.userId === userId && item.inviteStatus === 'accepted')
+      if (!member) throw new GroupPlanError('FORBIDDEN', '请使用有效邀请加入这份计划。')
+      actorId = member.id
+      if (segments[3] === 'polls' && segments[4] && !plan.polls.some(poll => poll.id === segments[4])) throw new GroupPlanError('NOT_FOUND', '投票不属于当前计划。')
+    } catch (error) { sendGroupPlanError(response, error); return }
+  }
+  const memberBody = async () => {
+    const body = await readJson(request) as Record<string, unknown>
+    return { ...body, userId, actorId, participantId: actorId }
+  }
+  if (request.method === 'POST' && segments.length === 4 && segments[3] === 'revoke-invite') {
+    try { sendJson(response, 200, await groupPlans.revokeInvite(segments[2], actorId)) } catch (error) { sendGroupPlanError(response, error) }
+    return
+  }
   // /api/group-plans/:planId/events
   if (request.method === 'GET' && segments.length === 4 && segments[3] === 'events') {
     const planId = segments[2]
@@ -57,18 +82,29 @@ async function handleGroupPlanRequest(request: IncomingMessage, response: Server
       const plan = await groupPlans.get(planId)
       response.writeHead(200, { 'Content-Type': 'text/event-stream; charset=utf-8', 'Cache-Control': 'no-cache', Connection: 'keep-alive' })
       response.write(`data: ${JSON.stringify({ type: 'plan.updated', plan })}\n\n`)
-      const unsubscribe = groupPlans.subscribe(planId, (next) => response.write(`data: ${JSON.stringify({ type: 'plan.updated', plan: next })}\n\n`))
+      const unsubscribe = groupPlans.subscribe(planId, (next) => { if (next.participants.some(member => member.userId === userId && member.inviteStatus === 'accepted')) response.write(`data: ${JSON.stringify({ type: 'plan.updated', plan: next })}\n\n`); else response.end() })
       const keepAlive = setInterval(() => response.write(': keep-alive\n\n'), 25_000)
       request.on('close', () => { clearInterval(keepAlive); unsubscribe() })
     } catch (error) { sendGroupPlanError(response, error) }
     return
   }
   if (request.method === 'POST' && url.pathname === '/api/group-plans') {
-    try { sendJson(response, 201, await groupPlans.create(await readJson(request) as never)) } catch (error) { sendGroupPlanError(response, error) }
+    try {
+      const body = await readJson(request) as { type?: string; owner?: Record<string, unknown> }
+      if (body.type === 'weekend' || body.type === 'date' || body.type === 'dining') {
+        sendJson(response, 410, { error: 'FEATURE_REMOVED', message: '此功能已下线，请使用旅行规划。' })
+        return
+      }
+      sendJson(response, 201, await groupPlans.create({ ...body, owner: { ...body.owner, userId } } as never))
+    } catch (error) { sendGroupPlanError(response, error) }
+    return
+  }
+  if(request.method==='PUT'&&segments.length===4&&segments[3]==='trip') {
+    try{const body=await memberBody() as unknown as {actorId:string;trip:unknown;expectedRevision:number};sendJson(response,200,await groupPlans.updateTrip(segments[2],body.actorId,body.trip,body.expectedRevision))}catch(error){sendGroupPlanError(response,error)}
     return
   }
   if (request.method === 'POST' && segments.length === 5 && segments[2] === 'invite' && segments[4] === 'join') {
-    try { sendJson(response, 200, await groupPlans.join(segments[3], await readJson(request) as never)) } catch (error) { sendGroupPlanError(response, error) }
+    try { sendJson(response, 200, await groupPlans.join(segments[3], await memberBody() as never)) } catch (error) { sendGroupPlanError(response, error) }
     return
   }
   if (request.method === 'GET' && segments.length === 4 && segments[2] === 'invite') {
@@ -80,31 +116,31 @@ async function handleGroupPlanRequest(request: IncomingMessage, response: Server
     return
   }
   if (request.method === 'POST' && segments.length === 4 && segments[3] === 'polls') {
-    try { const body = await readJson(request) as { actorId?: string; title?: string; type?: 'single' | 'multiple' | 'time'; options?: string[]; maxSelections?: number }; sendJson(response, 201, await groupPlans.createPoll(segments[2], body.actorId ?? '', { title: body.title ?? '', type: body.type ?? 'single', options: Array.isArray(body.options) ? body.options : [], maxSelections: body.maxSelections })) } catch (error) { sendGroupPlanError(response, error) }
+    try { const body = await memberBody() as { actorId?: string; title?: string; type?: 'single' | 'multiple' | 'time'; options?: string[]; maxSelections?: number }; sendJson(response, 201, await groupPlans.createPoll(segments[2], body.actorId ?? '', { title: body.title ?? '', type: body.type ?? 'single', options: Array.isArray(body.options) ? body.options : [], maxSelections: body.maxSelections })) } catch (error) { sendGroupPlanError(response, error) }
     return
   }
   if (request.method === 'POST' && segments.length === 4 && segments[3] === 'join') {
-    try { sendJson(response, 200, await groupPlans.join(segments[2], await readJson(request) as never)) } catch (error) { sendGroupPlanError(response, error) }
+    try { sendJson(response, 200, await groupPlans.join(segments[2], await memberBody() as never)) } catch (error) { sendGroupPlanError(response, error) }
     return
   }
   if (request.method === 'PUT' && segments.length === 6 && segments[3] === 'polls' && segments[5] === 'vote') {
-    try { const body = await readJson(request) as { participantId?: string; optionIds?: string[] }; sendJson(response, 200, await groupPlans.vote(segments[4], body.participantId ?? '', Array.isArray(body.optionIds) ? body.optionIds : [])) } catch (error) { sendGroupPlanError(response, error) }
+    try { const body = await memberBody() as { participantId?: string; optionIds?: string[] }; sendJson(response, 200, await groupPlans.vote(segments[4], body.participantId ?? '', Array.isArray(body.optionIds) ? body.optionIds : [])) } catch (error) { sendGroupPlanError(response, error) }
     return
   }
   if (request.method === 'POST' && segments.length === 6 && segments[3] === 'polls' && segments[5] === 'close') {
-    try { const body = await readJson(request) as { actorId?: string }; sendJson(response, 200, await groupPlans.closePoll(segments[2], segments[4], body.actorId ?? '')) } catch (error) { sendGroupPlanError(response, error) }
+    try { const body = await memberBody() as { actorId?: string }; sendJson(response, 200, await groupPlans.closePoll(segments[2], segments[4], body.actorId ?? '')) } catch (error) { sendGroupPlanError(response, error) }
     return
   }
   if (request.method === 'POST' && segments.length === 6 && segments[3] === 'polls' && segments[5] === 'resolve') {
-    try { const body = await readJson(request) as { actorId?: string; winningOptionId?: string }; sendJson(response, 200, await groupPlans.resolve(segments[2], segments[4], body.actorId ?? '', body.winningOptionId ?? '')) } catch (error) { sendGroupPlanError(response, error) }
+    try { const body = await memberBody() as { actorId?: string; winningOptionId?: string; expectedRevision?: number }; if (!Number.isInteger(body.expectedRevision) || body.expectedRevision! < 1) throw new GroupPlanError('VERSION_CONFLICT', '请刷新计划后重新确认。'); sendJson(response, 200, await groupPlans.resolve(segments[2], segments[4], body.actorId ?? '', body.winningOptionId ?? '', body.expectedRevision)) } catch (error) { sendGroupPlanError(response, error) }
     return
   }
   if (request.method === 'POST' && segments.length === 6 && segments[3] === 'polls' && segments[5] === 'reopen') {
-    try { const body = await readJson(request) as { actorId?: string }; sendJson(response, 200, await groupPlans.reopen(segments[2], segments[4], body.actorId ?? '')) } catch (error) { sendGroupPlanError(response, error) }
+    try { const body = await memberBody() as { actorId?: string }; sendJson(response, 200, await groupPlans.reopen(segments[2], segments[4], body.actorId ?? '')) } catch (error) { sendGroupPlanError(response, error) }
     return
   }
   if (request.method === 'POST' && segments.length === 4 && segments[3] === 'leave') {
-    try { const body = await readJson(request) as { participantId?: string }; sendJson(response, 200, await groupPlans.leave(segments[2], body.participantId ?? '')) } catch (error) { sendGroupPlanError(response, error) }
+    try { const body = await memberBody() as { participantId?: string }; sendJson(response, 200, await groupPlans.leave(segments[2], body.participantId ?? '')) } catch (error) { sendGroupPlanError(response, error) }
     return
   }
   sendJson(response, 404, { error: 'NOT_FOUND', message: '接口不存在。' })
@@ -135,6 +171,28 @@ export async function handleRequest(request: IncomingMessage, response: ServerRe
   if (request.method === 'OPTIONS') {
     response.writeHead(204)
     response.end()
+    return
+  }
+
+  if (request.method === 'GET' && request.url === '/api/session') { sendJson(response,200,{userId:sessionUser(request,response),kind:'device-guest',providers:{phone:false,wechat:false,apple:false}});return }
+  if (request.method === 'POST' && request.url === '/api/session/logout') {endSession(request,response);sendJson(response,200,{signedOut:true});return}
+
+  if (request.url?.startsWith('/api/community/')) {
+    await handleCommunityRequest(request, response)
+    return
+  }
+
+  if (request.url?.startsWith('/api/shares')) {
+    sharing ??= new TripSharingRepository()
+    const path = new URL(request.url, 'http://localhost').pathname.split('/').filter(Boolean)
+    try {
+      if (request.method === 'POST' && path.length === 2) sendJson(response,201,sharing.create(sessionUser(request,response),await readJson(request,4_000_000)))
+      else if (request.method === 'GET' && path.length === 2) sendJson(response,200,sharing.list(sessionUser(request,response),new URL(request.url,'http://localhost').searchParams.get('tripId')??''))
+      else if (request.method === 'GET' && path.length === 3) sendJson(response,200,sharing.read(path[2]))
+      else if (request.method === 'POST' && path.length === 4 && path[3] === 'update') sendJson(response,200,sharing.update(path[2],sessionUser(request,response),await readJson(request,4_000_000)))
+      else if (request.method === 'POST' && path.length === 4 && path[3] === 'revoke') { sharing.revoke(path[2],sessionUser(request,response));sendJson(response,200,{revoked:true}) }
+      else sendJson(response,404,{message:'分享接口不存在'})
+    } catch(error) { sendJson(response,error instanceof ShareError?error.status:500,{message:error instanceof ShareError?error.message:'分享暂时没有完成，请重试。'}) }
     return
   }
 

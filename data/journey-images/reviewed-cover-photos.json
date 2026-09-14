@@ -1,0 +1,210 @@
+[
+  {
+    "city": "合肥",
+    "src": "/assets/cover-refresh/hefei-xiaoyaojin-lake.jpg",
+    "alt": "合肥逍遥津公园实景",
+    "landmark": "逍遥津公园",
+    "aliases": [
+      "逍遥津"
+    ],
+    "kind": "landmark",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Xiaoyaojin_Park_59665-Hefei_(49221404793).jpg",
+    "credit": "xiquinhosilva",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+    "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/f/fe/Xiaoyaojin_Park_59665-Hefei_%2849221404793%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "reviewedAt": "2026-09-14",
+    "width": 960,
+    "height": 639
+  },
+  {
+    "city": "深圳",
+    "src": "/assets/cover-refresh/shenzhen-sea-world.jpg",
+    "alt": "深圳海上世界实景",
+    "landmark": "海上世界",
+    "aliases": [],
+    "kind": "landmark",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Sea_World_in_Shekou_Shenzhen2021.jpg",
+    "credit": "Charlie fong",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/6/6a/Sea_World_in_Shekou_Shenzhen2021.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "reviewedAt": "2026-09-14",
+    "width": 960,
+    "height": 540
+  },
+  {
+    "city": "深圳",
+    "src": "/assets/cover-refresh/shenzhen-bay-park.jpg",
+    "alt": "深圳深圳湾公园实景",
+    "landmark": "深圳湾公园",
+    "aliases": [],
+    "kind": "landmark",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Shenzhen_Bay_Park_-_2019-12-09_-_1.jpg",
+    "credit": "Mx. Granger",
+    "license": "CC0",
+    "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/e/e1/Shenzhen_Bay_Park_-_2019-12-09_-_1.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "reviewedAt": "2026-09-14",
+    "width": 960,
+    "height": 720
+  },
+  {
+    "city": "长春",
+    "src": "/assets/cover-refresh/changchun-jingyuetan.jpg",
+    "alt": "长春净月潭国家森林公园实景",
+    "landmark": "净月潭国家森林公园",
+    "aliases": [
+      "净月潭"
+    ],
+    "kind": "landmark",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Jingyetan_National_Park.jpg",
+    "credit": "Dalian16",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/9/9b/Jingyetan_National_Park.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "reviewedAt": "2026-09-14",
+    "width": 960,
+    "height": 640
+  },
+  {
+    "city": "香格里拉",
+    "src": "/assets/cover-refresh/shangrila-dukezong.jpg",
+    "alt": "香格里拉独克宗古城实景",
+    "landmark": "独克宗古城",
+    "aliases": [
+      "古城龟山公园转经"
+    ],
+    "kind": "landmark",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Shangri-La,_Yunnan_(21006444208).jpg",
+    "credit": "Luca Casartelli",
+    "license": "CC BY-SA 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+    "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/e/e9/Shangri-La%2C_Yunnan_%2821006444208%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "reviewedAt": "2026-09-14",
+    "width": 960,
+    "height": 636
+  },
+  {
+    "city": "西安",
+    "src": "/assets/cover-refresh/xian-wild-goose-pagoda.jpg",
+    "alt": "西安大雁塔实景",
+    "landmark": "大雁塔",
+    "aliases": [],
+    "kind": "landmark",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:2023-10-10_Giant_Wild_Goose_Pagoda_%E5%A4%A7%E9%9B%81%E5%A1%94_01.jpg",
+    "credit": "源義信",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/2/24/2023-10-10_Giant_Wild_Goose_Pagoda_%E5%A4%A7%E9%9B%81%E5%A1%94_01.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "reviewedAt": "2026-09-14",
+    "width": 960,
+    "height": 720
+  },
+  {
+    "city": "杭州",
+    "src": "/assets/cover-refresh/hangzhou-west-lake-baidi.jpg",
+    "alt": "杭州断桥残雪—白堤实景",
+    "landmark": "断桥残雪—白堤",
+    "aliases": [
+      "西湖",
+      "白堤"
+    ],
+    "kind": "landmark",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Huanglong_%26_Broken_Bridge_-_Hangzhou_City_%26_Outer_West_Lake_in_Hubin.jpg",
+    "credit": "User:CatOnMars",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0",
+    "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/c/ce/Huanglong_%26_Broken_Bridge_-_Hangzhou_City_%26_Outer_West_Lake_in_Hubin.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "reviewedAt": "2026-09-14",
+    "width": 960,
+    "height": 614
+  },
+  {
+    "city": "腾冲",
+    "src": "/assets/cover-refresh/tengchong-heshun-library.jpg",
+    "alt": "腾冲和顺图书馆实景",
+    "landmark": "和顺图书馆",
+    "aliases": [
+      "和顺图书馆慢看"
+    ],
+    "kind": "landmark",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:20140128_Heshun_Library.jpg",
+    "credit": "Windmemories",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/3/31/20140128_Heshun_Library.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "reviewedAt": "2026-09-14",
+    "width": 960,
+    "height": 640
+  },
+  {
+    "city": "泉州",
+    "src": "/assets/cover-refresh/quanzhou-xunpu-village.jpg",
+    "alt": "泉州蟳埔村实景",
+    "landmark": "蟳埔村",
+    "aliases": [],
+    "kind": "landmark",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Xunpu_Village_1.jpg",
+    "credit": "H2v5o68z",
+    "license": "CC0",
+    "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/e/ed/Xunpu_Village_1.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "reviewedAt": "2026-09-14",
+    "width": 960,
+    "height": 720
+  },
+  {
+    "city": "重庆",
+    "src": "/assets/cover-refresh/chongqing-eling-pavilion.jpg",
+    "alt": "重庆鹅岭公园实景",
+    "landmark": "鹅岭公园",
+    "aliases": [],
+    "kind": "landmark",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:%E9%B9%85%E5%B2%AD%E4%B8%A4%E6%B1%9F%E4%BA%AD_-_panoramio.jpg",
+    "credit": "somaliayaswan",
+    "license": "CC BY 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/3.0",
+    "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/a/a4/%E9%B9%85%E5%B2%AD%E4%B8%A4%E6%B1%9F%E4%BA%AD_-_panoramio.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "reviewedAt": "2026-09-14",
+    "width": 509,
+    "height": 800,
+    "objectPosition": "center 25%"
+  },
+  {
+    "city": "西安",
+    "src": "/assets/cover-refresh/xian-yongning-gate.jpg",
+    "alt": "西安西安城墙实景",
+    "landmark": "西安城墙",
+    "aliases": [
+      "永宁门"
+    ],
+    "kind": "landmark",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Xi%27an_Yongningmen.jpg",
+    "credit": "xiquinhosilva",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+    "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/a/a2/Xi%27an_Yongningmen.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "reviewedAt": "2026-09-14",
+    "width": 960,
+    "height": 651
+  },
+  {
+    "city": "丽水",
+    "src": "/assets/cover-refresh/lishui-songyang-village.jpg",
+    "alt": "丽水松阳古村落实景",
+    "landmark": "松阳古村落",
+    "aliases": [
+      "杨家堂村"
+    ],
+    "kind": "landmark",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Yangjiatang_Village,_Songyang_County-2024-002.jpg",
+    "credit": "纳瓦拉的亨利",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/f/fc/Yangjiatang_Village%2C_Songyang_County-2024-002.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "reviewedAt": "2026-09-14",
+    "width": 960,
+    "height": 720
+  }
+]

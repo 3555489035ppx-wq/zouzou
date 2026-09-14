@@ -1,9 +1,11 @@
-import { useEffect, useId, useRef, useState, type ButtonHTMLAttributes, type ReactNode } from 'react'
-import { motion } from 'framer-motion'
+import { formatTravelDuration } from '../design-system/format'
+import { TripScopeHeader } from './TripScopeHeader'
+import { useEffect, useId, useRef, useState, type ButtonHTMLAttributes, type KeyboardEvent, type ReactNode } from 'react'
+import { motion, useReducedMotion } from 'framer-motion'
 import {
   ArrowLeft, Bookmark, Check, ChevronDown, ChevronRight, Heart, Home, Lock,
   MapPin, MessageCircle, MoreHorizontal, Orbit, Plus, Route, Search, Share2, Trash2,
-  UserRound, Utensils, X,
+  UserRound, X,
 } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useAppStore } from '../stores/appStore'
@@ -14,9 +16,10 @@ import type { Look } from '../private-assets/bloub/bot/engine'
 import type { Place, Plan } from '../demo-data/trips'
 import { cityNames } from '../demo-data/cities'
 import { BloubBotSvg } from './BloubBotSvg'
+import { createReactionDeck, reactionDuration } from '../character/botReactions'
 
 export const ZouButton = ({ children, variant = 'primary', loading = false, className = '', ...props }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'primary' | 'secondary' | 'plain'; loading?: boolean }) => (
-  <button type="button" className={`zou-button zou-button--${variant} ${className}`} data-loading={loading || undefined} aria-busy={loading || undefined} disabled={loading || props.disabled} {...props}>
+  <button {...props} type={props.type ?? 'button'} className={`zou-button zou-button--${variant} ${className}`} data-loading={loading || undefined} aria-busy={loading || undefined} disabled={loading || props.disabled}>
     {loading ? <><span className="spinner" aria-hidden="true" />处理中</> : children}
   </button>
 )
@@ -39,11 +42,11 @@ export const ZouAvatarStack = ({ friends }: { friends: { name: string; image: st
 export const ZouNavigationBar = ({ title, back = true, right }: { title?: string; back?: boolean; right?: ReactNode }) => {
   const navigate = useNavigate()
   return (
-    <header className="zou-nav">
-      <div className="zou-nav__side">{back ? <button className="icon-button" aria-label="返回" onClick={() => navigate(-1)}><ArrowLeft /></button> : null}</div>
+    <><header className="zou-nav">
+      <div className="zou-nav__side">{back ? <button className="icon-button" aria-label="返回" onClick={() => window.history.state?.idx > 0 ? navigate(-1) : navigate('/home')}><ArrowLeft /></button> : null}</div>
       <div className="zou-nav__title">{title}</div>
       <div className="zou-nav__side zou-nav__side--right">{right}</div>
-    </header>
+    </header><TripScopeHeader /></>
   )
 }
 
@@ -54,11 +57,41 @@ const tabs = [
   { label: '我', path: '/profile', icon: UserRound },
 ]
 
+const tabIndicatorLeft = ['6px', 'calc(25% + 4px)', 'calc(50% + 2px)', '75%']
+let previousTabIndex: number | null = null
+
 export const ZouTabBar = () => {
   const location = useLocation()
   const navigate = useNavigate()
+  const appReducedMotion = useAppStore((s) => s.reducedMotion)
+  const systemReducedMotion = useReducedMotion()
+  const currentTabIndex = tabs.findIndex((tab) => tab.path === '/discover'
+    ? location.pathname.startsWith('/community') || location.pathname.startsWith('/discover')
+    : location.pathname === tab.path || (tab.path !== '/home' && location.pathname.startsWith(tab.path)))
+  const activeTabIndex = currentTabIndex < 0 ? 0 : currentTabIndex
+  const previousIndex = useRef(previousTabIndex ?? activeTabIndex)
+  const reduceMotion = appReducedMotion || systemReducedMotion
+  const tabDistance = Math.abs(activeTabIndex - previousIndex.current)
+
+  useEffect(() => {
+    previousTabIndex = activeTabIndex
+  }, [activeTabIndex])
+
   return (
     <nav className="zou-tabbar" aria-label="主导航">
+      <motion.span
+        className="zou-tabbar__indicator"
+        aria-hidden="true"
+        initial={reduceMotion ? false : { left: tabIndicatorLeft[previousIndex.current], scaleX: 1 }}
+        animate={{
+          left: tabIndicatorLeft[activeTabIndex],
+          scaleX: reduceMotion || tabDistance === 0 ? 1 : [1, Math.min(1.58, 1.18 + tabDistance * .16), 1],
+        }}
+        transition={reduceMotion ? { duration: 0 } : {
+          left: { duration: .34, ease: [.16, 1, .3, 1] },
+          scaleX: { duration: .34, times: [0, .46, 1], ease: [.16, 1, .3, 1] },
+        }}
+      />
       {tabs.map((tab) => {
         const selected = tab.path === '/discover'
           ? location.pathname.startsWith('/community') || location.pathname.startsWith('/discover')
@@ -66,10 +99,10 @@ export const ZouTabBar = () => {
         const Icon = tab.icon
         return (
           <button key={tab.path} className="zou-tab" aria-current={selected ? 'page' : undefined} onClick={() => navigate(tab.path)}>
-            <motion.span animate={{ scale: selected ? [0.96, 1] : 1 }} transition={{ duration: 0.16 }}>
+            <motion.span className="zou-tab__icon-wrap" animate={reduceMotion || !selected ? { y: 0, scale: 1 } : { y: [1, -2, 0], scale: [.94, 1.07, 1] }} transition={{ duration: reduceMotion ? 0 : .28, times: [0, .48, 1], ease: [.16, 1, .3, 1] }}>
               <Icon className="zou-tab__icon" aria-hidden="true" />
             </motion.span>
-            <span>{tab.label}</span>
+            <span className="zou-tab__label">{tab.label}</span>
           </button>
         )
       })}
@@ -83,27 +116,41 @@ export const ZouBottomSheet = ({ open, onClose, title, children }: { open: boole
   useEffect(() => {
     const dialog = ref.current
     if (!dialog) return
-    if (open && !dialog.open) dialog.showModal()
+    const trigger = document.activeElement as HTMLElement | null
+    const shell = document.querySelector<HTMLElement>('.app-shell')
+    const oldOverflow = shell?.style.overflowY ?? ''
+    if (open && !dialog.open) { dialog.showModal(); if (shell) shell.style.overflowY = 'hidden' }
     if (!open && dialog.open) dialog.close()
+    return () => { if (open) { dialog.close(); if (shell) shell.style.overflowY = oldOverflow; trigger?.focus({ preventScroll: true }) } }
   }, [open])
   return (
     <dialog ref={ref} className="zou-sheet" aria-labelledby={titleId} onCancel={(event) => { event.preventDefault(); onClose() }} onClick={(event) => { if (event.target === ref.current) onClose() }}>
       <div className="zou-sheet__grabber" aria-hidden="true" />
-      <header><h2 id={titleId}>{title}</h2><button className="icon-button" aria-label="关闭" onClick={onClose}><X /></button></header>
+      <header><h2 id={titleId}>{title}</h2><button type="button" className="icon-button" aria-label="关闭" onClick={onClose}><X /></button></header>
       <div className="zou-sheet__content">{children}</div>
     </dialog>
   )
 }
 
+export function navigateChoices(event: KeyboardEvent<HTMLElement>) {
+  if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(event.key)) return
+  const options = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('button:not(:disabled)'))
+  const index = options.indexOf(document.activeElement as HTMLButtonElement)
+  if (index < 0 || !options.length) return
+  event.preventDefault()
+  const next = event.key === 'Home' ? 0 : event.key === 'End' ? options.length - 1 : (index + (['ArrowRight', 'ArrowDown'].includes(event.key) ? 1 : -1) + options.length) % options.length
+  options[next].focus(); options[next].click()
+}
+
 export const ZouSegmentedControl = ({ options, value, onChange, label = '视图切换' }: { options: string[]; value: string; onChange: (value: string) => void; label?: string }) => (
-  <div className="zou-segmented" role="radiogroup" aria-label={label}>
+  <div className="zou-segmented" role="radiogroup" aria-label={label} onKeyDown={navigateChoices}>
     {options.map((option) => <button key={option} role="radio" aria-checked={value === option} onClick={() => onChange(option)}>{option}</button>)}
   </div>
 )
 
-export const ZouDaySelector = ({ day, onChange }: { day: string; onChange: (day: string) => void }) => (
-  <div className="day-selector" role="tablist" aria-label="行程日期">
-    {['Day 1', 'Day 2', 'Day 3'].map((item) => <button role="tab" aria-selected={day === item} key={item} onClick={() => onChange(item)}>{item}</button>)}
+export const ZouDaySelector = ({ day, onChange, days = ['Day 1', 'Day 2', 'Day 3'] }: { day: string; onChange: (day: string) => void; days?: string[] }) => (
+  <div className="day-selector" role="tablist" aria-label="行程日期" onKeyDown={navigateChoices}>
+    {days.map((item) => <button role="tab" aria-selected={day === item} key={item} onClick={() => onChange(item)}>{item}</button>)}
   </div>
 )
 
@@ -120,7 +167,7 @@ export const DestinationPicker = ({ value, onChange, name, ariaLabel = '目的�
   const cities = cityNames.filter((city) => city.includes(query.trim()))
 
   useEffect(() => {
-    if (open) searchRef.current?.focus()
+    if (open && window.matchMedia('(pointer: fine)').matches) searchRef.current?.focus()
   }, [open])
 
   useEffect(() => {
@@ -139,28 +186,31 @@ export const DestinationPicker = ({ value, onChange, name, ariaLabel = '目的�
         type="button"
         className="destination-picker__trigger"
         aria-label={ariaLabel}
-        aria-haspopup="listbox"
+        aria-haspopup="dialog"
         aria-expanded={open}
         aria-controls={open ? listId : undefined}
         onClick={() => setOpen((current) => !current)}
       >
-        <span>{value}</span><ChevronDown aria-hidden="true" />
+        <span>{value || '选择城市'}</span><ChevronDown aria-hidden="true" />
       </button>
-      {open ? <div className="destination-picker__menu">
+      <ZouBottomSheet open={open} onClose={() => setOpen(false)} title="选择目的地">
         <div className="destination-picker__search"><Search aria-hidden="true" /><input ref={searchRef} aria-label="搜索目的地" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="搜索城市或目的地" /></div>
         <div id={listId} className="destination-picker__options" role="listbox" aria-label="目的地列表">
           {cities.length > 0 ? cities.map((city) => <button type="button" role="option" aria-selected={value === city} className="destination-picker__option" key={city} onClick={() => { onChange(city); setQuery(''); setOpen(false) }}>{city}</button>) : <p className="destination-picker__empty">没有找到这个目的地</p>}
         </div>
-      </div> : null}
+      </ZouBottomSheet>
     </div>
   )
 }
 
-export const ZouMotionBot = ({ state = 'idle', label, size = 'lg', gaze = null }: { state?: BotState; label?: string; size?: 'sm' | 'lg'; gaze?: Look | null }) => {
+export const ZouMotionBot = ({ state = 'idle', label, size = 'lg', gaze = null, interactive = false, dots = false }: { state?: BotState; label?: string; size?: 'sm' | 'lg'; gaze?: Look | null; interactive?: boolean; dots?: boolean }) => {
   const reducedMotion = useAppStore((s) => s.reducedMotion)
   const [pointerGaze, setPointerGaze] = useState<Look | null>(null)
+  const [reactionVariant, setReactionVariant] = useState<number | null>(null)
   const botRef = useRef<HTMLDivElement>(null)
   const pointerFrame = useRef<number | null>(null)
+  const reactionTimer = useRef<number | null>(null)
+  const reactionDeck = useRef<ReturnType<typeof createReactionDeck> | null>(null)
   useEffect(() => {
     const updateGaze = (event: PointerEvent) => {
       const clientX = event.clientX
@@ -187,35 +237,60 @@ export const ZouMotionBot = ({ state = 'idle', label, size = 'lg', gaze = null }
       if (pointerFrame.current !== null) window.cancelAnimationFrame(pointerFrame.current)
     }
   }, [])
+
+  useEffect(() => () => {
+    if (reactionTimer.current !== null) window.clearTimeout(reactionTimer.current)
+  }, [])
+
+  const triggerReaction = () => {
+    if (!interactive) return
+    if (reactionTimer.current !== null) window.clearTimeout(reactionTimer.current)
+    reactionDeck.current ??= createReactionDeck()
+    const nextVariant = reactionDeck.current()
+    setReactionVariant(nextVariant)
+    reactionTimer.current = window.setTimeout(() => {
+      setReactionVariant(null)
+      reactionTimer.current = null
+    }, reducedMotion ? 500 : reactionDuration(nextVariant))
+  }
+
+  const reacting = reactionVariant !== null
   return (
     <div
       ref={botRef}
-      className={`motion-bot motion-bot--${size}`}
-      role="img"
-      aria-label={label ?? `Bloub / Grok Bot 状态：${state}`}
+      className={`motion-bot motion-bot--${size} motion-bot--state-${reacting ? 'reacting' : state}${interactive ? ' motion-bot--interactive' : ''}${reacting ? ' is-reacting' : ''}`}
+      data-bot-state={state}
+      data-bot-base-state={state}
+      data-bot-variant={reactionVariant ?? undefined}
+      data-bot-interactive={interactive ? 'true' : undefined}
+      role={interactive ? 'button' : 'img'}
+      tabIndex={interactive ? 0 : undefined}
+      aria-label={interactive ? label ?? '和走走打个招呼' : label ?? `Bloub / Grok Bot 状态：${state}`}
+      onClick={interactive ? triggerReaction : undefined}
+      onKeyDown={interactive ? (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); triggerReaction() } } : undefined}
     >
-      <BloubBotSvg state={state} reducedMotion={reducedMotion} gaze={pointerGaze ?? gaze} />
+      <>{dots ? <span className="bot-loading-dots" data-reduced-motion={reducedMotion}><i /><i /><i /></span> : <BloubBotSvg state={state} variant={reactionVariant ?? undefined} reducedMotion={reducedMotion} gaze={pointerGaze ?? gaze} />}</>
     </div>
   )
 }
 
 export const ZouPlanCard = ({ plan, selected, onSelect, onOpen }: { plan: Plan; selected: boolean; onSelect: () => void; onOpen: () => void }) => (
   <article className={`plan-card ${selected ? 'is-selected' : ''}`}>
-    <button className="plan-card__select" onClick={onSelect} aria-pressed={selected}>
+    <button className="plan-card__select" onClick={onSelect} aria-pressed={selected} aria-label={`选用${plan.label}`}>
       <span className="plan-card__check">{selected ? <Check /> : null}</span>
-      <h2>{plan.label}</h2>
+      <h2>{plan.label}</h2><span className="plan-choice-label">{selected ? '已选用' : '选用这套走法'}</span>
       <p>{plan.difference}</p>
       <dl><div><dt>预算</dt><dd>¥{plan.budget}</dd></div><div><dt>地点</dt><dd>{plan.places}</dd></div><div><dt>步行</dt><dd>{plan.walking}</dd></div><div><dt>节奏</dt><dd>{plan.pace}</dd></div></dl>
     </button>
-    <ZouButton variant={selected ? 'primary' : 'secondary'} onClick={onOpen}>查看这套走法</ZouButton>
+    <ZouButton variant="secondary" onClick={onOpen}>查看这套走法</ZouButton>
   </article>
 )
 
-export const ZouPlaceCard = ({ place, locked, onLock, onReplace, onDelete, onMore }: { place: Place; locked?: boolean; onLock: () => void; onReplace: () => void; onDelete: () => void; onMore?: () => void }) => (
+export const ZouPlaceCard = ({ place, locked, onLock, onReplace, onDelete, onMore, onOpen }: { place: Place; locked?: boolean; onLock: () => void; onReplace: () => void; onDelete: () => void; onMore?: () => void; onOpen?: () => void }) => (
   <article className="place-card">
-    <div className="place-card__time">{place.time}</div>
-    <div className="place-card__body"><div><h3>{place.name}</h3><p>{place.type} · 停留 {place.stay} · ¥{place.budget}</p></div><p className="place-card__note">{place.note}</p><div className="place-card__transport">下一段 · {place.transport}</div></div>
-    <div className="place-card__actions">{locked ? <button aria-label="解锁地点" aria-pressed="true" onClick={onLock}><Lock /></button> : null}<button onClick={onReplace}>替换</button><button aria-label="更多操作" aria-haspopup="menu" onClick={onMore ?? onDelete}><MoreHorizontal /></button></div>
+    <div className="place-card__time"><span>{place.time}</span><span>{place.type}</span></div>
+    <div className="place-card__body"><div><h3>{place.name}</h3><p>停留 {formatTravelDuration(place.stay)} · {place.priceState === 'unknown' ? '费用待确认' : `参考 ¥${place.budget}`}</p></div><p className="place-card__note">{place.note}</p><div className="place-card__transport">{place.transport}</div></div>
+    <div className="place-card__actions">{onOpen ? <button type="button" onClick={onOpen}>查看详情</button> : null}{locked ? <button aria-label="解锁地点" aria-pressed="true" onClick={onLock}><Lock /><span>已锁定</span></button> : null}<button onClick={onReplace}>更换地点</button><button aria-label="更多操作" aria-haspopup="menu" onClick={onMore ?? onDelete}><MoreHorizontal /></button></div>
   </article>
 )
 
@@ -277,7 +352,5 @@ export const FriendStatus = ({ accepted }: { accepted: boolean }) => <span class
 export const SceneLegend = () => <div className="scene-legend"><span><i className="legend-dot is-active" />当前</span><span><i className="legend-dot" />下一站</span></div>
 
 export const EmptyState = ({ title, body, action, onAction }: { title: string; body: string; action: string; onAction: () => void }) => <div className="empty-state"><ZouMotionBot state="idle" /><h2>{title}</h2><p>{body}</p><ZouButton onClick={onAction}>{action}</ZouButton></div>
-
-export const TripEntryIcon = ({ type }: { type: 'travel' | 'weekend' | 'date' | 'dining' }) => type === 'travel' ? <span className="suitcase-icon" aria-hidden="true" /> : type === 'weekend' ? <MapPin /> : type === 'date' ? <Heart /> : <Utensils />
 
 export { Bookmark, Check, ChevronDown, ChevronRight, Heart, MapPin, MessageCircle, Plus, Search, Share2, X }
