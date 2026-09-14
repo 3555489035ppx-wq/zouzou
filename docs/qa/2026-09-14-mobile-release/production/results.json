@@ -1,0 +1,285 @@
+{
+  "base": "https://zouzou.ppx.wiki",
+  "environment": "production",
+  "testedAt": "2026-09-14T13:39:07.482Z",
+  "physicalPhone": false,
+  "checks": [
+    {
+      "name": "real Pages D1 health",
+      "passed": true,
+      "details": {
+        "ok": true,
+        "runtime": "cloudflare-pages",
+        "storage": "d1",
+        "knowledgeVersion": "travel-20260914-72591dbecea55e65",
+        "knowledgeApproved": true,
+        "aiConfigured": true
+      }
+    },
+    {
+      "name": "release commit and knowledge version",
+      "passed": true,
+      "details": {
+        "sha": "91fce69bd42077367a74b8e239d410ff37f76504",
+        "buildId": "91fce69bd42077367a74b8e239d410ff37f76504",
+        "dirty": false,
+        "builtAt": "2026-09-14T13:37:20.315Z",
+        "auditOnly": false,
+        "knowledgeVersion": "travel-20260914-72591dbecea55e65",
+        "knowledgeApproved": true
+      }
+    },
+    {
+      "name": "server guest Secure HttpOnly cookie",
+      "passed": true
+    },
+    {
+      "name": "live versioned knowledge retrieval",
+      "passed": true,
+      "details": {
+        "count": 8,
+        "version": "travel-20260914-72591dbecea55e65"
+      }
+    },
+    {
+      "name": "actual model plus server knowledge generates plans",
+      "passed": true,
+      "details": {
+        "status": 200,
+        "provider": "deepseek",
+        "model": "deepseek-flash",
+        "method": "model-intent+knowledge-constrained-scheduler",
+        "count": 3,
+        "version": "travel-20260914-72591dbecea55e65"
+      }
+    },
+    {
+      "name": "generation retains destination and dates",
+      "passed": true,
+      "details": {
+        "city": "上海",
+        "dates": {
+          "start": "2026-10-16",
+          "end": "2026-10-17"
+        },
+        "validation": {
+          "passed": true,
+          "score": 100,
+          "checks": [
+            {
+              "name": "时间顺序",
+              "passed": true,
+              "detail": "每段交通和停留均有足够间隔。"
+            },
+            {
+              "name": "餐期",
+              "passed": true,
+              "detail": "已安排的午餐、晚餐处于对应餐期。"
+            },
+            {
+              "name": "营业时间",
+              "passed": true,
+              "detail": "有营业时间的地点均落在可访问窗口内。"
+            },
+            {
+              "name": "饮食匹配",
+              "passed": true,
+              "detail": "行程中的餐饮节点没有命中已知忌口或过敏风险。"
+            },
+            {
+              "name": "必去覆盖",
+              "passed": true,
+              "detail": "用户提出的必去地点均已安排。"
+            },
+            {
+              "name": "官方临时闭馆",
+              "passed": true,
+              "detail": "未命中已收录的日期闭馆公告；不代表全部场馆已实时核验。"
+            },
+            {
+              "name": "预算上限",
+              "passed": true,
+              "detail": "已列费用估算 ¥1186，在预算 ¥4000 内；未知费用未计入，最终是否超支待确认。"
+            },
+            {
+              "name": "出行信息",
+              "passed": true,
+              "detail": "核心城市、天数和预算可排程，锚点信息仍可补充。"
+            }
+          ],
+          "issues": [
+            "已生成可编辑草案，出发前确认：未提供具体到达时间、未提供具体到达地点、未提供具体返程时间、未提供具体返程地点、未提供具体想去的景点或历史街区。"
+          ]
+        }
+      }
+    },
+    {
+      "name": "A saves actual generated trip to D1",
+      "passed": true,
+      "details": {
+        "status": 200
+      }
+    },
+    {
+      "name": "A re-reads persisted trip",
+      "passed": true
+    },
+    {
+      "name": "B cannot enumerate A private trips",
+      "passed": true
+    },
+    {
+      "name": "B cannot read A private trip",
+      "passed": true
+    },
+    {
+      "name": "A creates private-trip share",
+      "passed": true,
+      "details": {
+        "status": 201
+      }
+    },
+    {
+      "name": "B reads allowlisted shared snapshot",
+      "passed": true
+    },
+    {
+      "name": "B cannot revoke A share",
+      "passed": true,
+      "details": {
+        "status": 403
+      }
+    },
+    {
+      "name": "B loads shared trip deep link",
+      "passed": true
+    },
+    {
+      "name": "official external map choices available",
+      "passed": true
+    },
+    {
+      "name": "shared route refresh survives",
+      "passed": true
+    },
+    {
+      "name": "A explicitly updates snapshot",
+      "passed": true
+    },
+    {
+      "name": "B sees updated snapshot",
+      "passed": true
+    },
+    {
+      "name": "A revokes share",
+      "passed": true
+    },
+    {
+      "name": "B sees revoked link failure",
+      "passed": true
+    },
+    {
+      "name": "HTTPS service worker active",
+      "passed": true
+    },
+    {
+      "name": "PWA manifest and icons",
+      "passed": true
+    },
+    {
+      "name": "no horizontal overflow 320 /home",
+      "passed": true
+    },
+    {
+      "name": "no horizontal overflow 320 /trips",
+      "passed": true
+    },
+    {
+      "name": "no horizontal overflow 320 /travel/new",
+      "passed": true
+    },
+    {
+      "name": "no horizontal overflow 320 /discover",
+      "passed": true
+    },
+    {
+      "name": "no horizontal overflow 320 /profile",
+      "passed": true
+    },
+    {
+      "name": "no horizontal overflow 320 /settings/install",
+      "passed": true
+    },
+    {
+      "name": "no horizontal overflow 390 /home",
+      "passed": true
+    },
+    {
+      "name": "visible hosted images load /home",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "no horizontal overflow 390 /trips",
+      "passed": true
+    },
+    {
+      "name": "no horizontal overflow 390 /travel/new",
+      "passed": true
+    },
+    {
+      "name": "no horizontal overflow 390 /discover",
+      "passed": true
+    },
+    {
+      "name": "visible hosted images load /discover",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "no horizontal overflow 390 /profile",
+      "passed": true
+    },
+    {
+      "name": "no horizontal overflow 390 /settings/install",
+      "passed": true
+    },
+    {
+      "name": "no horizontal overflow 430 /home",
+      "passed": true
+    },
+    {
+      "name": "no horizontal overflow 430 /trips",
+      "passed": true
+    },
+    {
+      "name": "no horizontal overflow 430 /travel/new",
+      "passed": true
+    },
+    {
+      "name": "no horizontal overflow 430 /discover",
+      "passed": true
+    },
+    {
+      "name": "no horizontal overflow 430 /profile",
+      "passed": true
+    },
+    {
+      "name": "no horizontal overflow 430 /settings/install",
+      "passed": true
+    },
+    {
+      "name": "no private API/share HTML caching",
+      "passed": true
+    },
+    {
+      "name": "offline never resurrects private snapshot",
+      "passed": true
+    },
+    {
+      "name": "browser runtime error free",
+      "passed": true,
+      "details": []
+    }
+  ]
+}

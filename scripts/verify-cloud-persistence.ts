@@ -2,11 +2,13 @@
 // The disposable guest token lives only in the ignored .wrangler QA state file.
 import { request } from '@playwright/test'
 import { mkdir, readFile, writeFile, unlink } from 'node:fs/promises'
+import { dirname } from 'node:path'
 import { generatePlans, understandTrip } from '../src/services/trip/planner'
 const mode=process.argv[2],base=process.argv[3]
 if(!['seed','check'].includes(mode)||!/^https:\/\/(?:[a-z0-9-]+\.)?zouzou-etq\.pages\.dev$|^https:\/\/zouzou\.ppx\.wiki$/.test(base??''))throw Error('Expected seed/check and verified HTTPS origin')
 const stateFile='.wrangler/mobile-release-persistence.json'
-const evidenceFile='docs/qa/2026-09-14-mobile-release/persistence-results.json'
+const evidenceFile='docs/qa/2026-09-14-mobile-release/'+(base==='https://zouzou.ppx.wiki'?'production/':'')+'persistence-results.json'
+await mkdir(dirname(evidenceFile),{recursive:true})
 if(mode==='seed') {
   const api=await request.newContext({baseURL:base})
   try {

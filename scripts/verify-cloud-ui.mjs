@@ -42,8 +42,11 @@ try {
   check('UI creates share URL on intended public origin',new URL(shareUrl).origin===base)
   await page.getByRole('button',{name:'撤销分享',exact:true}).click()
   check('UI revoke reaches real server',(await context.request.get(base+'/api/shares/'+new URL(shareUrl).pathname.split('/').at(-1))).status()===404)
-  await page.goto(base+'/trips');await page.setViewportSize({width:390,height:844});await page.evaluate(()=>document.documentElement.style.fontSize='200%')
+  await page.goto(base+'/trips');await expect(page.locator('.trip-ticket')).toHaveCount(1)
+  await expect(page.locator('.trip-ticket')).toContainText('上海')
+  await page.setViewportSize({width:390,height:844});await page.evaluate(async()=>{document.documentElement.style.fontSize='200%';await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))})
   check('saved trip list at 200 percent has no page overflow',await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth))
+  await page.locator('.trip-ticket').scrollIntoViewIfNeeded()
   await page.screenshot({path:output+'/saved-trips-200.png',fullPage:true})
   check('UI runtime error free',errors.length===0,errors)
 }catch(cause){results.error=cause instanceof Error?cause.message:String(cause);await page.screenshot({path:output+'/ui-failure.png',fullPage:true}).catch(()=>{});process.exitCode=1}

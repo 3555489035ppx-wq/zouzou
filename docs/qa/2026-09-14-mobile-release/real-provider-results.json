@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 1,
+  "acceptanceDate": "2026-09-14",
+  "timezone": "Asia/Shanghai",
+  "recordedFrom": "Previously captured local tool results; no provider calls were repeated when writing this file.",
+  "scope": "Local handleCloudAI execution calling the real DeepSeek provider. Not remote Cloudflare or D1 verification.",
+  "realProviderCallCount": 2,
+  "mocked": false,
+  "knowledgeVersion": "travel-20260914-72591dbecea55e65",
+  "configuration": {
+    "AI_PROVIDER": "deepseek",
+    "DEEPSEEK_MODEL": "deepseek-flash",
+    "KNOWLEDGE_RELEASE_APPROVED": "true",
+    "deadlineMs": 20000,
+    "secretSource": "Existing server .env; secret value neither printed nor retained in evidence."
+  },
+  "inputSummary": {
+    "destination": "上海",
+    "startDate": "2026-10-16",
+    "endDate": "2026-10-17",
+    "durationDays": 2,
+    "nights": 1,
+    "partySize": 2,
+    "budgetCny": 4000,
+    "scenario": "历史街区，普通餐饮住宿，适中节奏，无额外饮食限制"
+  },
+  "results": [
+    {
+      "route": "/api/trips/understand",
+      "sourceToolChunk": "ead828",
+      "httpStatus": 200,
+      "elapsedMs": 5782,
+      "realProviderCalls": 1,
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "knowledgeVersion": "travel-20260914-72591dbecea55e65",
+      "validUnderstandingShape": true,
+      "destinationDatesDurationPartyBudgetMatch": true,
+      "guideCount": 8
+    },
+    {
+      "route": "/api/trips/generate",
+      "inputMode": "Confirmed intent from the preceding real understanding response",
+      "sourceToolChunk": "ead828",
+      "httpStatus": 200,
+      "elapsedMs": 37,
+      "realProviderCalls": 0,
+      "provider": "deterministic",
+      "model": "knowledge-constrained-scheduler",
+      "generationMethod": "knowledge-constrained-scheduler",
+      "knowledgeVersion": "travel-20260914-72591dbecea55e65",
+      "planCount": 3,
+      "validPlansShape": true,
+      "validationPassedByPlan": [true, true, true],
+      "issueCountByPlan": [1, 1, 1],
+      "exactIssueTextByPlan": [null, null, null]
+    },
+    {
+      "route": "/api/trips/generate",
+      "inputMode": "Text input; real model intent extraction followed by deterministic scheduling",
+      "sourceToolChunk": "0e038a",
+      "httpStatus": 200,
+      "elapsedMs": 6593,
+      "realProviderCalls": 1,
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "generationMethod": "model-intent+knowledge-constrained-scheduler",
+      "knowledgeVersion": "travel-20260914-72591dbecea55e65",
+      "planCount": 3,
+      "validPlansShape": true,
+      "validationPassedByPlan": [true, true, true],
+      "issueCountByPlan": [1, 1, 1],
+      "exactIssueTextByPlan": [null, null, null]
+    }
+  ],
+  "issueAnalysis": {
+    "observed": "Each generated plan had validation.passed=true and exactly one issue. Only issue counts were retained in the live-call summary.",
+    "exactTextStatus": "NOT_CAPTURED",
+    "exactTextLimitation": "The original response and intent.missing values were not persisted; the exact expanded issue strings cannot be recovered from the retained results without another run, which was not performed.",
+    "codeInferredCategory": "Non-blocking missing travel-anchor information",
+    "codeTemplate": "已生成可编辑草案，出发前确认：${plan.intent.missing.join('、')}。",
+    "codeEvidence": [
+      "src/services/trip/planner.ts:1432-1440: conflicts and missing total budget fail the input check; other missing fields append the editable-draft confirmation issue while permitting validation.passed=true.",
+      "src/services/trip/planner.ts:1350-1430: timing, opening, dietary, required-place and budget issues also fail their corresponding validation checks."
+    ],
+    "inferredOnly": true,
+    "likelyUnspecifiedAnchors": "Arrival/return timing or locations and lodging were not provided in the acceptance input; the model's exact missing-field wording was not captured.",
+    "deliveryAssessment": "Does not block acceptance of the tested provider protocol and editable-draft generation. Does not establish that travel anchors or all real-world itinerary facts are confirmed.",
+    "assessmentBasis": "Observed successful HTTP/schema/validation results plus the current planner validation logic; not a verbatim reconstruction of the live issue text."
+  },
+  "followUpChange": {
+    "file": "server/cloud/ai.ts",
+    "change": "Default DeepSeek model corrected from deepseek-v4-flash to live-verified deepseek-flash.",
+    "deadlineChanged": false,
+    "directTests": { "file": "server/cloud/ai.test.ts", "passed": 35, "total": 35 },
+    "serverTypecheck": "PASS",
+    "diffCheck": "PASS"
+  },
+  "boundaries": {
+    "remoteD1Verified": false,
+    "remoteSessionOrShareVerified": false,
+    "committedOrPushedByThisAgent": false,
+    "fullItinerariesRetained": false,
+    "secretsRetained": false,
+    "additionalProviderCallsForEvidenceFile": 0
+  }
+}

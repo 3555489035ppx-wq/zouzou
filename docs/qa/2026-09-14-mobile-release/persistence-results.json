@@ -1,0 +1,12 @@
+{
+  "phase": "verified",
+  "base": "https://codex-mobile-cloud-release.zouzou-etq.pages.dev",
+  "oldSha": "b4f6c4286dfd62f69a74a3591eb315c2686507b5",
+  "newSha": "91fce69bd42077367a74b8e239d410ff37f76504",
+  "knowledgeVersion": "travel-20260914-72591dbecea55e65",
+  "verifiedAt": "2026-09-14T13:33:16.585Z",
+  "privateTripSurvives": true,
+  "shareSurvives": true,
+  "revokedAfterProbe": true,
+  "fixtureOnly": true
+}

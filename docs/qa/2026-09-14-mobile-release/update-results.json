@@ -1,0 +1,28 @@
+{
+  "base": "https://codex-mobile-cloud-release.zouzou-etq.pages.dev",
+  "oldSha": "b4f6c4286dfd62f69a74a3591eb315c2686507b5",
+  "checks": [
+    {
+      "name": "old deployment has saved trip and editable draft",
+      "passed": true
+    },
+    {
+      "name": "update availability does not reload current document",
+      "passed": true
+    },
+    {
+      "name": "activating new worker preserves current document",
+      "passed": true
+    },
+    {
+      "name": "update preserves exact draft and saved trip values",
+      "passed": true
+    },
+    {
+      "name": "manual reopen retains draft and same trip",
+      "passed": true
+    }
+  ],
+  "testedAt": "2026-09-14T13:26:35.395Z",
+  "newSha": "91fce69bd42077367a74b8e239d410ff37f76504"
+}

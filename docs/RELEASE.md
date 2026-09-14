@@ -1,6 +1,6 @@
 # 走走手机发布记录
 
-更新时间：2026-09-14。当前状态：**代码和图片已上传GitHub，Cloudflare预览构建中，生产尚未发布新版。** 线上最终版本以 /build.json 和本页后续结果为准。
+更新时间：2026-09-14。当前状态：**代码和图片已上传GitHub，正式域名已部署新版并通过云端验收。** 打开 [走走](https://zouzou.ppx.wiki)。最新部署SHA可读取 [/build.json](https://zouzou.ppx.wiki/build.json)，后续文档/验收脚本提交不改变下列已验收业务代码。
 
 ## 发布目标与版本
 
@@ -10,17 +10,18 @@
 | GitHub | https://github.com/3555489035ppx-wq/zouzou ，原仓库已公开，未改变隐私 |
 | 发布分支 | codex/mobile-cloud-release |
 | 历史整合 | 原HEAD855a92e与main6549507最终tree相同；已正常合并，不强推 |
-| 发布提交 | 2322148整合、df8ba60合并、180ae08回归与构建输入 |
+| 功能验收提交 | 91fce69bd42077367a74b8e239d410ff37f76504；此前2322148整合、df8ba60合并、180ae08回归 |
 | 唯一生产链路 | 现有Cloudflare Pages项目zouzou，Git集成，生产main |
 | 正式域名 | https://zouzou.ppx.wiki；项目域名 https://zouzou-etq.pages.dev |
-| 新预览 / 生产 | 88b58da7已成功，b4f6c42；离线修复继续推送 / 生产未执行 |
+| 已验收预览 | a1050f70-f331-45e0-b1ea-4c4be7d5b199 / 91fce69；50项API/PWA和10项UI通过 |
+| 已验收生产 | 53c20425-65bd-4ae5-ab91-a38c46e6547c / 91fce69；45项API/PWA和10项UI通过 |
 | 旧生产参考 | c89cb80c-bb93-4473-865f-ef3639f8aefa，仅旧静态版 |
 
 ## 内容清单
 
 - 保留当前首页、原灰色Bot、授权图片、导航及Trip数据结构；继续下线三场景创建，不删除历史旅行。
 - 用户声明图片自有且已取得许可，依据[CONTENT-AUTHORIZATION](CONTENT-AUTHORIZATION.md)发布。保留历史permission=unknown、verified=false，不把声明改写为事实核验。
-- 知识版本travel-20260914-72591dbecea55e65：7918条reviewed、60城；12个实际输入及哈希见data/release/knowledge.json。只发布审核汇总，不上传逐条原始采集账本或WorkBuddy资料。
+- 知识版本travel-20260914-72591dbecea55e65：7918条reviewed、60城；12个实际输入及哈希见data/release/knowledge.json，[逐城发布数量](KNOWLEDGE-COVERAGE.md)。只发布审核汇总，不上传逐条原始采集账本或WorkBuddy资料。
 - 发现广场1200条、60城各20条、精选300条；修复真实来源路线丢失、图片回退、异步知识加载与旧计数断言。
 - 按data/release/assets.json发布1178个实际资源，745115741字节，精简图片目录587条；原11.4GB采集材料仍留本机，图片URL路径不变。
 - 完整指南库改为服务端按城市/查询检索；主JS约1.54MB/gzip424KB，发现懒加载块约2.21MB/gzip333KB；开发图片审核页不进入生产包。
@@ -40,11 +41,11 @@
 
 双环境隔离，迁移只建结构，无预置行程或清库；数据库不随构建重建。DEEPSEEK_API_KEY直接配置为Cloudflare服务端Secret；旧高德客户端Key变量已清空，日志和仓库不含密钥值。
 
-账号/models实查支持deepseek-flash和deepseek-v4-pro，当前使用前者。本机handler连接真实供应商的理解及直接生成已成功，3套方案校验通过；远端Worker链路仍需另验。当前文字适配没有可用视觉供应商，截图需用户填写确认。访客有效30天，换设备/清Cookie不能保证找回；未接手机号、微信或Apple账号。
+账号/models实查支持deepseek-flash和deepseek-v4-pro，当前使用前者。真实供应商理解及直接生成已在本机、预览与正式Worker通过，返回3套方案及明确知识版本；页面选用→D1保存→移除测试本机副本→同访客恢复同Trip→创建及撤销分享也通过。当前文字适配没有可用视觉供应商，截图需用户填写确认。访客有效30天，换设备/清Cookie不能保证找回；未接手机号、微信或Apple账号。
 
 ## 验证与发布
 
-完整类型检查、574/574全量测试和完整发布构建通过；Worker平台编译通过。实际证据见[ACCEPTANCE](ACCEPTANCE.md)。
+完整类型检查、576/576全量测试、完整发布构建及Worker编译通过。Cloudflare特有的offline.html重定向问题已修复并在远端断网复验；旧新版SW升级5项通过，草稿与本机行程保持不变。预览两次实际部署间私人行程及旧分享仍有效。实际证据见[ACCEPTANCE](ACCEPTANCE.md)。
 
 ```powershell
 node node_modules/typescript/bin/tsc -b --pretty false

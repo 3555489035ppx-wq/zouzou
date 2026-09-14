@@ -1,0 +1,81 @@
+{
+  "base": "https://codex-mobile-cloud-release.zouzou-etq.pages.dev",
+  "environment": "preview",
+  "testedAt": "2026-09-14T13:23:42.378Z",
+  "physicalPhone": false,
+  "checks": [
+    {
+      "name": "UI calls real model and versioned server scheduler",
+      "passed": true,
+      "details": [
+        {
+          "endpoint": "/api/trips/understand",
+          "status": 200,
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "knowledgeVersion": "travel-20260914-72591dbecea55e65"
+        },
+        {
+          "endpoint": "/api/trips/generate",
+          "status": 200,
+          "provider": "deterministic",
+          "model": "knowledge-constrained-scheduler",
+          "knowledgeVersion": "travel-20260914-72591dbecea55e65"
+        }
+      ]
+    },
+    {
+      "name": "UI saves chosen plan locally",
+      "passed": true
+    },
+    {
+      "name": "saved deep link reload preserves exact local data",
+      "passed": true
+    },
+    {
+      "name": "UI confirms D1 save only after server response",
+      "passed": true
+    },
+    {
+      "name": "UI restores same trip from real D1",
+      "passed": true
+    },
+    {
+      "name": "home resumes the same restored trip",
+      "passed": true
+    },
+    {
+      "name": "UI creates share URL on intended public origin",
+      "passed": true
+    },
+    {
+      "name": "UI revoke reaches real server",
+      "passed": true
+    },
+    {
+      "name": "saved trip list at 200 percent has no page overflow",
+      "passed": true
+    },
+    {
+      "name": "UI runtime error free",
+      "passed": true,
+      "details": []
+    }
+  ],
+  "ai": [
+    {
+      "endpoint": "/api/trips/understand",
+      "status": 200,
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "knowledgeVersion": "travel-20260914-72591dbecea55e65"
+    },
+    {
+      "endpoint": "/api/trips/generate",
+      "status": 200,
+      "provider": "deterministic",
+      "model": "knowledge-constrained-scheduler",
+      "knowledgeVersion": "travel-20260914-72591dbecea55e65"
+    }
+  ]
+}
