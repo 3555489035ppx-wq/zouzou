@@ -7,11 +7,15 @@ import { guideContextForPrompt, searchTravelGuides } from './travel-guides'
 import { cityKnowledge } from '../src/services/trip/cityKnowledge'
 import { moreCityKnowledge } from '../src/services/trip/more-city-knowledge'
 import { generatePlans, understandTrip } from '../src/services/trip/planner'
-import type { GuideKnowledgeBase } from '../src/services/trip/guides'
+import { searchGuideCandidates, type GuideKnowledgeBase } from '../src/services/trip/guides'
+import reviewedGuideData from '../data/travel-guides-reviewed-20-cities.json'
+import { regionalCommunitySignals } from '../src/services/trip/regional-community-signals'
+import { socialResearchGuides } from '../src/services/trip/socialResearch'
 
 const review = JSON.parse(readFileSync(resolve('data/travel-research/2026-09-06-review.json'), 'utf8')) as { cities: Array<{ city: string; stay: string[] }> }
 const kb = JSON.parse(readFileSync(resolve('data/travel-guides.json'), 'utf8')) as GuideKnowledgeBase
 const batch = kb.guides.filter(guide => guide.research?.batch === '2026-09-06')
+const sources = [...reviewedGuideData.guides, ...kb.guides, ...regionalCommunitySignals, ...socialResearchGuides]
 
 describe('September cross-platform travel research integration', () => {
   it('keeps exact source locations and does not manufacture terms from a city label', () => {
@@ -55,8 +59,20 @@ describe('September cross-platform travel research integration', () => {
       const query = `${city}3天2晚，2人预算6000元，本地美食和城市漫步，住宿在${stay[0]}。`
       const local = getLocalGuideContext(city, query)
       const remote = searchTravelGuides(city, query)
-      expect(local.candidates.some(guide => guide.research?.batch === '2026-09-06')).toBe(true)
-      expect(remote.candidates.some(guide => guide.research?.batch === '2026-09-06')).toBe(true)
+      // guides.ts reserves reviewed records, ranks relevance, deduplicates URLs,
+      // then takes eight. The September batch has no reserved top-eight position.
+      // Check historical recall independently from the expanded corpus's ranking.
+      const historical = searchGuideCandidates({ ...kb, guides: batch }, city, query, 8)
+      expect(historical.candidates.length).toBeGreaterThan(0)
+      expect(historical.candidates.every(guide => guide.city === city && guide.research?.batch === '2026-09-06')).toBe(true)
+      expect(local.candidates).toHaveLength(8)
+      expect(remote.candidates).toEqual(local.candidates)
+      expect(local.candidates.some(guide => guide.id.startsWith('reviewed20-') && guide.research?.evidence.length)).toBe(true)
+      expect(new Set(local.candidates.map(guide=>guide.sourceUrl.split(/[?#]/)[0])).size).toBe(8)
+      for (const guide of local.candidates) {
+        expect(guide.city).toBe(city)
+        expect(sources.find(source=>source.id===guide.id && source.sourceUrl===guide.sourceUrl)).toEqual(guide)
+      }
       const prompt = guideContextForPrompt(remote)
       expect(prompt.map(guide => guide.hotelHints)).toEqual(remote.candidates.map(guide => guide.hotelHints ?? []))
       expect(prompt.every(guide => typeof guide.sourceReadLevel === 'string')).toBe(true)

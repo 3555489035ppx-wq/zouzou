@@ -1,10 +1,11 @@
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { GroupPlanError, GroupPlanRepository } from './group-plans'
 import type { GroupPlanInput } from '../src/services/groupPlans'
 import { parseGroupPlan } from '../src/services/groupPlanSchemas'
+import * as cityKnowledge from '../src/services/trip/cityKnowledge'
 
 const folders: string[] = []
 const repositories: GroupPlanRepository[] = []
@@ -54,11 +55,47 @@ describe('persistent group plan poll', () => {
   it('offers distinct named restaurants rather than several dishes from the same shop', async () => {
     const repo = await repository()
     const plan = await repo.create(input({ interests: ['中餐'], budget: 150 }))
-    const names = plan.polls[0].options.map(option => option.title)
-    expect(names.length).toBeGreaterThanOrEqual(2)
-    expect(new Set(names.map(name => name.split('｜')[0])).size).toBe(names.length)
-    expect(names).toEqual(expect.arrayContaining(['大壶春', '味香斋']))
-    expect(names.some(name => name.includes('｜') || name.includes('附近'))).toBe(false)
+    const options = plan.polls[0].options
+    const knowledge = cityKnowledge.getCityKnowledge(plan.city)
+    expect(options).toHaveLength(3)
+    const venues = options.map(option => {
+      // Rankings change as sourced venues enter the corpus. Require a real
+      // canonical shop record instead of pinning yesterday's winning names.
+      const venue = knowledge.items.find(item => item.name === option.title && item.venueName === option.title && item.category === 'restaurant')
+      expect(venue, `Missing canonical restaurant: ${option.title}`).toBeDefined()
+      expect(option.type).toBe('restaurant')
+      expect(option.title).not.toMatch(/｜|附近/)
+      expect(venue!.source.label.trim()).not.toBe('')
+      expect(venue!.source.checkedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+      const source = new URL(venue!.source.url)
+      expect(source.protocol).toBe('https:')
+      expect(source.pathname).not.toBe('/')
+      expect(source.hostname).not.toMatch(/(^|\.)(example\.(com|org|net)|localhost)$/)
+      expect(['official', 'community', 'amap']).toContain(venue!.source.kind)
+      expect(option.metadata).toMatchObject({ area: venue!.area, verified: venue!.verified })
+      expect(option.metadata.reason).toContain(venue!.summary)
+      return venue!.venueName
+    })
+    expect(new Set(venues).size).toBe(options.length)
+    expect(new Set(options.map(option => option.id)).size).toBe(options.length)
+  })
+  it('collapses multiple sourced dish aliases to their canonical shop before selecting restaurants', async () => {
+    const knowledge = cityKnowledge.getCityKnowledge('上海')
+    // Deliberately retain the actual two Da Hu Chun dishes ahead of the shop
+    // records. Both alias normalization and venue-based deduplication matter.
+    const items = knowledge.items.filter(item => ['大壶春', '味香斋'].includes(item.venueName ?? ''))
+    expect(items.filter(item => item.venueName === '大壶春' && item.name !== item.venueName).length).toBeGreaterThanOrEqual(2)
+    expect(items.filter(item => item.name === item.venueName).map(item => item.name).sort()).toEqual(['味香斋', '大壶春'].sort())
+    const lookup = vi.spyOn(cityKnowledge, 'getCityKnowledge').mockReturnValue({ ...knowledge, items })
+    try {
+      const repo = await repository()
+      const plan = await repo.create(input({ interests: ['中餐'], budget: 150 }))
+      const names = plan.polls[0].options.map(option => option.title)
+      expect(names).toHaveLength(2)
+      expect(names.sort()).toEqual(['味香斋', '大壶春'].sort())
+      expect(names.filter(name => name === '大壶春')).toHaveLength(1)
+      expect(names.some(name => name.includes('｜'))).toBe(false)
+    } finally { lookup.mockRestore() }
   })
   it('rejects a stale decision after another member changes the plan', async () => {
     const repo = await repository(); const plan = await repo.create(input({ type: 'date' }))

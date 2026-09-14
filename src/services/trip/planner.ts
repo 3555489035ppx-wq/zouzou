@@ -1409,7 +1409,7 @@ export function validatePlan(plan: Pick<GeneratedPlan, 'days' | 'intent' | 'budg
   const allStops = Object.values(plan.days).flat()
   if (plan.intent.indoorOnly) {
     const knowledge = getCityKnowledge(plan.intent.destination)
-    const unconfirmed = allStops.filter(stop => !stop.fixed && !knowledge.items.find(item => item.name === stop.name)?.tags.includes('室内'))
+    const unconfirmed = allStops.filter(stop => !stop.fixed && (stop.pendingVenue || !knowledge.items.find(item => item.name === stop.name)?.tags.includes('室内')))
     if (unconfirmed.length) issues.push(`全部室内尚未满足：${unconfirmed.map(stop => stop.name).join('、')}缺少室内场所依据，请替换或确认。`)
     checks.push({ name: '室内约束', passed: unconfirmed.length === 0, detail: unconfirmed.length ? '部分活动或待选餐厅尚未确认室内，不能视为完整室内方案。' : '活动地点均有室内标记；站间交通仍需核对。' })
   }
@@ -1602,6 +1602,9 @@ function withCurrentPlaceKnowledge(plan: GeneratedPlan): GeneratedPlan {
  * meal slot as a successfully generated travel option. */
 export function completePlanOptions(plans: GeneratedPlan[]): GeneratedPlan[] {
   const complete=plans.filter(plan=>{
+    // Recheck actual stops: saved validation cannot authorize an outdoor edit
+    // or an unresolved venue in an explicitly indoor trip.
+    if(plan.intent.indoorOnly && !validatePlan(plan).checks.find(check=>check.name==='室内约束')?.passed)return false
     const stops=Object.values(plan.days).flat()
     const dayEntries=Object.entries(plan.days)
     const mealsCovered=dayEntries.every(([,day],index)=>{
@@ -1626,7 +1629,11 @@ export function completePlanOptions(plans: GeneratedPlan[]): GeneratedPlan[] {
     return mealsCovered && visitsCovered && !stops.some(stop=>plannedStopIsMeal(stop)&&stop.pendingVenue)
       && (plan.nights===0 || stops.some(stop=>isHotelStop(stop)&&!/待选|待确认/.test(stop.name)))
   })
-  if(!complete.length)throw new Error('这次还没能配齐适合路线的餐厅或全天游览，攻略未生成完成。你的旅行条件已保留，请调整条件或稍后重试。')
+  if(!complete.length){
+    const indoorIssues=unique(plans.filter(plan=>plan.intent.indoorOnly).flatMap(plan=>validatePlan(plan).issues.filter(issue=>issue.startsWith('全部室内尚未满足'))))
+    if(indoorIssues.length)throw new Error(`${indoorIssues[0]} 未将待选地点或室外场所作为可行室内方案；请确认有室内依据的地点，或调整全部室内条件后重新生成。`)
+    throw new Error('这次还没能配齐适合路线的餐厅或全天游览，攻略未生成完成。你的旅行条件已保留，请调整条件或稍后重试。')
+  }
   return complete
 }
 

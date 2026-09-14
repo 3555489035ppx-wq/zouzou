@@ -97,10 +97,16 @@ describe('PRD v2 original defects', () => {
   })
   it('Q-09/Q-11 replacement choices preserve unavailable and indoor constraints', () => {
     for (const city of ['南京', '上海']) {
-      const plan = generatePlans(understandTrip({ text: `去${city}3天，预算6000元，全部室内。`, media: [] }).intent)[0]
+      const generated = generatePlans(understandTrip({ text: `去${city}3天，预算6000元，全部室内。`, media: [] }).intent)[0]
+      // Simulate removing a future visit: its sourced venue is now available
+      // for replacement rather than already consumed by this itinerary.
+      const spare = city === '南京' ? '六朝博物馆' : '浦东美术馆'
+      expect(generated.knowledge.items.find(item=>item.name===spare)?.tags).toContain('室内')
+      const plan = { ...generated, days: Object.fromEntries(Object.entries(generated.days).map(([day,stops])=>[day,stops.filter(stop=>stop.name!==spare)])) }
       const target = Object.values(plan.days).flat().find(stop => !stop.fixed && !stop.pendingVenue)!
       const candidates = getReplacementCandidates(plan, target.id)
       expect(candidates.length).toBeGreaterThan(0)
+      expect(candidates.some(candidate=>candidate.name===spare)).toBe(true)
       for (const candidate of candidates) expect(plan.knowledge.items.find(item => item.name === candidate.name)?.tags).toContain('室内')
       const unavailable = candidates[0].name
       const constrained = { ...plan, intent: { ...plan.intent, unavailablePlaces: [unavailable] } }
@@ -109,14 +115,52 @@ describe('PRD v2 original defects', () => {
     }
   })
 
+  it('Q-09 leaves exhausted indoor replacement choices empty instead of repeating a scheduled venue', () => {
+    const plan=generatePlans(understandTrip({text:'去南京3天，预算6000元，全部室内。',media:[]}).intent)[0]
+    const stops=Object.values(plan.days).flat()
+    const target=stops.find(stop=>!stop.fixed&&!stop.pendingVenue)!
+    const indoorVisits=plan.knowledge.items.filter(item=>item.tags.includes('室内')&&!['food','restaurant'].includes(item.category))
+    expect(indoorVisits.length).toBeGreaterThan(0)
+    expect(indoorVisits.every(item=>stops.some(stop=>stop.name===item.name))).toBe(true)
+    expect(getReplacementCandidates(plan,target.id)).toEqual([])
+    const used=stops.find(stop=>!stop.fixed&&!stop.pendingVenue&&stop.id!==target.id)!
+    expect(replacePlanPlace(plan,target.id,used.name)).toBe(plan)
+    expect(()=>completePlanOptions([plan])).toThrow('全部室内尚未满足')
+  })
+
+  it('Q-11 publishes feasible indoor variants but rechecks outdoor edits and pending known venues', () => {
+    const plans=generatePlans(understandTrip({text:'2026年9月19日去南京1天，1人预算2000元，11:00到南京南站，18:30从南京南站返程，全部室内。',media:[]}).intent)
+    const feasible=completePlanOptions(plans)
+    expect(feasible.length).toBeGreaterThan(0)
+    for(const plan of feasible){
+      expect(plan.validation.checks.find(check=>check.name==='室内约束')?.passed).toBe(true)
+      expect(Object.values(plan.days).flat().some(stop=>stop.pendingVenue)).toBe(false)
+    }
+    const plan=feasible[0]
+    const target=Object.values(plan.days).flat().find(stop=>!stop.fixed&&!/餐|小吃/.test(stop.type))!
+    expect(target).toBeDefined()
+    // Preserve the old passing validation deliberately: publication must inspect
+    // actual edited stops, not trust this stale report.
+    for(const patch of [{name:'中山陵'},{pendingVenue:true}]){
+      const edited={...plan,days:Object.fromEntries(Object.entries(plan.days).map(([day,stops])=>[day,stops.map(stop=>stop.id===target.id?{...stop,...patch}:stop)]))}
+      expect(()=>completePlanOptions([edited])).toThrow('全部室内尚未满足')
+      expect(completePlanOptions([edited,plan])).toEqual([plan])
+    }
+  })
+
   it('Q-11 pending venues remain unconfirmed and outdoor edits fail validation', () => {
     const plan = generatePlans(understandTrip({ text: base + '全部室内。', media: [] }).intent)[0]
     const pendingMeals=Object.values(plan.days).flat().filter(stop => stop.pendingVenue)
-    expect(pendingMeals.every(stop=>stop.type==='早餐')).toBe(true)
-    expect(plan.validation.checks.find(check => check.name === '室内约束')?.passed).toBe(pendingMeals.length===0)
+    // Two sourced indoor restaurants cannot fill six distinct lunches/dinners.
+    expect(pendingMeals.some(stop=>/午餐|晚餐/.test(stop.type))).toBe(true)
+    expect(pendingMeals.every(stop=>stop.priceState==='unknown'&&stop.budget===0)).toBe(true)
+    expect(plan.validation.checks.find(check => check.name === '室内约束')?.passed).toBe(false)
+    expect(()=>completePlanOptions([plan])).toThrow('全部室内尚未满足')
     const template = Object.values(plan.days).flat().find(stop => !stop.fixed)!
     const pending = { ...plan, days: { 'Day 1': [{ ...template, name: '室内餐厅待选', pendingVenue: true }] } }
     expect(validatePlan(pending).checks.find(check => check.name === '室内约束')?.passed).toBe(false)
+    const pendingKnown = {...plan,days:{'Day 1':[{...template,name:'六朝博物馆',pendingVenue:true}]}}
+    expect(validatePlan(pendingKnown).checks.find(check=>check.name==='室内约束')?.passed).toBe(false)
     const target = Object.values(plan.days).flat().find(stop => !stop.fixed && !stop.pendingVenue)!
     const edited = updateGeneratedPlan(plan, { 'Day 1': [{ ...target, name: '中山陵' }] })
     expect(edited.validation.checks.find(check => check.name === '室内约束')?.passed).toBe(false)
@@ -135,12 +179,16 @@ describe('PRD v2 original defects', () => {
     expect(monday.intent.alternatives).toBeUndefined()
   })
 
-  it('Q-11 supplies concrete indoor meals and rain transfers for all three variants', () => {
+  it('Q-11 preserves indoor meal evidence and rain transfers, rejecting incomplete variants', () => {
     for (const plan of generatePlans(understandTrip({ text: base + '两天大雨，全部安排室内。', media: [] }).intent)) {
       const stops = Object.values(plan.days).flat()
       expect(stops.filter(stop => !stop.fixed && !stop.pendingVenue).every(stop => plan.knowledge.items.find(item => item.name === stop.name)?.tags.includes('室内'))).toBe(true)
-      expect(stops.filter(stop => stop.pendingVenue).every(stop=>stop.type==='早餐')).toBe(true)
-      if(stops.some(stop=>stop.pendingVenue))expect(plan.validation.checks.find(check=>check.name==='室内约束')?.passed).toBe(false)
+      const namedMeals=stops.filter(stop=>/早餐|午餐|晚餐/.test(stop.type)&&!stop.pendingVenue)
+      expect(new Set(namedMeals.map(stop=>stop.canonicalName??stop.name)).size).toBe(namedMeals.length)
+      for(const day of Object.values(plan.days))expect(day.filter(stop=>/午餐|晚餐/.test(stop.type)).map(stop=>stop.type)).toEqual(['午餐','晚餐'])
+      expect(stops.filter(stop=>stop.pendingVenue).every(stop=>stop.priceState==='unknown'&&stop.budget===0)).toBe(true)
+      expect(plan.validation.checks.find(check=>check.name==='室内约束')?.passed).toBe(false)
+      expect(()=>completePlanOptions([plan])).toThrow('全部室内尚未满足')
       expect(stops.filter(stop => stop.travelFromPreviousMinutes > 0).every(stop => stop.mode === 'taxi' && stop.transport.includes('雨天'))).toBe(true)
       expect(plan.validation.checks.find(check => check.name === '时间顺序')?.passed).toBe(true)
     }

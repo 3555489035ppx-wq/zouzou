@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import reviewed from '../../../data/travel-guides-reviewed-20-cities.json'
-import reviewReport from '../../../docs/qa/three-platform-first-20-city-review.json'
+import reviewReport from '../../../data/release/knowledge-review-summary.json'
 import namedPlaces from '../../../data/travel-research/three-platform-named-places.json'
 import { getLocalGuideContext } from './localGuides'
 import { getCityKnowledge } from './cityKnowledge'

@@ -42,4 +42,8 @@ if(dataFiles.length<10)throw Error('Incomplete runtime knowledge dependency list
 const kb=JSON.parse(await readFile('data/travel-guides-reviewed-20-cities.json','utf8'))
 const release={knowledgeVersion:'travel-20260914-'+hash.digest('hex').slice(0,16),permissionDeclaration:'docs/CONTENT-AUTHORIZATION.md',approvalBasis:'owner-confirmed',reviewedCount:kb.guides.length,cities:[...new Set(kb.guides.map((guide:{city:string})=>guide.city))].length,sourceGeneratedAt:kb.generatedAt,inputs}
 await writeFile('data/release/knowledge.json',JSON.stringify(release,null,2)+'\n')
+// Publish only aggregate review evidence, never the private per-record ledger.
+const review=JSON.parse(await readFile('docs/qa/three-platform-first-20-city-review.json','utf8'))
+if(review.result.runtimeCandidates!==release.reviewedCount)throw Error('Review/runtime count mismatch')
+await writeFile('data/release/knowledge-review-summary.json',JSON.stringify({schemaVersion:review.schemaVersion,generatedAt:review.generatedAt,scope:review.scope,result:review.result,outputSha256:review.outputSha256},null,2)+'\n')
 console.log(JSON.stringify({assets:records.length,bytes,catalog:compact.length,knowledgeVersion:release.knowledgeVersion,reviewed:release.reviewedCount,cities:release.cities}))
