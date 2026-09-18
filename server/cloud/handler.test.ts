@@ -69,6 +69,20 @@ describe('Cloudflare private trips and guest sessions',()=>{
     expect((await call('/api/trips','PUT',plan(),undefined,{'Content-Type':'text/plain'})).status).toBe(415)
     expect(sqlite.prepare('SELECT count(*) AS n FROM cloud_trips').get()?.n).toBe(0)
   })
+  // 微信小程序的 wx.request 由原生 WebView 发出：Origin=servicewechat.com 且 Sec-Fetch-Site=cross-site，
+  // 之前会被 CSRF 校验一律挡成 403，小程序因此完全无法调用生成接口。
+  it('accepts requests from the own mini program while still rejecting other cross-site callers',async()=>{
+    const body={text:'上海两天',media:[]}
+    const own=await call('/api/trips/understand','POST',body,undefined,{Origin:'https://servicewechat.com',Referer:'https://servicewechat.com/wx314187b9a9c98213/12/page-frame.html','Sec-Fetch-Site':'cross-site'})
+    expect(own.status).not.toBe(403)
+    // 别人的小程序：appid 不同，仍然拒绝
+    const foreignMini=await call('/api/trips/understand','POST',body,undefined,{Origin:'https://servicewechat.com',Referer:'https://servicewechat.com/wx0000000000000000/12/page-frame.html','Sec-Fetch-Site':'cross-site'})
+    expect(foreignMini.status).toBe(403)
+    // 其它站点：照旧拒绝
+    expect((await call('/api/trips/understand','POST',body,undefined,{Origin:'https://evil.example','Sec-Fetch-Site':'cross-site'})).status).toBe(403)
+    // 有 servicewechat Origin 但没有 Referer：无法确认 appid，仍然拒绝
+    expect((await call('/api/trips/understand','POST',body,undefined,{Origin:'https://servicewechat.com','Sec-Fetch-Site':'cross-site'})).status).toBe(403)
+  })
   it('invalidates the guest session on logout',async()=>{
     const cookie=await session(),before=await(await call('/api/session','GET',undefined,cookie)).json()
     const logout=await call('/api/session/logout','POST',undefined,cookie)

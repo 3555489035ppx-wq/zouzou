@@ -83,6 +83,7 @@
     "src/demo-data/acquired-journey-images.ts",
     "src/demo-data/acquired-journey-images.release.ts",
     "src/demo-data/discover.ts",
+    "src/private-assets/bloub/bot/**/*.ts",
     "src/demo-data/discover-multiday.ts",
     "src/demo-data/authorized-social-photos.ts",
     "src/demo-data/discover-breakfast-routes.ts",
@@ -90,6 +91,7 @@
     "src/demo-data/discover-v2-routes.ts",
     "src/services/journey-images/**/*.ts",
     "src/demo-data/discover-cover-index.ts",
-    "src/services/journey-images/presentation.ts"
+    "src/services/journey-images/presentation.ts",
+    "apps/wechat-mini/src/shared/journeyTools.ts"
   ]
 }

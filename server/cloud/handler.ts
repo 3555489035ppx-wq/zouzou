@@ -10,9 +10,26 @@ export type CloudEnv = {
   KNOWLEDGE_VERSION?: string
   KNOWLEDGE_RELEASE_APPROVED?: string
   AI_PROVIDER?: string; DEEPSEEK_API_KEY?: string; DEEPSEEK_MODEL?: string; OPENAI_API_KEY?: string; OPENAI_MODEL?: string
+  /** 微信小程序 appid，用于识别来自本小程序的请求。 */
+  MINI_PROGRAM_APP_ID?: string
 }
 const sessionCookie = (value:string,secure:boolean,expires=false) => `zouzou_session=${value}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${expires?0:2592000}${secure?'; Secure':''}`
 function cookieToken(request:Request) { return request.headers.get('cookie')?.split(';').map(value=>value.trim()).find(value=>value.startsWith('zouzou_session='))?.slice(15) }
+
+const DEFAULT_MINI_APP_ID = 'wx314187b9a9c98213'
+/**
+ * 微信小程序里的 wx.request 由原生 WebView 发出，会带
+ * `Origin: https://servicewechat.com` 与 `Referer: https://servicewechat.com/{appid}/{version}/page-frame.html`，
+ * 既不是同源、也会被标成 Sec-Fetch-Site: cross-site，因此会被下面的 CSRF 校验挡掉（实测 403）。
+ * 这里只放行「Referer 里带本站小程序 appid」的请求——appid 无法伪造，
+ * 其它站点或其它小程序仍然照旧被拒。
+ */
+function fromOwnMiniProgram(request:Request,env:CloudEnv) {
+  const referer=(request.headers.get('referer')??'').toLowerCase()
+  if(!referer)return false
+  const appId=(env.MINI_PROGRAM_APP_ID?.trim()||DEFAULT_MINI_APP_ID).toLowerCase()
+  return referer.startsWith(`https://servicewechat.com/${appId}/`)
+}
 
 async function rateLimit(db:CloudDatabase,bucket:string,max:number,windowMs:number) {
   const expires = Math.floor(Date.now()/windowMs)*windowMs+windowMs
@@ -35,7 +52,8 @@ export async function handleCloudRequest(request:Request,env:CloudEnv):Promise<R
     if (request.method==='OPTIONS') return finish(new Response(null,{status:204}))
     if (!['GET','HEAD'].includes(request.method)) {
       const origin=request.headers.get('origin')
-      if (request.headers.get('sec-fetch-site')==='cross-site' || (origin && origin!==url.origin)) throw new CloudError(403,'请从走走页面发起操作。')
+      const ownMini=fromOwnMiniProgram(request,env)
+      if (!ownMini && (request.headers.get('sec-fetch-site')==='cross-site' || (origin && origin!==url.origin))) throw new CloudError(403,'请从走走页面发起操作。')
       if (request.body && !request.headers.get('content-type')?.startsWith('application/json')) throw new CloudError(415,'请使用JSON请求。')
     }
     if (!env.DB) throw new CloudError(503,'云端数据库尚未配置。你的本机数据未改变。')
