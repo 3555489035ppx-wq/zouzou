@@ -209,7 +209,9 @@ describe('Shanghai itinerary planner', () => {
     expect(plan.validation.passed).toBe(true)
   })
 
-  it('keeps each day moving through route bands without geographic backtracking', () => {
+  // 这个用例会遍历全部 60 个城市各跑一遍完整规划，本身就要 2~3 秒；
+  // 并行跑全量测试时默认 5 秒不够，显式放宽超时，断言本身不放宽。
+  it('keeps each day moving through route bands without geographic backtracking', { timeout: 30000 }, () => {
     for (const city of cityNames) {
       const firstPlace = getCityProfile(city).demoLabels[0]
       const understanding = understandTrip({

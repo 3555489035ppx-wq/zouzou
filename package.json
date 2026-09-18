@@ -5,6 +5,17 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "dev:weapp": "pnpm --dir apps/wechat-mini dev:weapp",
+    "build:weapp": "pnpm --dir apps/wechat-mini build:weapp",
+    "typecheck:weapp": "pnpm --dir apps/wechat-mini typecheck",
+    "test:weapp": "node scripts/verify-wechat-mini.mjs",
+    "test:weapp:repair": "node scripts/verify-wechat-repair.mjs",
+    "test:weapp:runtime": "node scripts/verify-wechat-runtime.cjs",
+    "test:weapp:design": "node scripts/verify-wechat-design.cjs",
+    "test:weapp:tools": "node scripts/verify-wechat-tools.cjs",
+    "test:weapp:tools-logic": "node --experimental-strip-types scripts/verify-tools-logic.ts",
+    "test:weapp:tools-spec": "node scripts/verify-tools-spec.mjs",
+    "test:weapp:size": "node scripts/wechat-package-size.mjs",
     "build:release": "tsc -b && node scripts/build-release.mjs",
     "dev": "vite --host 0.0.0.0",
     "server": "tsx server/index.ts",
@@ -22,7 +33,9 @@
     "typecheck": "tsc -b --pretty false",
     "build": "tsc -b && vite build && node scripts/stamp-release.mjs",
     "test": "vitest run",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:trip:generation": "node scripts/verify-trip-generation.mjs",
+    "test:trip:coverage": "tsx scripts/audit-planner-coverage.ts"
   },
   "dependencies": {
     "@react-three/fiber": "^9.3.0",
@@ -46,6 +59,7 @@
     "@types/react-dom": "^19.1.7",
     "@types/three": "^0.179.0",
     "@vitejs/plugin-react": "^5.0.2",
+    "miniprogram-automator": "0.12.1",
     "tsx": "^4.23.12",
     "typescript": "^5.9.2",
     "vite": "^7.1.3",

@@ -340,10 +340,29 @@ function negativelyMentioned(text: string, names: string[]) {
     if (index < 0) return false
     const before = clause.slice(0, index)
     const after = clause.slice(index + name.length)
-    return /(?:不去|不想去|不要去|不吃|不想吃|不要吃|不安排|不想逛|不想看|不看|跳过|排除|取消)(?:\s|再|逛|参观)*(?:[^，。；;]*[、和及])?$/.test(before)
-      || /^(?:这次|暂时|已经|也|都|暂)?(?:不去|不想去|不吃|不想吃|不安排|跳过|取消|没有预约到|没约到|约满|无票|没票)/.test(after)
+    // 「不要」放在长词之后，避免把「不要去外滩」只吃掉「不要」而漏掉「去」。
+    return /(?:不去|不想去|不要去|不吃|不想吃|不要吃|不安排|不想逛|不想看|不看|跳过|排除|取消|不要|不想)(?:\s|再|逛|参观)*(?:[^，。；;]*[、和及])?$/.test(before)
+      || /^(?:这次|暂时|已经|也|都|暂)?(?:不去|不想去|不吃|不想吃|不安排|跳过|取消|没有预约到|没约到|约满|无票|没票|不要|不想)/.test(after)
       || /(?:没有预约到|没约到|无票|没票)\s*$/.test(before)
   }))
+}
+
+/**
+ * §15：用户只报了地点、没说城市时，用地点反推城市（「武康路、安福路玩一天」→ 上海）。
+ * 城市地点索引只建一次并缓存，避免每次解析都遍历 60 个城市的知识库。
+ */
+let cityPlaceIndex: Array<{ city: string; names: string[] }> | undefined
+function inferCityFromMentionedPlaces(text: string): string | undefined {
+  cityPlaceIndex ??= cityNames.map((city) => ({
+    city,
+    names: getCityKnowledge(city).items.map((item) => item.name).filter((name) => name.length >= 2),
+  }))
+  let best: { city: string; hits: number } | undefined
+  for (const entry of cityPlaceIndex) {
+    const hits = entry.names.filter((name) => text.includes(name)).length
+    if (hits && (!best || hits > best.hits)) best = { city: entry.city, hits }
+  }
+  return best?.city
 }
 
 export function understandTrip(request: TripRequest): TripUnderstanding {
@@ -380,7 +399,9 @@ export function understandTrip(request: TripRequest): TripUnderstanding {
   const times = unique([...textTimes, ...confirmedMediaTimes])
   const mentionedDestinations = cityNames.filter(city => combined.includes(city)).sort((a,b) => combined.indexOf(a) - combined.indexOf(b))
   const explicitDestination = mentionedDestinations.find(city => new RegExp(`(?:去|游玩|旅行到)\\s*${city}`).test(combined))
-  const destination = explicitDestination ?? mentionedDestinations[0] ?? '未确定'
+  let destination = explicitDestination ?? mentionedDestinations[0] ?? '未确定'
+  // 只有城市无法从文字里确定时才做地点反推，避免影响正常路径。
+  if (!cityNames.includes(destination)) destination = inferCityFromMentionedPlaces(combined) ?? destination
   const cityProfile = getCityProfile(destination)
   const knowledge = knowledgeWithRememberedPlaces(destination)
   const normalizeAnchorLocation = (value: string) => {
@@ -420,15 +441,20 @@ export function understandTrip(request: TripRequest): TripUnderstanding {
   if (textArrivalLocation && mediaArrivalLocations.some((value) => !value.includes(textArrivalLocation.replace('火车站', '')) && !textArrivalLocation.includes(value.replace('火车站', '')))) conflicts.push(`文字到达地点 ${textArrivalLocation} 与截图地点 ${mediaArrivalLocations[0]}`)
   if (textDepartureLocation && mediaDepartureLocations.some((value) => !value.includes(textDepartureLocation.replace('火车站', '')) && !textDepartureLocation.includes(value.replace('火车站', '')))) conflicts.push(`文字返程地点 ${textDepartureLocation} 与截图地点 ${mediaDepartureLocations[0]}`)
 
-  if (/武康路/.test(combined)) mustVisit.push('武康路')
-  if (/安福路/.test(combined)) mustVisit.push('安福路')
-  if (/外滩/.test(combined)) mustVisit.push('外滩')
-  if (/豫园|老城厢/.test(combined)) mustVisit.push('豫园')
+  // 用户明确说「不要去」的地点不能进必去，否则它会同时出现在必去与禁去里。
+  // 先用一次廉价判断兜住：没有否定词的输入完全不必逐个地点跑否定正则。
+  const mentionsNegative = /不去|不想|不要|不看|跳过|排除|取消|没约到|无票|没票|约满/.test(combined)
+  const wantPlace = (name: string, pattern: RegExp) => pattern.test(combined) && !(mentionsNegative && negativelyMentioned(combined, [name]))
+  if (wantPlace('武康路', /武康路/)) mustVisit.push('武康路')
+  if (wantPlace('安福路', /安福路/)) mustVisit.push('安福路')
+  if (wantPlace('外滩', /外滩/)) mustVisit.push('外滩')
+  if (wantPlace('豫园', /豫园|老城厢/)) mustVisit.push('豫园')
   if (/看展|展览|美术馆|博物馆/.test(combined)) mustVisit.push('展览')
   const explicitCityPlaces = unique([
     ...cityProfile.demoLabels,
     ...Object.values(cityProfile.stopNames ?? {}),
-  ]).filter((place) => place.length >= 2 && !/咖啡|午餐|晚餐|本地|散步|夜景|路线|酒店|城市/.test(place) && combined.includes(place))
+  ]).filter((place) => place.length >= 2 && !/咖啡|午餐|晚餐|本地|散步|夜景|路线|酒店|城市/.test(place)
+    && combined.includes(place) && !(mentionsNegative && negativelyMentioned(combined, [place])))
   mustVisit.push(...explicitCityPlaces)
   const profilePlaceTerms = new Set(unique([
     ...cityProfile.demoLabels,
@@ -1598,8 +1624,34 @@ function withCurrentPlaceKnowledge(plan: GeneratedPlan): GeneratedPlan {
   return {...plan,knowledge:{...plan.knowledge,items}}
 }
 
-/** Publishing is stricter than constructing a draft: never return an unfinished
- * meal slot as a successfully generated travel option. */
+/**
+ * 哪些天的哪些时段没排满（上午/下午/晚间）。
+ * 与原先 visitsCovered 的判定完全一致，只是把「没排满」从致命错误改成可报告项。
+ */
+function looseVisitPeriods(dayEntries:[string,PlannedStop[]][],plan:GeneratedPlan){
+  const loose:string[]=[]
+  for(const [day,stops] of dayEntries){
+    const start=timeToMinutes(stops[0]?.time??'23:59')
+    const returning=stops.find(stop=>stop.type==='返程')
+    const end=Math.min(returning?timeToMinutes(returning.time)-30:22*60,intentEnd(plan.intent))
+    for(const period of DAILY_VISITS){
+      if(start>period.start+30||end<period.end||(period.type==='晚间'&&plan.intent.lowMobility))continue
+      const covered=stops.some(stop=>!stop.fixed&&!plannedStopIsMeal(stop)&&stop.type!=='休息'
+        &&timeToMinutes(stop.time)<period.end&&timeToMinutes(stop.time)+stop.durationMinutes>period.start)
+      if(!covered)loose.push(`${day} ${period.type}`)
+    }
+  }
+  return loose
+}
+
+/**
+ * Publishing is stricter than constructing a draft: never return an unfinished
+ * meal slot as a successfully generated travel option.
+ *
+ * 但「某个时段没排满」不是同一级别的错误：它只是当天节奏偏松，不应该让用户
+ * 完全拿不到方案。因此这里把时段覆盖降级为待确认事项，只保留真正不可发布的
+ * 情况——空白天、缺整餐、餐厅未落地、有住宿夜却缺酒店。
+ */
 export function completePlanOptions(plans: GeneratedPlan[]): GeneratedPlan[] {
   const complete=plans.filter(plan=>{
     // Recheck actual stops: saved validation cannot authorize an outdoor edit
@@ -1618,16 +1670,15 @@ export function completePlanOptions(plans: GeneratedPlan[]): GeneratedPlan[] {
       return windows.every(([type,floor,ceiling,duration])=>(type==='晚餐'&&earlyReturn&&timeToMinutes(plan.intent.departureTime!)<19*60)
         ||start>ceiling||Math.max(start,floor)+duration>end||day.some(stop=>stop.type===type&&!stop.pendingVenue))
     })
-    const visitsCovered=dayEntries.every(([,day])=>{
-      const start=timeToMinutes(day[0]?.time??'23:59')
-      const returning=day.find(stop=>stop.type==='返程')
-      const end=Math.min(returning?timeToMinutes(returning.time)-30:22*60,intentEnd(plan.intent))
-      return DAILY_VISITS.every(period=>start>period.start+30||end<period.end||(period.type==='晚间'&&plan.intent.lowMobility)
-        ||day.some(stop=>!stop.fixed&&!plannedStopIsMeal(stop)&&stop.type!=='休息'
-          &&timeToMinutes(stop.time)<period.end&&timeToMinutes(stop.time)+stop.durationMinutes>period.start))
-    })
-    return mealsCovered && visitsCovered && !stops.some(stop=>plannedStopIsMeal(stop)&&stop.pendingVenue)
+    const publishable = mealsCovered && !stops.some(stop=>plannedStopIsMeal(stop)&&stop.pendingVenue)
       && (plan.nights===0 || stops.some(stop=>isHotelStop(stop)&&!/待选|待确认/.test(stop.name)))
+    if(!publishable)return false
+    const loose=looseVisitPeriods(dayEntries,plan)
+    if(loose.length)plan.validation={...plan.validation,issues:unique([
+      ...plan.validation.issues,
+      `部分时段安排较松（${loose.join('、')}），可以按当天体力与天气灵活调整。`,
+    ])}
+    return true
   })
   if(!complete.length){
     const indoorIssues=unique(plans.filter(plan=>plan.intent.indoorOnly).flatMap(plan=>validatePlan(plan).issues.filter(issue=>issue.startsWith('全部室内尚未满足'))))
