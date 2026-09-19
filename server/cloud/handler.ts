@@ -81,8 +81,8 @@ export async function handleCloudRequest(request:Request,env:CloudEnv):Promise<R
     if (url.pathname==='/api/guides' && request.method==='GET') return finish(await handleCloudAI(request,env,env.KNOWLEDGE_VERSION??''))
     if (!['GET','HEAD'].includes(request.method)) await rateLimit(db,`write:${actor}`,60,60000)
     if (/^\/api\/trips\/(understand|generate|media\/analyze)$/.test(url.pathname)) {
-      await rateLimit(db,`ai:${actor}`,6,60000)
-      await rateLimit(db,'ai:global',100,86400000)
+      await rateLimit(db,`ai:${actor}`,20,60000)
+      await rateLimit(db,'ai:global',500,86400000)
       return finish(await handleCloudAI(request,env,env.KNOWLEDGE_VERSION??''))
     }
     if(url.pathname.startsWith('/api/community/'))return finish(await handleCloudCommunity(request,db,actor!))
