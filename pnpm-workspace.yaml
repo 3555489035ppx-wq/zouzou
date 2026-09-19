@@ -1,6 +1,10 @@
 allowBuilds:
   esbuild: true
   workerd: true
+  core-js: true
+  core-js-pure: true
 onlyBuiltDependencies:
   - esbuild
   - workerd
+  - core-js
+  - core-js-pure
