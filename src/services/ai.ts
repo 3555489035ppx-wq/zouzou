@@ -120,15 +120,9 @@ function isUsableRemoteUnderstanding(value: TripUnderstanding) {
   // A provider response that contains only defaults cannot drive the planner.
   if (intent.destination === '未确定') return false
   if (intent.durationDays < 1 || intent.partySize < 1) return false
-  return Boolean(
-    intent.dates
-      || intent.budget !== null
-      || intent.arrivalTime
-      || intent.departureTime
-      || intent.hotel
-      || intent.mustVisit.length > 0
-      || intent.preferences.length > 0,
-  )
+  // Optional preferences must not reject a valid city-and-duration request.
+  // The payload has already passed parseTripUnderstanding.
+  return intent.destination.trim().length > 0
 }
 
 export interface AIService {
@@ -158,8 +152,10 @@ class LocalPlanningAIAdapter implements AIService {
     const guideContext = getLocalGuideContext(result.intent.destination, request.text)
     onStage('thinking', result.intent.missing.length > 0 ? '已识别需求，正在标记待确认信息' : '已识别需求和固定行程锚点')
     await wait(UNDERSTANDING_STAGE_DELAY)
+    signal?.throwIfAborted()
     onStage('thinking', '整理已提取条件与待确认项')
     await wait(UNDERSTANDING_STAGE_DELAY)
+    signal?.throwIfAborted()
     onStage('success', '理解完成')
     return {
       ...result,
@@ -174,6 +170,7 @@ class LocalPlanningAIAdapter implements AIService {
     signal?.throwIfAborted()
     onStage('planning', '正在配齐每天的餐厅、住宿与游览安排')
     const result = completePlanOptions(generatePlans(understanding.intent, understanding.guideContext))
+    signal?.throwIfAborted()
     onStage('success', result.every((plan) => plan.validation.passed) ? '方案算术检查完成；营业与交通仍需确认' : '方案已生成，还有信息需要确认')
     return result
   }
