@@ -192,7 +192,7 @@ describe('bounded travel agent', () => {
     const result = await runTravelAgent(request(), invoke(choice({ action: 'adjust', durationExplicit: true,
       preserveOtherDays: true, intent })), controller().signal, 'v1')
     expect(result.body.kind).toBe('clarify')
-    expect(result.body.answer).toContain('其他天完全不变')
+    expect(result.body.answer).toContain('其他天也可能变化')
     expect(mocks.generate).not.toHaveBeenCalled()
   })
   it('labels whole-plan regeneration when adjusting preferences', async () => {

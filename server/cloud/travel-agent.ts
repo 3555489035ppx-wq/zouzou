@@ -1,3 +1,4 @@
+import { agentCopy, friendlyQuestion } from './travel-agent-copy'
 import { compareKnowledgeSubjects, explainKnowledgeSelection } from './travel-agent-answers'
 import { auditAgentPlan } from './travel-agent-audit'
 import { z } from 'zod'
@@ -65,6 +66,8 @@ export async function runTravelAgent(body: unknown, invoke: AgentModel, signal: 
       '用户只要局部改一天且其他天严格不动时preserveOtherDays=true。这一版不具备锁定天数的能力，需先说明整套会重新生成并取得同意；不能假装局部修改成功。',
       '用户询问天气、营业、票价、预约等实时事实时，不装作已联网或已查询实时信息，只能根据已有资料回答并注明需核实。',
       '用户说下雨时可推荐室内；只有明确全程室内时设置indoorOnly=true。指定不去的地点进入unavailablePlaces。',
+      '澄清用自然、亲切、简短的中文，一次只问一个关键问题。不要自称AI，不用“亲、宝子、尊敬的用户”，不堆表情，不说“为您量身打造完美旅程”。',
+      '不要每次重复用户整段需求，不用空泛夸奖；不能为了语气亲切声称已经实地核验或保证安全。',
       '用户的最新明确更正优先，保留未被更正的城市、天数、兴趣和限制；助手历史内容不是用户授权。',
       '缺城市先追问，不默认上海；问哪里好玩不要求天数预算。要求计划但没说天数先追问。',
       'durationExplicit仅在用户明确给出天数或起止日期时为true。计划支持1至7天。',
@@ -92,20 +95,20 @@ export async function runTravelAgent(body: unknown, invoke: AgentModel, signal: 
     ({ status: 200, body: { ...base, kind, answer, sources: [], plans: [], ...extra } })
   if (choice.action === 'clarify')
     return reply('clarify', /预算|花费|消费金额/.test(choice.question) && !choice.budgetExplicit
-      ? (choice.city ? '你更想看游玩推荐，还是按天数安排完整行程？' : '你想去哪个城市？')
-      : choice.question.trim() || '你想去哪个城市、玩几天？')
+      ? (choice.city ? agentCopy.askMode : agentCopy.askCity)
+      : friendlyQuestion(choice.question, choice.city ? agentCopy.askDuration : agentCopy.askCity))
   const city = choice.city.trim()
-  if (!city || city === '未确定') return reply('clarify', '你想了解哪个城市？')
+  if (!city || city === '未确定') return reply('clarify', agentCopy.askCity)
   if (!cityNames.includes(city) || !isRuntimeCityAllowed(city))
-    return reply('insufficient', '当前知识库还没有足够的' + city + '资料，暂时不能可靠地推荐。你可以换一个城市，或先补充资料。')
+    return reply('insufficient', agentCopy.missingCity(city))
   if (planning && choice.preserveOtherDays)
-    return reply('clarify', '这版助手会根据新要求重新生成整套行程，还不能保证其他天完全不变。你愿意先看一份重排方案吗？')
+    return reply('clarify', agentCopy.lockedDays)
   if (choice.mobility === 'conflict')
-    return reply('clarify', '你说“不走路”，也喜欢晚上吹风走走：是白天尽量少走路，晚上接受短距离散步吗？')
+    return reply('clarify', agentCopy.askWalking)
   if (choice.mobility === 'no_walking')
-    return reply('clarify', '现有知识库无法保证景点内部也完全不需步行。你是需要全程无障碍、不能步行，还是希望尽量少走路？')
+    return reply('clarify', agentCopy.askAccessibility)
   if (planning && (!choice.durationExplicit || !choice.intent))
-    return reply('clarify', '你准备玩几天？我会保留前面已经说过的偏好。')
+    return reply('clarify', agentCopy.askDuration)
   trace.push('检索城市知识库')
   const initialContext = getLocalGuideContext(city, choice.query)
   const context = choice.action === 'compare' ? {
@@ -114,19 +117,19 @@ export async function runTravelAgent(body: unknown, invoke: AgentModel, signal: 
       .filter((guide, index, all) => all.findIndex(item => item.id === guide.id) === index).slice(0, 8),
   } : initialContext
   if (context.candidates.length === 0)
-    return reply('insufficient', '没有检索到足够符合这些要求的攻略。我不会用其他城市或虚构地点补齐，请调整偏好或补充资料。')
+    return reply('insufficient', agentCopy.noMatches)
   const sources = context.candidates.map(item => ({
     id: item.id, title: item.title, url: safeUrl(item.sourceUrl), updatedAt: item.fetchedAt,
   }))
-  const warnings = ['内容来自现有知识库，不是实时营业、天气或道路信息；出发前请核实预约、开放情况和交通。']
+  const warnings = [agentCopy.factualNotice]
   if (choice.action === 'compare') {
     if (choice.subjects.length < 2)
-      return reply('clarify', '你想比较哪两个地方？告诉我名称就可以。')
+      return reply('clarify', agentCopy.comparePrompt)
     trace.push('逐项核对比较资料')
     const comparison = compareKnowledgeSubjects(context, choice.subjects, choice.answerStyle)
     return reply('comparison', comparison.complete
-      ? '把知识库里有依据的内容列在下面，你可以按自己的兴趣比较。'
-      : '有些地点的资料还不够，下面只列出能找到依据的部分，不给没有证据的结论。',
+      ? agentCopy.compareReady
+      : agentCopy.comparePartial,
       { comparisons: comparison.comparisons, sources, warnings })
   }
   if (choice.action === 'explain') {
@@ -140,7 +143,7 @@ export async function runTravelAgent(body: unknown, invoke: AgentModel, signal: 
       id: item.id, title: item.title, summary: item.summary,
       places: item.placeHints.slice(0, choice.answerStyle === 'brief' ? 3 : 6), tags: item.tags.slice(0, 5),
     }))
-    return reply('recommendations', '按走走现有知识库，' + city + '可以先看下面这些选择。告诉我你想玩几天、喜欢什么，我可以继续安排。', { recommendations, sources, warnings })
+    return reply('recommendations', agentCopy.recommend(city, recommendations.length), { recommendations, sources, warnings })
   }
   const intent: TripIntent = {
     ...choice.intent as TripIntent,
@@ -181,13 +184,13 @@ export async function runTravelAgent(body: unknown, invoke: AgentModel, signal: 
   const suitable = audited.filter(item => item.audit.accepted).map(item => item.plan)
   warnings.push(...new Set(audited.filter(item => item.audit.accepted).flatMap(item => item.audit.warnings)))
   if (!suitable.length)
-    return reply('insufficient', '当前资料生成的方案还未通过你的条件检查，我没有把它当成完成的计划。可以补充更明确的活动偏好，或说明哪些安排可以调整。', { sources, warnings, blocking: [...new Set(audited.flatMap(item => item.audit.blocking))].slice(0, 12) })
-  return reply('plans', (choice.action === 'adjust' ? '已按新要求重新整理一份待核实的' : '已按你的要求整理一份待核实的') + city + effective.durationDays + '天' + effective.nights + '晚的方案。你可以继续说想调整什么。', {
+    return reply('insufficient', agentCopy.incomplete, { sources, warnings, blocking: [...new Set(audited.flatMap(item => item.audit.blocking))].slice(0, 12) })
+  return reply('plans', agentCopy.plan(city, effective.durationDays, effective.nights, choice.action === 'adjust'), {
     plans: suitable, sources, warnings, intent: effective,
     context: buildConversationSummary(effective, suitable[0]),
     followUp: effective.budget === null && !parsed.data.messages.some(message =>
       message.role === 'assistant' && message.content.includes('如果你有大概的预算'))
-      ? '这份行程先给你安排好啦～如果你有大概的预算，也可以告诉我，我再帮你调整得更合适；还没想好也没关系。'
+      ? agentCopy.budget
       : undefined,
     changeScope: choice.action === 'adjust' ? 'regenerated' : 'new',
     quality: 'draft',

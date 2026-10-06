@@ -32,9 +32,9 @@ export function compareKnowledgeSubjects(context: GuideContext, subjects: string
 export function explainKnowledgeSelection(context: GuideContext, query: string, style: AnswerStyle) {
   const matches = context.matchedTerms.filter(term => term && term !== context.city).slice(0, 5)
   return {
-    answer: '这次先按' + context.city + '筛选，再参考你提到的偏好检索相关攻略。' +
-      (matches.length ? '检索词包括：' + matches.join('、') + '。' : '') +
-      '这些是推荐线索，不代表已经实时核实，也不代表每个地点都符合全部条件。',
+    answer: '我先找了' + context.city + '的攻略，再结合你说的喜好挑选。' +
+      (matches.length ? '这次主要参考了：' + matches.join('、') + '。' : '') +
+      '这些内容都有对应来源，不过不代表开放时间和现场情况已经实时确认。',
     reasons: context.candidates.slice(0, style === 'brief' ? 2 : 5).map(guide => ({
       sourceId: guide.id,
       title: guide.title,

@@ -26,7 +26,7 @@ export function TravelAgentPage() {
     active.current?.abort()
     active.current = null
     setPending('')
-    setError('已停止，可修改问题后重新发送。')
+    setError('已经停下啦，改好想法再发给我就行。')
   }
   const send = async (raw: string) => {
     const text = raw.trim()
@@ -51,7 +51,7 @@ export function TravelAgentPage() {
       setInput('')
     } catch (cause) {
       if (id !== generation.current) return
-      setError(controller.signal.aborted ? '等待超时，请重试；之前的结果仍保留。' : cause instanceof Error ? cause.message : '暂时没有完成，请重试。')
+      setError(controller.signal.aborted ? '这次等得有点久，没能完成。可以再试一次，前面的内容还在。' : cause instanceof Error ? cause.message : '暂时没有完成，请重试。')
     } finally {
       window.clearTimeout(timeout)
       if (id === generation.current) { active.current = null; setPending('') }
@@ -59,7 +59,7 @@ export function TravelAgentPage() {
   }
   return <div className="travel-agent-demo">
     <main className="travel-agent">
-      <header><span className="travel-agent__eyebrow">ZOUZOU TRAVEL AGENT · 测试版</span><h1>先聊聊，想去哪走走？</h1><p>从走走知识库找灵感，也可以直接说天数和偏好。</p></header>
+      <header><span className="travel-agent__eyebrow">ZOUZOU TRAVEL AGENT · 测试版</span><h1>先聊聊，想去哪走走？</h1><p>不知道去哪玩，可以先聊聊；想好了，就告诉我天数和喜好。</p></header>
       {!history.length && <div className="travel-agent__examples">{examples.map(text => <button type="button" key={text} disabled={!!pending} onClick={() => void send(text)}>{text}</button>)}</div>}
       <section aria-label="旅行对话" aria-live="polite" aria-busy={!!pending}>
         {results.map((result, index) => <div className="travel-agent__turn" key={index}>
@@ -72,7 +72,7 @@ export function TravelAgentPage() {
             </section>)}
             {result.comparisons?.map(item => <section className="travel-agent__card" key={item.subject}>
               <h2>{item.subject}</h2>
-              {item.status === 'insufficient' ? <p>缺少可归属于这个地点的具体资料，暂不作比较结论。</p> :
+              {item.status === 'insufficient' ? <p>这个地方的具体资料还不够，暂时不好直接比较。</p> :
                 <ul>{item.evidence.map((fact, factIndex) => <li key={fact.sourceId + '-' + factIndex}>
                   {fact.text}
                   <small> · {result.sources.find(source => source.id === fact.sourceId)?.title ?? '知识库来源'}</small>
@@ -80,9 +80,9 @@ export function TravelAgentPage() {
             </section>)}
             {result.reasons?.map(reason => <section className="travel-agent__card" key={reason.sourceId}>
               <h2>{reason.title}</h2><p>{reason.summary}</p>
-              <small>{reason.matchedTags.length ? '匹配的攻略标签：' + reason.matchedTags.join('、') : '城市相关资料，尚无明确偏好标签命中'}</small>
+              <small>{reason.matchedTags.length ? '和你喜好相近的内容：' + reason.matchedTags.join('、') : '这是相关城市的资料，还需要看看合不合你的喜好'}</small>
             </section>)}
-            {result.changeScope === 'regenerated' && <p className="travel-agent__warning">这是按新条件重新生成的方案，其他天也可能变化。</p>}
+            {result.changeScope === 'regenerated' && <p className="travel-agent__warning">这次重新排了一版，其他天也可能有变化，记得一起看看。</p>}
             {result.plans.map((plan, planIndex) => <details className="travel-agent__card" key={plan.id} open={planIndex === 0}>
               <summary>{plan.label} · {plan.city} · {Object.keys(plan.days).length}天{plan.nights}晚</summary>
               <p>{plan.difference}</p>
@@ -93,13 +93,13 @@ export function TravelAgentPage() {
                 </li>)}</ol>
               </section>)}
             </details>)}
-            {!!result.sources.length && <details className="travel-agent__sources"><summary>参考来源（{result.sources.length}）</summary>
+            {!!result.sources.length && <details className="travel-agent__sources"><summary>资料来自这里（{result.sources.length}）</summary>
               <ul>{result.sources.map(source => <li key={source.id}>{sourceHref(source.url) ? <a href={sourceHref(source.url)} target="_blank" rel="noreferrer">{source.title}</a> : source.title}</li>)}</ul>
             </details>}
             {result.warnings?.map(warning => <p className="travel-agent__warning" key={warning}>{warning}</p>)}
             {!!result.blocking?.length && <ul className="travel-agent__warning">{result.blocking.map(item => <li key={item}>{item}</li>)}</ul>}
             {result.followUp && <p className="travel-agent__followup">{result.followUp}</p>}
-            <small className="travel-agent__trace">{result.trace.join(' → ')}</small>
+            <details className="travel-agent__sources"><summary>这次是怎么安排的</summary><small className="travel-agent__trace">{result.trace.join(' → ')}</small></details>
             {index === results.length - 1 && <div className="travel-agent__examples">
               {result.kind === 'recommendations' && <button type="button" disabled={!!pending} onClick={() => void send('按前面这个城市，帮我安排两天一晚')}>安排两天一晚</button>}
               {result.kind === 'plans' && <button type="button" disabled={!!pending} onClick={() => void send('保留前面的偏好，把整套行程安排得再轻松一点')}>整套再轻松一点</button>}
@@ -107,7 +107,7 @@ export function TravelAgentPage() {
             </div>}
           </article>
         </div>)}
-        {pending && <div><p className="travel-agent__user">{pending}</p><p role="status">正在处理你的旅行需求…</p></div>}
+        {pending && <div><p className="travel-agent__user">{pending}</p><p role="status">正在帮你看看怎么安排…</p></div>}
         <div ref={end} />
       </section>
       {error && <p role="alert" className="travel-agent__error">{error}</p>}
