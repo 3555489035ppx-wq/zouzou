@@ -1,3 +1,4 @@
+import { AgentLocalLimiter } from './agent-limits'
 import { handleCloudAI } from './cloud/ai'
 import 'dotenv/config'
 import { handleCommunityRequest } from './community'
@@ -12,6 +13,7 @@ import { sessionUser, endSession } from './sessions'
 import { ShareError, TripSharingRepository } from './trip-sharing'
 let sharing: TripSharingRepository | undefined
 
+const agentLocalLimiter = new AgentLocalLimiter()
 const DEFAULT_PORT = 8787
 const MAX_BODY_BYTES = 1_000_000
 // Six 3 MiB originals expand to just over 25 MB in base64, plus JSON.
@@ -204,6 +206,8 @@ export async function handleRequest(request: IncomingMessage, response: ServerRe
 
   if (request.url === '/api/agent/chat') {
     if (request.method !== 'POST') { sendJson(response, 405, { message: '请使用POST。' }); return }
+    const release = agentLocalLimiter.acquire()
+    if (!release) { sendJson(response, 429, { code: 'RATE_LIMITED', message: '本地助手请求过于频繁，请稍后重试。' }); return }
     const controller = new AbortController()
     const abort = () => { if (!response.writableEnded) controller.abort() }
     response.on('close', abort)
@@ -224,12 +228,16 @@ export async function handleRequest(request: IncomingMessage, response: ServerRe
         DEEPSEEK_API_KEY: process.env.DEEPSEEK_API_KEY, DEEPSEEK_MODEL: process.env.DEEPSEEK_MODEL,
         KNOWLEDGE_RELEASE_APPROVED: process.env.KNOWLEDGE_RELEASE_APPROVED,
       }, process.env.KNOWLEDGE_VERSION ?? '')
-      if (!response.destroyed) sendJson(response, result.status, await result.json())
+      if (!response.destroyed) {
+        const requestId = result.headers.get('X-Request-ID')
+        if (requestId) response.setHeader('X-Request-ID', requestId)
+        sendJson(response, result.status, await result.json())
+      }
     } catch (error) {
       if (!response.destroyed) sendJson(response, error instanceof HttpError ? error.statusCode : 500, {
         message: error instanceof HttpError ? error.message : '旅行助手暂时不可用，请重试。',
       })
-    } finally { response.off('close', abort) }
+    } finally { response.off('close', abort); release() }
     return
   }
 

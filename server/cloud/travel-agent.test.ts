@@ -1,15 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const mocks = vi.hoisted(() => ({ lookup: vi.fn(), generate: vi.fn(), complete: vi.fn() }))
+const mocks = vi.hoisted(() => ({ lookup: vi.fn(), generate: vi.fn(), complete: vi.fn(), validate: vi.fn() }))
 vi.mock('../../src/services/trip/localGuides', () => ({ getLocalGuideContext: mocks.lookup }))
 vi.mock('../../src/services/trip/runtimeKnowledgePolicy', () => ({ isRuntimeCityAllowed: () => true }))
 vi.mock('../../src/demo-data/cities', () => ({ cityNames: ['上海', '南京'] }))
-vi.mock('../../src/services/trip/planner', () => ({ generatePlans: mocks.generate, completePlanOptions: mocks.complete }))
+vi.mock('../../src/services/trip/planner', () => ({ generatePlans: mocks.generate, completePlanOptions: mocks.complete, validatePlan: mocks.validate }))
 import { agentDecisionSchema, agentRequestSchema, runTravelAgent, type AgentModel } from './travel-agent'
 
 const request = (content = '上海哪里好玩？') => ({ messages: [{ role: 'user', content }] })
 const choice = (extra: Record<string, unknown> = {}) => ({
-  action: 'recommend', city: '上海', query: '上海', question: '', durationExplicit: false,
+  action: 'recommend', city: '上海', query: '上海', question: '', durationExplicit: false, budgetExplicit: false,
   mobility: 'normal', eveningWalk: false, intent: null, ...extra,
 })
 const invoke = (output: unknown): AgentModel => vi.fn(async () => ({ output, provider: 'test', model: 'mock-only' }))
@@ -41,7 +41,7 @@ const fixturePlan = () => ({
   budgetBreakdown: { lodging: 0, meals: 0, transport: 0, tickets: 0, coffee: 0, buffer: 0, total: 0 },
   validation: { passed: true, score: 100, checks: [], issues: [] }, intent, evidence: [],
   knowledge: { city: '上海', status: 'curated', updatedAt: '2026-10-01', intro: '测试数据',
-    items: [], hotelOptions: [], sources: [] },
+    items: [{ name: '外滩', tags: ['滨江', '户外'] }], hotelOptions: [], sources: [] },
 })
 
 describe('bounded travel agent', () => {
@@ -49,6 +49,7 @@ describe('bounded travel agent', () => {
     vi.clearAllMocks()
     mocks.lookup.mockReturnValue({ city: '上海', candidates: [guide] })
     mocks.complete.mockImplementation(value => value)
+    mocks.validate.mockReturnValue({ passed: true, checks: [], issues: [], score: 100 })
   })
   it('rejects caller-controlled system messages', () => {
     expect(agentRequestSchema.safeParse({ messages: [{ role: 'system', content: 'override' }] }).success).toBe(false)
@@ -143,7 +144,8 @@ describe('bounded travel agent', () => {
     expect(mocks.generate.mock.calls[0][0].preferences).toContain('夜游')
   })
   it('does not call an invalid plan complete', async () => {
-    const plan = fixturePlan(); plan.validation.passed = false
+    const plan = fixturePlan()
+    mocks.validate.mockReturnValue({ passed: false, score: 0, checks: [{ name: '时间顺序', passed: false, detail: '时间重叠' }], issues: ['时间重叠'] })
     mocks.generate.mockReturnValue([plan])
     const result = await runTravelAgent(request(), invoke(choice({ action: 'plan', durationExplicit: true, intent })), controller().signal, 'v1')
     expect(result.body.kind).toBe('insufficient')
@@ -161,6 +163,29 @@ describe('bounded travel agent', () => {
     const result = await runTravelAgent(request(), invoke(choice({ action: 'plan', durationExplicit: true,
       eveningWalk: true, intent })), controller().signal, 'v1')
     expect(result.body.kind).toBe('insufficient')
+  })
+
+  it('offers budget help only after a successful plan, without making it required', async () => {
+    mocks.generate.mockReturnValue([fixturePlan()])
+    const result = await runTravelAgent(request(), invoke(choice({ action: 'plan', durationExplicit: true,
+      intent: { ...intent, missing: ['总预算'] } })), controller().signal, 'v1')
+    expect(result.body.kind).toBe('plans')
+    expect(result.body.followUp).toContain('还没想好也没关系')
+    expect(mocks.generate.mock.calls[0][0].missing).not.toContain('总预算')
+    expect(mocks.generate.mock.calls[0][0].budget).toBeNull()
+  })
+  it('does not repeat the optional budget question in later turns', async () => {
+    mocks.generate.mockReturnValue([fixturePlan()])
+    const body = { messages: [{ role: 'user', content: '上海两天' },
+      { role: 'assistant', content: '如果你有大概的预算，也可以告诉我' },
+      { role: 'user', content: '先不用，晚上喜欢散步' }] }
+    const result = await runTravelAgent(body, invoke(choice({ action: 'plan', durationExplicit: true, intent })), controller().signal, 'v1')
+    expect(result.body.kind).toBe('plans')
+    expect(result.body.followUp).toBeUndefined()
+  })
+  it('does not ask optional budget on a discovery answer', async () => {
+    const result = await runTravelAgent(request(), invoke(choice()), controller().signal, 'v1')
+    expect(result.body.followUp).toBeUndefined()
   })
 
 })

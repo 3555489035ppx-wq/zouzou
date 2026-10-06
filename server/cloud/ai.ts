@@ -1,4 +1,4 @@
-import { runTravelAgent } from './travel-agent'
+import { runTravelAgent, TravelAgentError } from './travel-agent'
 import { z } from 'zod'
 import { TRIP_INTENT_INSTRUCTIONS, TRIP_VISION_INSTRUCTIONS } from '../ai-guidelines'
 import { buildUnderstandingSummary, completePlanOptions, generatePlans, type TripIntent } from '../../src/services/trip/planner'
@@ -131,6 +131,19 @@ async function understand(body: unknown, env: CloudAIEnv, signal: AbortSignal, k
 /** Worker routing only; authentication, persistence and deployment belong to the caller. */
 export async function handleCloudAI(request: Request, env: CloudAIEnv, knowledgeVersion: string): Promise<Response> {
   const path = new URL(request.url).pathname.replace(/\/$/, '')
+  const agentRequest = path === '/api/agent/chat'
+  const requestId = agentRequest ? crypto.randomUUID() : undefined
+  const startedAt = Date.now()
+  const agentJson = (value: unknown, status = 200) => {
+    const payload = value && typeof value === 'object' ? { ...value, requestId } : { message: '旅行助手返回异常。', requestId }
+    const encoded = JSON.stringify(payload)
+    if (new TextEncoder().encode(encoded).byteLength > 1_500_000)
+      return json({ code: 'AGENT_RESPONSE_TOO_LARGE', message: '结果过大，请缩小行程范围。', requestId }, 502)
+    return new Response(encoded, { status, headers: {
+      'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'X-Request-ID': requestId ?? '',
+    } })
+  }
+  const resultJson = (value: unknown, status = 200) => agentRequest ? agentJson(value, status) : json(value, status)
   const guidesRequest = path === '/api/guides'
   if (!guidesRequest && !['/api/agent/chat', '/api/trips/understand', '/api/trips/generate', '/api/trips/media/analyze', '/api/trips/media'].includes(path)) return json({ code: 'NOT_FOUND', message: 'AI 接口不存在。' }, 404)
   const method = guidesRequest ? 'GET' : 'POST'
@@ -154,7 +167,7 @@ export async function handleCloudAI(request: Request, env: CloudAIEnv, knowledge
     if (path === '/api/agent/chat') {
       const result = await runTravelAgent(body, (instructions, input) =>
         callModel(env, signal, instructions, input, false, 2800), signal, knowledgeVersion)
-      return json(result.body, result.status)
+      return agentJson(result.body, result.status)
     }
     if (path.endsWith('/understand')) return json(await understand(body, env, signal, knowledgeVersion))
     if (path.endsWith('/generate')) {
@@ -183,9 +196,14 @@ export async function handleCloudAI(request: Request, env: CloudAIEnv, knowledge
     const mediaFacts = media.map(item => { const fact = checked.data.items.find(fact => fact.mediaId === item.id)!; return { ...fact, name: item.name, provider: result.provider, needsConfirmation: true, warnings: [...new Set([...fact.warnings, '截图提取结果需由你核对确认。'])] } })
     return json({ mediaFacts, provider: result.provider, model: result.model, requestedModel: result.requestedModel, knowledgeVersion, warnings: ['截图提取结果需由你核对确认。'] })
   } catch (error) {
-    if (request.signal.aborted) return json({ code: 'CANCELLED', message: '请求已取消。' }, 499)
-    if (controller.signal.aborted) return json({ code: 'TIMEOUT', message: '云端模型处理超时，请重试。' }, 504)
-    if (error instanceof CloudAIError) return json({ code: error.code, message: error.message }, error.status)
-    return json({ code: 'AI_INTERNAL_ERROR', message: '云端处理失败，请稍后重试。' }, 500)
-  } finally { clearTimeout(timeout) }
+    if (request.signal.aborted) return resultJson({ code: 'CANCELLED', message: '请求已取消。' }, 499)
+    if (controller.signal.aborted) return resultJson({ code: 'TIMEOUT', message: '云端模型处理超时，请重试。' }, 504)
+    if (error instanceof TravelAgentError) return resultJson({ code: error.code, message: error.message }, 502)
+    if (error instanceof CloudAIError) return resultJson({ code: error.code, message: error.message }, error.status)
+    return resultJson({ code: 'AI_INTERNAL_ERROR', message: '云端处理失败，请稍后重试。' }, 500)
+  } finally {
+    clearTimeout(timeout)
+    // Diagnostics intentionally exclude prompts, conversation history, URLs and credentials.
+    if (agentRequest) console.info(JSON.stringify({ event: 'travel_agent.request', requestId, durationMs: Date.now() - startedAt, cancelled: request.signal.aborted, timedOut: controller.signal.aborted }))
+  }
 }

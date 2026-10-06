@@ -82,8 +82,12 @@ export function foodCompatibilityIssues(text: string, profile: DietaryProfile, e
   if (profile.vegetarian && risks.has('meat')) issues.push('含肉类线索')
   if (profile.halal && (risks.has('pork') || risks.has('alcohol'))) issues.push('可能含猪肉或酒精')
   profile.allergies.forEach((allergy) => {
-    const allergyPattern = allergy === '海鲜' || allergy === '贝类' ? /海鲜|虾|蟹|贝|鱼|生蚝|牡蛎/ : new RegExp(allergy, 'i')
-    if (allergyPattern.test(searchable)) issues.push(`命中过敏原：${allergy}`)
+    // Allergy names are literal user data, never executable regular expressions.
+    const normalized = allergy.trim().normalize('NFKC').toLowerCase()
+    const matched = normalized === '海鲜' || normalized === '贝类'
+      ? /海鲜|虾|蟹|贝|鱼|生蚝|牡蛎/.test(searchable)
+      : normalized.length > 0 && searchable.normalize('NFKC').toLowerCase().includes(normalized)
+    if (matched) issues.push(`命中过敏原：${allergy}`)
   })
   profile.dislikes.forEach((dislike) => {
     if (dislike && searchable.includes(dislike)) issues.push(`命中忌口：${dislike}`)

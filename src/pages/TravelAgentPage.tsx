@@ -46,7 +46,7 @@ export function TravelAgentPage() {
     try {
       const result = await sendAgentMessage(next, controller.signal)
       if (id !== generation.current || controller.signal.aborted) return
-      setHistory([...next, { role: 'assistant', content: [result.answer, result.context ? '当前方案摘要：' + result.context : ''].filter(Boolean).join('\n').slice(0, 4000) }])
+      setHistory([...next, { role: 'assistant', content: [result.answer, result.followUp ?? '', result.context ? '当前方案摘要：' + result.context : ''].filter(Boolean).join('\n') }])
       setResults(previous => [...previous, result])
       setInput('')
     } catch (cause) {
@@ -84,6 +84,8 @@ export function TravelAgentPage() {
               <ul>{result.sources.map(source => <li key={source.id}>{sourceHref(source.url) ? <a href={sourceHref(source.url)} target="_blank" rel="noreferrer">{source.title}</a> : source.title}</li>)}</ul>
             </details>}
             {result.warnings?.map(warning => <p className="travel-agent__warning" key={warning}>{warning}</p>)}
+            {!!result.blocking?.length && <ul className="travel-agent__warning">{result.blocking.map(item => <li key={item}>{item}</li>)}</ul>}
+            {result.followUp && <p className="travel-agent__followup">{result.followUp}</p>}
             <small className="travel-agent__trace">{result.trace.join(' → ')}</small>
           </article>
         </div>)}
