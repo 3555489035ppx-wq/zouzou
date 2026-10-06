@@ -62,7 +62,7 @@ export default function App() {
     <Route path="/onboarding" element={<OnboardingPage />} />
     <Route path="/share/:token" element={<SharedTripPage />} />
     <Route path="/home" element={<SplashPage />} />
-    <Route path="/travel/agent" element={<TravelAgentPage />} />
+    <Route path="/agent-demo" element={<TravelAgentPage />} />
     <Route path="/travel/new" element={<TravelNewPage />} />
     <Route path="/travel/understanding" element={<UnderstandingPage />} />
     <Route path="/travel/plans" element={<PlansPage />} />

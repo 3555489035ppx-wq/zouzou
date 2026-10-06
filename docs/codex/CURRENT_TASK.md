@@ -1,14 +1,14 @@
 # Current task
 
-Task: 走走旅行助手第一版
-Goal: 知识库问答与自然语言定制行程
-Scope: Web新增/旅行助手页面、受限服务端工具调度、澄清与约束检查
-Non-Goals: 不修改小程序、知识库源数据、个人行程存储；不部署、不合并main、不配置密钥
-Phase: 实现完成，等待可执行测试环境
-Resume Point: 运行docs/TRAVEL_AGENT.md中的Vitest、typecheck和build，再做真实模型与浏览器验收。用户当前不允许用Work/Codex执行代码任务，桌面任务仅用于连接授权，不能扩展。
+Task: 独立走走旅行聊天Agent Demo
+Goal: 在单独聊天页面展示知识库问答与定制旅行攻略
+Scope: /agent-demo，沿用知识库与服务端受限工具，不接入正式产品入口
+Non-Goals: 不上线、不合并main、不改小程序和用户存储、不使用Work/Codex编写代码
+Phase: 代码已实现，独立Demo调整中；待验证
+Resume Point: 在用户许可的执行路径运行docs/TRAVEL_AGENT.md中的测试、typecheck、build，再验收Demo。不得将“单独聊天界面”误解为获准创建代码执行对话。
 
 CHECKPOINT 2026-10-06
-- 已实现：模型选择问答/澄清/计划工具，服务端知识库检索，已有规划器复用，客户端对话、取消、失败保护
-- 修改文件：见本提交及docs/TRAVEL_AGENT.md
-- 验证：静态检查；自动测试/构建/浏览器/真实模型均NOT RUN
-- 未完成：运行检查、修复实测问题、部署（未授权）
+- 用户最新收窄：只做Demo，一个独立聊天Agent，回答包含旅行攻略
+- 移除“创建旅行”页入口，恢复原表单；Demo移至/agent-demo并移除产品AppShell导航
+- 上一版12文件已提交并回读，21项测试仅编写、未执行
+- 本轮仍未运行自动测试、构建、浏览器或真实模型

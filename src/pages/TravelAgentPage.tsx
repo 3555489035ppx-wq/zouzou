@@ -1,7 +1,4 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { AppShell } from '../components/AppShell'
-import { ZouNavigationBar } from '../components/ui'
 import { sendAgentMessage, type AgentMessage, type AgentResult } from '../services/travelAgent'
 import './TravelAgentPage.css'
 
@@ -13,7 +10,6 @@ const sourceHref = (raw: string | null) => {
 }
 
 export function TravelAgentPage() {
-  const navigate = useNavigate()
   const [history, setHistory] = useState<AgentMessage[]>([])
   const [results, setResults] = useState<AgentResult[]>([])
   const [input, setInput] = useState('')
@@ -61,7 +57,7 @@ export function TravelAgentPage() {
       if (id === generation.current) { active.current = null; setPending('') }
     }
   }
-  return <AppShell><ZouNavigationBar title="走走旅行助手" right={<button type="button" onClick={() => navigate('/travel/new')}>表单规划</button>} />
+  return <div className="travel-agent-demo">
     <main className="travel-agent">
       <header><span className="travel-agent__eyebrow">ZOUZOU TRAVEL AGENT · 测试版</span><h1>先聊聊，想去哪走走？</h1><p>从走走知识库找灵感，也可以直接说天数和偏好。</p></header>
       {!history.length && <div className="travel-agent__examples">{examples.map(text => <button type="button" key={text} disabled={!!pending} onClick={() => void send(text)}>{text}</button>)}</div>}
@@ -105,5 +101,5 @@ export function TravelAgentPage() {
         <small>对话仅保留在当前页面；刷新或离开会清除，不自动改动已保存行程。发送内容将由已配置的模型服务处理。</small>
       </form>
     </main>
-  </AppShell>
+  </div>
 }
