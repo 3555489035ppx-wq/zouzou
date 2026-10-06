@@ -1,3 +1,4 @@
+import { runTravelAgent } from './travel-agent'
 import { z } from 'zod'
 import { TRIP_INTENT_INSTRUCTIONS, TRIP_VISION_INSTRUCTIONS } from '../ai-guidelines'
 import { buildUnderstandingSummary, completePlanOptions, generatePlans, type TripIntent } from '../../src/services/trip/planner'
@@ -88,14 +89,14 @@ function providerConfig(env: CloudAIEnv, vision: boolean) {
   return { provider, model, key, url: provider === 'deepseek' ? 'https://api.deepseek.com/chat/completions' : 'https://api.openai.com/v1/chat/completions' }
 }
 
-async function callModel(env: CloudAIEnv, signal: AbortSignal, instructions: string, content: unknown, vision = false) {
+async function callModel(env: CloudAIEnv, signal: AbortSignal, instructions: string, content: unknown, vision = false, maxTokens = 6000) {
   const config = providerConfig(env, vision)
   let response: Response
   try {
     response = await fetch(config.url, {
       method: 'POST', signal,
       headers: { Authorization: `Bearer ${config.key}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: config.model, messages: [{ role: 'system', content: instructions }, { role: 'user', content }], response_format: { type: 'json_object' }, ...(config.provider === 'openai' ? { max_completion_tokens: 6000 } : { max_tokens: 6000 }) }),
+      body: JSON.stringify({ model: config.model, messages: [{ role: 'system', content: instructions }, { role: 'user', content }], response_format: { type: 'json_object' }, ...(config.provider === 'openai' ? { max_completion_tokens: maxTokens } : { max_tokens: maxTokens }) }),
     })
   } catch { signal.throwIfAborted(); throw new CloudAIError(502, 'AI_UNAVAILABLE', '无法连接云端模型，请重试。') }
   if (!response.ok) {
@@ -131,12 +132,12 @@ async function understand(body: unknown, env: CloudAIEnv, signal: AbortSignal, k
 export async function handleCloudAI(request: Request, env: CloudAIEnv, knowledgeVersion: string): Promise<Response> {
   const path = new URL(request.url).pathname.replace(/\/$/, '')
   const guidesRequest = path === '/api/guides'
-  if (!guidesRequest && !['/api/trips/understand', '/api/trips/generate', '/api/trips/media/analyze', '/api/trips/media'].includes(path)) return json({ code: 'NOT_FOUND', message: 'AI 接口不存在。' }, 404)
+  if (!guidesRequest && !['/api/agent/chat', '/api/trips/understand', '/api/trips/generate', '/api/trips/media/analyze', '/api/trips/media'].includes(path)) return json({ code: 'NOT_FOUND', message: 'AI 接口不存在。' }, 404)
   const method = guidesRequest ? 'GET' : 'POST'
   if (request.method !== method) return new Response(JSON.stringify({ code: 'METHOD_NOT_ALLOWED', message: `请使用 ${method}。` }), { status: 405, headers: { Allow: method, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } })
   const controller = new AbortController()
   const signal = AbortSignal.any([request.signal, controller.signal])
-  const timeout = setTimeout(() => controller.abort(), CLOUD_AI_TIMEOUT_MS)
+  const timeout = setTimeout(() => controller.abort(), path === '/api/agent/chat' ? 40_000 : CLOUD_AI_TIMEOUT_MS)
   try {
     signal.throwIfAborted()
     if (env.KNOWLEDGE_RELEASE_APPROVED !== 'true' || !knowledgeVersion.trim()) throw new CloudAIError(503, 'KNOWLEDGE_NOT_APPROVED', '运行时知识尚未获准发布，云端 AI 暂不可用。')
@@ -150,6 +151,11 @@ export async function handleCloudAI(request: Request, env: CloudAIEnv, knowledge
     }
     if (!request.headers.get('content-type')?.toLowerCase().includes('application/json')) throw new CloudAIError(415, 'UNSUPPORTED_MEDIA_TYPE', '请发送 application/json。')
     const body = await readJson(request, path.includes('/media') ? MAX_BODY_BYTES : 256_000, signal)
+    if (path === '/api/agent/chat') {
+      const result = await runTravelAgent(body, (instructions, input) =>
+        callModel(env, signal, instructions, input, false, 2800), signal, knowledgeVersion)
+      return json(result.body, result.status)
+    }
     if (path.endsWith('/understand')) return json(await understand(body, env, signal, knowledgeVersion))
     if (path.endsWith('/generate')) {
       const structured = z.object({ understanding: z.object({ intent: intentSchema }) }).safeParse(body)

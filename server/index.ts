@@ -1,3 +1,4 @@
+import { handleCloudAI } from './cloud/ai'
 import 'dotenv/config'
 import { handleCommunityRequest } from './community'
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http'
@@ -198,6 +199,37 @@ export async function handleRequest(request: IncomingMessage, response: ServerRe
 
   if (request.url?.startsWith('/api/group-plans')) {
     await handleGroupPlanRequest(request, response)
+    return
+  }
+
+  if (request.url === '/api/agent/chat') {
+    if (request.method !== 'POST') { sendJson(response, 405, { message: '请使用POST。' }); return }
+    const controller = new AbortController()
+    const abort = () => { if (!response.writableEnded) controller.abort() }
+    response.on('close', abort)
+    try {
+      const origin = request.headers.origin
+      const allowed = [`http://${request.headers.host}`, ...(process.env.CORS_ORIGIN ?? '').split(',').map(value => value.trim())]
+      // Local Vite proxy preserves the development site's Origin.
+      if (origin && !allowed.includes(origin) && !/^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin)) {
+        sendJson(response, 403, { message: '请从本地走走页面发起请求。' }); return
+      }
+      const body = await readJson(request, 80_000)
+      const result = await handleCloudAI(new Request('http://localhost/api/agent/chat', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body), signal: controller.signal,
+      }), {
+        AI_PROVIDER: process.env.AI_PROVIDER,
+        OPENAI_API_KEY: process.env.OPENAI_API_KEY, OPENAI_MODEL: process.env.OPENAI_MODEL,
+        DEEPSEEK_API_KEY: process.env.DEEPSEEK_API_KEY, DEEPSEEK_MODEL: process.env.DEEPSEEK_MODEL,
+        KNOWLEDGE_RELEASE_APPROVED: process.env.KNOWLEDGE_RELEASE_APPROVED,
+      }, process.env.KNOWLEDGE_VERSION ?? '')
+      if (!response.destroyed) sendJson(response, result.status, await result.json())
+    } catch (error) {
+      if (!response.destroyed) sendJson(response, error instanceof HttpError ? error.statusCode : 500, {
+        message: error instanceof HttpError ? error.message : '旅行助手暂时不可用，请重试。',
+      })
+    } finally { response.off('close', abort) }
     return
   }
 

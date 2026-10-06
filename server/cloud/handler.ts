@@ -80,7 +80,7 @@ export async function handleCloudRequest(request:Request,env:CloudEnv):Promise<R
     if (url.pathname==='/api/session' && request.method==='GET') return finish(json({userId:actor,kind:'guest',expiresInDays:30,message:'访客身份仅用于当前浏览器；清除Cookie、退出或换设备后不能找回，请保留独立副本。'}))
     if (url.pathname==='/api/guides' && request.method==='GET') return finish(await handleCloudAI(request,env,env.KNOWLEDGE_VERSION??''))
     if (!['GET','HEAD'].includes(request.method)) await rateLimit(db,`write:${actor}`,60,60000)
-    if (/^\/api\/trips\/(understand|generate|media\/analyze)$/.test(url.pathname)) {
+    if (url.pathname === '/api/agent/chat' || /^\/api\/trips\/(understand|generate|media\/analyze)$/.test(url.pathname)) {
       await rateLimit(db,`ai:${actor}`,20,60000)
       await rateLimit(db,'ai:global',500,86400000)
       return finish(await handleCloudAI(request,env,env.KNOWLEDGE_VERSION??''))

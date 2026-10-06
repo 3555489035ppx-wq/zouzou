@@ -1,3 +1,4 @@
+const TravelAgentPage = lazy(() => import('./pages/TravelAgentPage').then(module => ({ default: module.TravelAgentPage })))
 import { TripScope } from './components/TripScope'
 import { AppUpdateNotice } from './components/AppUpdateNotice'
 const InstallPage = lazy(() => import('./pages/InstallPage'))
@@ -61,6 +62,7 @@ export default function App() {
     <Route path="/onboarding" element={<OnboardingPage />} />
     <Route path="/share/:token" element={<SharedTripPage />} />
     <Route path="/home" element={<SplashPage />} />
+    <Route path="/travel/agent" element={<TravelAgentPage />} />
     <Route path="/travel/new" element={<TravelNewPage />} />
     <Route path="/travel/understanding" element={<UnderstandingPage />} />
     <Route path="/travel/plans" element={<PlansPage />} />

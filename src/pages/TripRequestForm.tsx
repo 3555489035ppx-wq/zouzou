@@ -51,7 +51,7 @@ export function TripRequestForm() {
   }
   const saveMedia = async (next: TripMedia[]) => {setMediaBusy(true);try{await saveDraftMedia(next);setMedia(next);writeVersioned(TRIP_MEDIA_STORAGE,mediaReferences(next),'local');setDraft(previous=>({...previous,revision:(previous.revision??0)+1,updatedAt:new Date().toISOString(),sources:{...previous.sources,attachments:'user'}}));setError('')}catch{setError('附件保存失败，本机空间不足或存储不可用。原附件保留。')}finally{setMediaBusy(false)}}
   return <AppShell><ZouNavigationBar title="创建旅行" right={query.get("from")==="results"?<button type="button" onClick={()=>navigate("/travel/plans",{replace:true})}>关闭修改</button>:undefined} /><form className="page-content travel-new" onSubmit={event => { event.preventDefault(); submit() }} onCompositionStart={() => { composing.current = true }} onCompositionEnd={() => { composing.current = false }}>
-    <header><h1>想去哪走走？</h1><p>草稿保存在此设备，未填条件稍后确认。</p></header>
+    <header><h1>想去哪走走？</h1><p>草稿保存在此设备，未填条件稍后确认。</p><button type="button" onClick={() => navigate("/travel/agent")}>和走走聊聊，按偏好找攻略 →</button></header>
     <section className="trip-constraints trip-request-group" aria-label="目的地与日期"><h2 className="trip-constraints__wide">目的地与日期</h2>
       <label className="trip-constraints__wide trip-request-destination"><span>目的地</span><DestinationPicker value={draft.destination} onChange={value => change('destination', value)} ariaLabel="目的地" /></label>
       <label>天数<input aria-label="旅行天数" type="number" min="1" max="14" value={draft.days} onChange={e => change('days', e.target.value)} /></label>

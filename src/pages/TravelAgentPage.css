@@ -1,0 +1,18 @@
+.travel-agent{max-width:760px;margin:0 auto;padding:24px 20px 110px;color:#202328}
+.travel-agent header{margin-bottom:24px}.travel-agent h1{font-size:28px;letter-spacing:-.8px;margin:10px 0}
+.travel-agent p{line-height:1.75;white-space:pre-wrap;overflow-wrap:anywhere}.travel-agent small{line-height:1.6}
+.travel-agent__eyebrow{font-size:10px;letter-spacing:1.4px;color:#69778a}.travel-agent header p{color:#6a6f76;font-size:14px}
+.travel-agent button{border:1px solid #e0e5eb;border-radius:16px;background:white;color:#202328;padding:12px 16px;font:inherit;cursor:pointer}
+.travel-agent button:disabled{opacity:.45;cursor:default}.travel-agent button:focus-visible,.travel-agent textarea:focus-visible{outline:2px solid #6a97d6;outline-offset:3px}
+.travel-agent__examples{display:flex;flex-wrap:wrap;gap:10px;margin:20px 0}.travel-agent__examples button{text-align:left;background:#f3f7fc}
+.travel-agent__turn{margin:28px 0}.travel-agent__user{background:#eef4fc;border-radius:18px 18px 4px 18px;padding:12px 16px;margin-left:32px}
+.travel-agent__reply{padding-top:4px}.travel-agent__card{border:1px solid #e6e9ee;border-radius:18px;padding:18px;margin:14px 0;background:#fff}
+.travel-agent__card h2{font-size:17px;line-height:1.5;margin:0 0 8px}.travel-agent__card h3{font-size:16px;margin-top:24px}
+.travel-agent__card summary{font-weight:650;cursor:pointer;line-height:1.6}.travel-agent__card p{font-size:14px}.travel-agent__card ol{padding-left:22px}.travel-agent__card li{margin:16px 0}
+.travel-agent__card small,.travel-agent__trace{color:#707882}.travel-agent__sources{font-size:13px;margin-top:18px}.travel-agent__sources li{margin:8px 0;overflow-wrap:anywhere}
+.travel-agent__sources a{color:#476b9c}.travel-agent__warning{font-size:12px;color:#6f747c}.travel-agent__error{color:#9a3535;font-size:14px}
+.travel-agent__composer{margin-top:28px;padding-top:20px;border-top:1px solid #e6e9ee}.travel-agent__composer label{display:block;font-size:13px;margin-bottom:8px}
+.travel-agent__composer textarea{box-sizing:border-box;width:100%;resize:vertical;padding:14px;border:1px solid #dce2e9;border-radius:16px;background:#fafbfd;font:inherit;color:inherit}
+.travel-agent__composer>div{display:flex;gap:10px;margin:12px 0}.travel-agent__composer button[type=submit]{background:#25282e;color:white}
+.travel-agent__composer>small{display:block;color:#838991;font-size:11px}
+@media(prefers-reduced-motion:reduce){.travel-agent *{scroll-behavior:auto!important}}
