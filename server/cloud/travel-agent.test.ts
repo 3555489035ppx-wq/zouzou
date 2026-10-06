@@ -188,4 +188,18 @@ describe('bounded travel agent', () => {
     expect(result.body.followUp).toBeUndefined()
   })
 
+  it('does not pretend a locked-day edit is implemented', async () => {
+    const result = await runTravelAgent(request(), invoke(choice({ action: 'adjust', durationExplicit: true,
+      preserveOtherDays: true, intent })), controller().signal, 'v1')
+    expect(result.body.kind).toBe('clarify')
+    expect(result.body.answer).toContain('其他天完全不变')
+    expect(mocks.generate).not.toHaveBeenCalled()
+  })
+  it('labels whole-plan regeneration when adjusting preferences', async () => {
+    mocks.generate.mockReturnValue([fixturePlan()])
+    const result = await runTravelAgent(request(), invoke(choice({ action: 'adjust', durationExplicit: true, intent })), controller().signal, 'v1')
+    expect(result.body.kind).toBe('plans')
+    expect(result.body.changeScope).toBe('regenerated')
+  })
+
 })

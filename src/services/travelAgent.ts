@@ -7,8 +7,16 @@ const responseSchema = z.object({
   requestId: z.string().uuid(),
   quality: z.literal('draft').optional(),
   followUp: z.string().max(400).optional(),
+  changeScope: z.enum(['new', 'regenerated']).optional(),
+  comparisons: z.array(z.object({
+    subject: z.string(), status: z.enum(['supported', 'insufficient']), sourceIds: z.array(z.string()),
+    evidence: z.array(z.object({ text: z.string(), sourceId: z.string(), verified: z.boolean() })),
+  })).max(3).optional(),
+  reasons: z.array(z.object({
+    sourceId: z.string(), title: z.string(), matchedTags: z.array(z.string()), summary: z.string(),
+  })).max(5).optional(),
   blocking: z.array(z.string()).max(12).optional(),
-  kind: z.enum(['clarify', 'insufficient', 'recommendations', 'plans']),
+  kind: z.enum(['clarify', 'insufficient', 'recommendations', 'comparison', 'explanation', 'plans']),
   answer: z.string().min(1).max(6000),
   provider: z.string(),
   model: z.string(),

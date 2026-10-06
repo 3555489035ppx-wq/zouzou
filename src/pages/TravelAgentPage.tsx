@@ -70,6 +70,19 @@ export function TravelAgentPage() {
               <h2>{item.places.length ? item.places.join(' · ') : item.title}</h2>
               <p>{item.summary}</p><small>{item.tags.join(' / ')}</small>
             </section>)}
+            {result.comparisons?.map(item => <section className="travel-agent__card" key={item.subject}>
+              <h2>{item.subject}</h2>
+              {item.status === 'insufficient' ? <p>缺少可归属于这个地点的具体资料，暂不作比较结论。</p> :
+                <ul>{item.evidence.map((fact, factIndex) => <li key={fact.sourceId + '-' + factIndex}>
+                  {fact.text}
+                  <small> · {result.sources.find(source => source.id === fact.sourceId)?.title ?? '知识库来源'}</small>
+                </li>)}</ul>}
+            </section>)}
+            {result.reasons?.map(reason => <section className="travel-agent__card" key={reason.sourceId}>
+              <h2>{reason.title}</h2><p>{reason.summary}</p>
+              <small>{reason.matchedTags.length ? '匹配的攻略标签：' + reason.matchedTags.join('、') : '城市相关资料，尚无明确偏好标签命中'}</small>
+            </section>)}
+            {result.changeScope === 'regenerated' && <p className="travel-agent__warning">这是按新条件重新生成的方案，其他天也可能变化。</p>}
             {result.plans.map((plan, planIndex) => <details className="travel-agent__card" key={plan.id} open={planIndex === 0}>
               <summary>{plan.label} · {plan.city} · {Object.keys(plan.days).length}天{plan.nights}晚</summary>
               <p>{plan.difference}</p>
@@ -87,6 +100,11 @@ export function TravelAgentPage() {
             {!!result.blocking?.length && <ul className="travel-agent__warning">{result.blocking.map(item => <li key={item}>{item}</li>)}</ul>}
             {result.followUp && <p className="travel-agent__followup">{result.followUp}</p>}
             <small className="travel-agent__trace">{result.trace.join(' → ')}</small>
+            {index === results.length - 1 && <div className="travel-agent__examples">
+              {result.kind === 'recommendations' && <button type="button" disabled={!!pending} onClick={() => void send('按前面这个城市，帮我安排两天一晚')}>安排两天一晚</button>}
+              {result.kind === 'plans' && <button type="button" disabled={!!pending} onClick={() => void send('保留前面的偏好，把整套行程安排得再轻松一点')}>整套再轻松一点</button>}
+              {['recommendations', 'comparison'].includes(result.kind) && <button type="button" disabled={!!pending} onClick={() => void send('详细说说你按哪些条件检索推荐的')}>看看推荐依据</button>}
+            </div>}
           </article>
         </div>)}
         {pending && <div><p className="travel-agent__user">{pending}</p><p role="status">正在处理你的旅行需求…</p></div>}
